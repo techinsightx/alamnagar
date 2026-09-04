@@ -1,11 +1,18 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { UploadCloud, X, Loader2, CheckCircle, Calendar, Clock } from "lucide-react";
+import { UploadCloud, X, Loader2, CheckCircle, Clock, Info, ShieldCheck } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { createRazorpayOrder, verifyRazorpayPayment } from "@/app/actions/razorpay";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export default function CreateListingPage() {
   const router = useRouter();
@@ -14,16 +21,27 @@ export default function CreateListingPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("product");
+  const [category, setCategory] = useState<"product" | "service">("product");
   const [slots, setSlots] = useState<string[]>([]);
   const [currentSlot, setCurrentSlot] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load Razorpay script on mount
+  useEffect(() => {
+    if (!document.getElementById("razorpay-script")) {
+      const script = document.createElement("script");
+      script.id = "razorpay-script";
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      document.body.appendChild(script);
+    }
+  }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + images.length > 5) {
-      alert("Maximum 5 images allowed");
+      alert("अधिकतम 5 छवियाँ अनुमति हैं।");
       return;
     }
     setImages([...images, ...files]);
@@ -60,62 +78,127 @@ export default function CreateListingPage() {
       { method: "POST", body: formData }
     );
     const data = await response.json();
+    if (!response.ok) throw new Error("Upload failed");
     return data.secure_url;
   };
 
-  const handleSubmit = async () => {
+  const handlePublish = async () => {
     if (!auth.currentUser) {
       router.push("/auth");
       return;
     }
 
-    if (!title || !description || !price || images.length === 0) {
-      alert("Please fill all required fields and add at least one image");
+    const numPrice = parseFloat(price);
+    if (!title || !description || !price || isNaN(numPrice) || numPrice <= 0 || images.length === 0) {
+      alert("कृपया सभी आवश्यक फ़ील्ड भरें और कम से कम एक छवि जोड़ें।");
       return;
     }
 
     if (category === "service" && slots.length === 0) {
-      alert("Please add at least one time slot for services");
+      alert("सेवाओं के लिए कृपया कम से कम एक समय स्लॉट जोड़ें।");
       return;
     }
 
-    setUploading(true);
+    // 🎯 Calculate Listing Fee: Minimum ₹100 OR 10% of product cost (whichever is higher)
+    const listingFee = Math.max(100, Math.round(numPrice * 0.10));
+
+    setProcessingPayment(true);
+
     try {
-      // Upload images to Cloudinary
-      const imageUrls = await Promise.all(images.map(img => uploadToCloudinary(img)));
+      // 1. Create Razorpay Order for the Listing Fee
+      const orderResult = await createRazorpayOrder(listingFee);
+      if (!orderResult.success || !orderResult.order) {
+        throw new Error("भुगतान ऑर्डर बनाने में त्रुटि।");
+      }
 
-      // Get seller details
-      const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-      const userData = userDoc.exists() ? userDoc.data() : {};
+      const order = orderResult.order;
 
-      // Create listing
-      await addDoc(collection(db, "listings"), {
-        title: title.trim(),
-        description: description.trim(),
-        price: parseFloat(price),
-        category,
-        images: imageUrls,
-        slots: category === "service" ? slots : [],
-        sellerId: auth.currentUser.uid,
-        sellerName: userData.displayName || auth.currentUser.displayName || "User",
-        sellerPhoto: userData.photoURL || auth.currentUser.photoURL || "",
-        sellerEmail: userData.email || auth.currentUser.email || "",
-        sellerBio: userData.bio || "",
-        sellerLocation: userData.location || "",
-        sellerVerified: userData.isVerified || false,
-        status: "active",
-        createdAt: serverTimestamp(),
-      });
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount, // Amount in paise
+        currency: order.currency,
+        name: "आलमनगर बाज़ार",
+        description: "लिस्टिंग शुल्क भुगतान",
+        order_id: order.id,
+        handler: async function (response: any) {
+          try {
+            // 3. Verify Payment on Server
+            const verifyResult = await verifyRazorpayPayment(
+              order.id,
+              response.razorpay_payment_id,
+              response.razorpay_signature
+            );
 
-      alert("Listing created successfully!");
-      router.push("/marketplace");
-    } catch (error) {
-      console.error("Listing creation error:", error);
-      alert("Failed to create listing");
-    } finally {
-      setUploading(false);
+            if (!verifyResult.success) {
+              throw new Error("भुगतान सत्यापन विफल।");
+            }
+
+            setUploading(true);
+
+            // 4. Upload Images to Cloudinary (Only after successful payment)
+            const imageUrls = await Promise.all(images.map(img => uploadToCloudinary(img)));
+
+            // 5. Get Seller Details
+            const userDoc = await getDoc(doc(db, "users", auth.currentUser!.uid));
+            const userData = userDoc.exists() ? userDoc.data() : {};
+
+            // 6. Save Listing to Firestore
+            await addDoc(collection(db, "listings"), {
+              title: title.trim(),
+              description: description.trim(),
+              price: numPrice,
+              listingFeePaid: listingFee, // Record the fee paid
+              category,
+              images: imageUrls,
+              slots: category === "service" ? slots : [],
+              sellerId: auth.currentUser!.uid,
+              sellerName: userData.displayName || auth.currentUser!.displayName || "User",
+              sellerPhoto: userData.photoURL || auth.currentUser!.photoURL || "",
+              sellerEmail: userData.email || auth.currentUser!.email || "",
+              sellerBio: userData.bio || "",
+              sellerLocation: userData.location || "आलमनगर",
+              sellerVerified: userData.isVerified || false,
+              status: "active",
+              deliveryMethod: "seller_managed", // Seller will handle delivery
+              createdAt: serverTimestamp(),
+            });
+
+            alert("भुगतान सफल! आपकी लिस्टिंग सफलतापूर्वक प्रकाशित हो गई है।");
+            router.push("/marketplace");
+          } catch (error: any) {
+            console.error("Post-payment processing error:", error);
+            alert("लिस्टिंग सहेजने में त्रुटि: " + error.message);
+          } finally {
+            setUploading(false);
+            setProcessingPayment(false);
+          }
+        },
+        prefill: {
+          name: auth.currentUser.displayName || "",
+          email: auth.currentUser.email || "",
+        },
+        theme: {
+          color: "#059669", // Emerald 600
+        },
+        modal: {
+          ondismiss: function () {
+            setProcessingPayment(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error: any) {
+      console.error("Payment initiation error:", error);
+      alert("भुगतान प्रक्रिया शुरू करने में त्रुटि: " + error.message);
+      setProcessingPayment(false);
     }
   };
+
+  const numPrice = parseFloat(price) || 0;
+  const estimatedFee = numPrice > 0 ? Math.max(100, Math.round(numPrice * 0.10)) : 100;
 
   return (
     <main className="min-h-screen bg-stone-50 py-12 px-6">
@@ -125,37 +208,47 @@ export default function CreateListingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl shadow-xl border border-stone-100 overflow-hidden"
         >
-          <div className="p-8 border-b border-stone-100">
+          <div className="p-8 border-b border-stone-100 bg-gradient-to-r from-emerald-50 to-amber-50">
             <h1 className="text-3xl font-extrabold text-stone-900 mb-2">नई लिस्टिंग बनाएं</h1>
-            <p className="text-stone-500">अपना उत्पाद या सेवा बाज़ार में सूचीबद्ध करें</p>
+            <p className="text-stone-600">अपना उत्पाद या सेवा बाज़ार में सूचीबद्ध करें</p>
           </div>
 
-          <div className="p-8 space-y-6">
+          <div className="p-8 space-y-8">
             {/* Category Selection */}
             <div>
               <label className="block text-sm font-bold text-stone-700 mb-3">लिस्टिंग प्रकार *</label>
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => setCategory("product")}
-                  className={`p-4 rounded-xl border-2 transition-all ${
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
                     category === "product"
                       ? "border-emerald-500 bg-emerald-50"
                       : "border-stone-200 hover:border-stone-300"
                   }`}
                 >
-                  <p className="font-bold text-stone-900">उत्पाद (Product)</p>
-                  <p className="text-sm text-stone-500 mt-1">भौतिक वस्तु बेचें</p>
+                  <div className={`p-2 rounded-lg ${category === "product" ? "bg-emerald-200" : "bg-stone-200"}`}>
+                    <ShieldCheck className="w-6 h-6 text-emerald-700" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-stone-900">उत्पाद (Product)</p>
+                    <p className="text-xs text-stone-500 mt-1">भौतिक वस्तु बेचें</p>
+                  </div>
                 </button>
                 <button
                   onClick={() => setCategory("service")}
-                  className={`p-4 rounded-xl border-2 transition-all ${
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
                     category === "service"
-                      ? "border-emerald-500 bg-emerald-50"
+                      ? "border-amber-500 bg-amber-50"
                       : "border-stone-200 hover:border-stone-300"
                   }`}
                 >
-                  <p className="font-bold text-stone-900">सेवा (Service)</p>
-                  <p className="text-sm text-stone-500 mt-1">स्लॉट बुकिंग के साथ</p>
+                  <div className={`p-2 rounded-lg ${category === "service" ? "bg-amber-200" : "bg-stone-200"}`}>
+                    <Clock className="w-6 h-6 text-amber-700" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-stone-900">सेवा (Service)</p>
+                    <p className="text-xs text-stone-500 mt-1">स्लॉट बुकिंग के साथ</p>
+                  </div>
                 </button>
               </div>
             </div>
@@ -176,11 +269,11 @@ export default function CreateListingPage() {
               {previews.length > 0 && (
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4">
                   {previews.map((preview, index) => (
-                    <div key={index} className="relative group">
-                      <img src={preview} alt="" className="w-full h-24 object-cover rounded-lg" />
+                    <div key={index} className="relative group aspect-square">
+                      <img src={preview} alt="" className="w-full h-full object-cover rounded-lg border border-stone-200" />
                       <button
                         onClick={() => removeImage(index)}
-                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -190,16 +283,49 @@ export default function CreateListingPage() {
               )}
             </div>
 
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">शीर्षक *</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="जैसे: जैविक आम, गृह सेवा, आदि"
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-              />
+            {/* Title & Price */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">शीर्षक *</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="जैसे: जैविक आम, गृह सेवा, आदि"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">मूल्य (₹) *</label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="0"
+                  min="0"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                />
+              </div>
+            </div>
+
+            {/* 🎯 Listing Fee Info Box */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-4">
+              <Info className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-amber-900">लिस्टिंग शुल्क जानकारी</p>
+                <p className="text-sm text-amber-800 mt-1 leading-relaxed">
+                  सफल लिस्टिंग के लिए न्यूनतम <strong>₹100</strong> या उत्पाद मूल्य का <strong>10%</strong> (जो भी अधिक हो) शुल्क लगेगा।
+                </p>
+                {numPrice > 0 && (
+                  <p className="text-base font-black text-amber-700 mt-3 bg-amber-100 inline-block px-3 py-1 rounded-lg">
+                    अनुमानित शुल्क: ₹{estimatedFee}
+                  </p>
+                )}
+                <p className="text-xs text-amber-700 mt-3 flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3" />
+                  भुगतान सफल होने के बाद ही आपकी लिस्टिंग प्रकाशित होगी। डिलीवरी की पूरी जिम्मेदारी विक्रेता (Seller) की होगी।
+                </p>
+              </div>
             </div>
 
             {/* Description */}
@@ -214,19 +340,6 @@ export default function CreateListingPage() {
               />
             </div>
 
-            {/* Price */}
-            <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">मूल्य (₹) *</label>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0"
-                min="0"
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-              />
-            </div>
-
             {/* Slots (Only for Services) */}
             {category === "service" && (
               <div>
@@ -237,11 +350,11 @@ export default function CreateListingPage() {
                     value={currentSlot}
                     onChange={(e) => setCurrentSlot(e.target.value)}
                     placeholder="जैसे: Saturday 10 AM - 12 PM"
-                    className="flex-1 px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    className="flex-1 px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   />
                   <button
                     onClick={addSlot}
-                    className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+                    className="px-6 py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors"
                   >
                     जोड़ें
                   </button>
@@ -249,12 +362,12 @@ export default function CreateListingPage() {
                 {slots.length > 0 && (
                   <div className="space-y-2">
                     {slots.map((slot, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-stone-50 rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-3 bg-stone-50 rounded-lg border border-stone-200">
                         <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-emerald-600" />
+                          <Clock className="w-4 h-4 text-amber-600" />
                           <span className="text-sm font-medium text-stone-700">{slot}</span>
                         </div>
-                        <button onClick={() => removeSlot(index)} className="text-red-500 hover:text-red-600">
+                        <button onClick={() => removeSlot(index)} className="text-red-500 hover:text-red-600 p-1 hover:bg-red-50 rounded">
                           <X className="w-4 h-4" />
                         </button>
                       </div>
@@ -266,14 +379,14 @@ export default function CreateListingPage() {
 
             {/* Submit Button */}
             <button
-              onClick={handleSubmit}
-              disabled={uploading}
-              className="w-full py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+              onClick={handlePublish}
+              disabled={processingPayment || uploading}
+              className="w-full py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-black rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 text-lg"
             >
-              {uploading ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> अपलोड हो रहा है...</>
+              {processingPayment || uploading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> प्रक्रिया चल रही है...</>
               ) : (
-                <><CheckCircle className="w-5 h-5" /> लिस्टिंग प्रकाशित करें</>
+                <><CheckCircle className="w-5 h-5" /> भुगतान करें और प्रकाशित करें (₹{estimatedFee})</>
               )}
             </button>
           </div>
