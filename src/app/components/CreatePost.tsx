@@ -72,10 +72,11 @@ export default function CreatePost() {
         const uploadResult = await uploadToCloudinary(formData);
         
         if (uploadResult.success) {
-          mediaUrl = uploadResult.url;
-          mediaType = uploadResult.type;
+          // ✅ FIX: TypeScript error resolved by adding fallback ""
+          mediaUrl = uploadResult.url || "";
+          mediaType = uploadResult.type || "";
         } else {
-          throw new Error("Media upload failed");
+          throw new Error(uploadResult.error || "Media upload failed");
         }
       }
 
