@@ -7,7 +7,7 @@ import {
   Share2, MoreHorizontal, Play, Volume2, VolumeX, Loader2, 
   User, Link2, Check, Home, Trash2, ChevronDown, ChevronUp, Bookmark, 
   BadgeCheck, Eye, Clock, Camera, Circle, StopCircle, Hash, Wand2, 
-  Flame, Zap, Sliders, RotateCcw, Mic, MicOff, ShoppingBag, Flag, AlertTriangle
+  Flame, Zap, Sliders, RotateCcw, Mic, MicOff, ShoppingBag, Flag, AlertTriangle, Users
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { 
@@ -635,7 +635,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       }
     } catch (error) { 
       console.error("Like error:", error);
-      // Revert on failure
       setLiked(prevLiked);
       setLikeCount(prevCount);
       showToast("लाइक करने में त्रुटि हुई।", "error");
@@ -942,6 +941,9 @@ function SpotlightContent() {
   const [savedOnly, setSavedOnly] = useState(false);
   const [filterMode, setFilterMode] = useState<'all' | 'featured' | 'trending'>('all');
   
+  // 🆕 NEW: Citizens Count State
+  const [usersCount, setUsersCount] = useState<number>(0);
+
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type });
@@ -953,6 +955,15 @@ function SpotlightContent() {
         const userData = userDoc.exists() ? userDoc.data() : {};
         setUser({ uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL, handle: userData.handle || currentUser.displayName || "user" });
       } else { setUser(null); }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 🆕 NEW: Fetch total users count in real-time
+  useEffect(() => {
+    const usersQuery = query(collection(db, "users"));
+    const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
+      setUsersCount(snapshot.size);
     });
     return () => unsubscribe();
   }, []);
@@ -987,6 +998,7 @@ function SpotlightContent() {
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       </AnimatePresence>
 
+      {/* 🆕 UPGRADED HEADER with Citizens Count & Clickable Profile */}
       <header className="sticky top-20 z-40 bg-stone-50/90 backdrop-blur-xl border-b border-stone-200">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -1000,10 +1012,31 @@ function SpotlightContent() {
               <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-500"> आलमनगर समुदाय </p>
             </div>
           </div>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-600 to-amber-500 p-[2px]">
-            <div className="w-full h-full rounded-full bg-stone-50 overflow-hidden flex items-center justify-center">
-              {user?.photoURL ? <img src={user.photoURL} alt="" className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-stone-600">{user?.displayName?.[0] || "U"}</span>}
+          
+          <div className="flex items-center gap-3">
+            {/* Joined Citizens Counter */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-amber-50 border border-emerald-200 rounded-lg">
+              <Users className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-extrabold text-emerald-700">
+                {usersCount.toLocaleString('hi-IN')}
+              </span>
+              <span className="text-[9px] text-stone-600 font-semibold">नागरिक</span>
             </div>
+            
+            {/* Clickable Profile Link */}
+            <Link 
+              href={user ? "/profile" : "/auth"} 
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-600 to-amber-500 p-[2px] hover:scale-105 transition-transform block"
+              title={user ? "प्रोफ़ाइल देखें" : "लॉगिन करें"}
+            >
+              <div className="w-full h-full rounded-full bg-stone-50 overflow-hidden flex items-center justify-center">
+                {user?.photoURL ? (
+                  <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5 text-stone-600" />
+                )}
+              </div>
+            </Link>
           </div>
         </div>
       </header>
