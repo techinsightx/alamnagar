@@ -13,11 +13,62 @@ import { auth, db } from "@/lib/firebase";
 import { 
   collection, query, orderBy, limit, onSnapshot, 
   addDoc, doc, updateDoc, increment, serverTimestamp, deleteDoc,
-  Timestamp, getDoc, where, getDocs
+  Timestamp, getDoc, where, getDocs, arrayUnion, arrayRemove
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+// ══════════════════════════════════════════════════════════
+// 🍞 CUSTOM TOAST NOTIFICATION COMPONENT
+// ══════════════════════════════════════════════════════════
+const Toast = ({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3500);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.9 }}
+      className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border ${
+        type === 'success' 
+          ? 'bg-emerald-900/90 border-emerald-500/30 text-emerald-100 backdrop-blur-md' 
+          : 'bg-red-900/90 border-red-500/30 text-red-100 backdrop-blur-md'
+      }`}
+    >
+      {type === 'success' ? <Check className="w-5 h-5 text-emerald-400" /> : <AlertTriangle className="w-5 h-5 text-red-400" />}
+      <span className="font-semibold text-sm">{message}</span>
+    </motion.div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════
+// 💀 SKELETON LOADER COMPONENT
+// ══════════════════════════════════════════════════════════
+const SkeletonPost = () => (
+  <div className="bg-stone-900 border border-stone-700 rounded-2xl overflow-hidden mb-4 p-4 animate-pulse">
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-10 h-10 rounded-full bg-stone-700" />
+      <div className="flex-1 space-y-2">
+        <div className="h-4 bg-stone-700 rounded w-1/3" />
+        <div className="h-3 bg-stone-700 rounded w-1/4" />
+      </div>
+    </div>
+    <div className="space-y-2 mb-4">
+      <div className="h-4 bg-stone-700 rounded w-full" />
+      <div className="h-4 bg-stone-700 rounded w-2/3" />
+    </div>
+    <div className="h-56 bg-stone-700 rounded-xl w-full mb-4" />
+    <div className="flex gap-4">
+      <div className="h-8 bg-stone-700 rounded w-16" />
+      <div className="h-8 bg-stone-700 rounded w-16" />
+      <div className="h-8 bg-stone-700 rounded w-16" />
+    </div>
+  </div>
+);
 
 // ══════════════════════════════════════════════════════════
 // 🎯 AUTOMATIC FEATURED LOGIC
@@ -50,9 +101,6 @@ interface SpotlightPost {
 }
 interface Comment { id: string; userId: string; userName: string; userPhoto: string; text: string; createdAt: any; }
 
-// ═══════════════════════════════════════════════════════════
-// REPORT REASONS (Hindi)
-// ═══════════════════════════════════════════════════════════
 const REPORT_REASONS = [
   { id: "inappropriate", label: "अश्लील या अनुचित सामग्री", icon: "🔞" },
   { id: "spam", label: "स्पैम या विज्ञापन", icon: "🚫" },
@@ -111,13 +159,9 @@ const FeaturedBadge = ({ level, isTrendingPost }: { level: 'platinum' | 'gold' |
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🚩 REPORT MODAL COMPONENT (NEW)
+// 🚩 REPORT MODAL COMPONENT
 // ═══════════════════════════════════════════════════════════
-const ReportModal = ({ 
-  isOpen, onClose, postId, postOwnerId 
-}: { 
-  isOpen: boolean; onClose: () => void; postId: string; postOwnerId: string;
-}) => {
+const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOpen: boolean; onClose: () => void; postId: string; postOwnerId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [selectedReason, setSelectedReason] = useState("");
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -129,18 +173,10 @@ const ReportModal = ({
     setChecking(true);
     const checkExistingReport = async () => {
       try {
-        const q = query(
-          collection(db, "reports"),
-          where("postId", "==", postId),
-          where("reporterId", "==", auth.currentUser!.uid)
-        );
+        const q = query(collection(db, "reports"), where("postId", "==", postId), where("reporterId", "==", auth.currentUser!.uid));
         const snapshot = await getDocs(q);
         setAlreadyReported(!snapshot.empty);
-      } catch (error) {
-        console.error("Report check error:", error);
-      } finally {
-        setChecking(false);
-      }
+      } catch (error) { console.error("Report check error:", error); } finally { setChecking(false); }
     };
     checkExistingReport();
   }, [isOpen, postId]);
@@ -150,57 +186,29 @@ const ReportModal = ({
     setSubmitting(true);
     try {
       await addDoc(collection(db, "reports"), {
-        postId,
-        postOwnerId,
-        reporterId: auth.currentUser.uid,
-        reporterName: auth.currentUser.displayName || "User",
-        reporterPhoto: auth.currentUser.photoURL || "",
-        reason: selectedReason,
-        details: details.trim(),
-        status: "pending",
-        createdAt: serverTimestamp(),
+        postId, postOwnerId, reporterId: auth.currentUser.uid,
+        reporterName: auth.currentUser.displayName || "User", reporterPhoto: auth.currentUser.photoURL || "",
+        reason: selectedReason, details: details.trim(), status: "pending", createdAt: serverTimestamp(),
       });
-      setSelectedReason("");
-      setDetails("");
-      setAlreadyReported(true);
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      showToast("रिपोर्ट सफलतापूर्वक भेज दी गई है। धन्यवाद!", "success");
+      setSelectedReason(""); setDetails(""); setAlreadyReported(true);
+      setTimeout(onClose, 1500);
     } catch (error) {
       console.error("Report submission error:", error);
-      alert("रिपोर्ट सबमिट करने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
-    } finally {
-      setSubmitting(false);
-    }
+      showToast("रिपोर्ट भेजने में त्रुटि हुई।", "error");
+    } finally { setSubmitting(false); }
   };
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-        className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" 
-        onClick={onClose}
-      >
-        <motion.div 
-          initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} 
-          transition={{ type: "spring", damping: 30, stiffness: 300 }} 
-          onClick={(e) => e.stopPropagation()} 
-          className="w-full sm:max-w-md bg-stone-900 sm:rounded-2xl rounded-t-3xl border-t sm:border border-stone-700 flex flex-col"
-          style={{ maxHeight: '85vh' }}
-        >
-          {/* Header */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+        <motion.div initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", damping: 30, stiffness: 300 }} onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-md bg-stone-900 sm:rounded-2xl rounded-t-3xl border-t sm:border border-stone-700 flex flex-col" style={{ maxHeight: '85vh' }}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 flex-shrink-0">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Flag className="w-5 h-5 text-red-500" /> पोस्ट रिपोर्ट करें
-            </h3>
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-              <X className="w-5 h-5 text-white/70" />
-            </button>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2"><Flag className="w-5 h-5 text-red-500" /> पोस्ट रिपोर्ट करें</h3>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5 text-white/70" /></button>
           </div>
-
-          {/* Content */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {checking ? (
               <div className="flex flex-col items-center justify-center py-12">
@@ -209,17 +217,12 @@ const ReportModal = ({
               </div>
             ) : alreadyReported ? (
               <div className="text-center py-12">
-                <motion.div 
-                  initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  className="inline-flex p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-4"
-                >
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="inline-flex p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-4">
                   <Check className="w-8 h-8 text-emerald-400" />
                 </motion.div>
                 <h4 className="text-lg font-bold text-white mb-2">आपने यह पोस्ट पहले ही रिपोर्ट कर दी है</h4>
                 <p className="text-white/60 text-sm mb-6">हमारी टीम जल्द ही इसकी समीक्षा करेगी।</p>
-                <button onClick={onClose} className="px-6 py-2.5 bg-white/10 border border-white/20 text-white font-semibold rounded-full hover:bg-white/20 transition-all">
-                  बंद करें
-                </button>
+                <button onClick={onClose} className="px-6 py-2.5 bg-white/10 border border-white/20 text-white font-semibold rounded-full hover:bg-white/20 transition-all">बंद करें</button>
               </div>
             ) : (
               <>
@@ -230,22 +233,11 @@ const ReportModal = ({
                     <p className="text-xs text-white/60">आपकी रिपोर्ट गुप्त रहेगी। पोस्ट के मालिक को यह नहीं पता चलेगा कि आपने रिपोर्ट की है।</p>
                   </div>
                 </div>
-
                 <div>
-                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider mb-3 block">
-                    रिपोर्ट का कारण चुनें *
-                  </label>
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider mb-3 block">रिपोर्ट का कारण चुनें *</label>
                   <div className="space-y-2">
                     {REPORT_REASONS.map((reason) => (
-                      <button
-                        key={reason.id}
-                        onClick={() => setSelectedReason(reason.id)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
-                          selectedReason === reason.id
-                            ? "bg-red-500/10 border-red-500/50 text-white"
-                            : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
-                        }`}
-                      >
+                      <button key={reason.id} onClick={() => setSelectedReason(reason.id)} className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${selectedReason === reason.id ? "bg-red-500/10 border-red-500/50 text-white" : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"}`}>
                         <span className="text-xl">{reason.icon}</span>
                         <span className="text-sm font-medium flex-1">{reason.label}</span>
                         {selectedReason === reason.id && <Check className="w-4 h-4 text-red-400" />}
@@ -253,46 +245,21 @@ const ReportModal = ({
                     ))}
                   </div>
                 </div>
-
                 {selectedReason && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <label className="text-xs font-bold text-white/70 uppercase tracking-wider mb-2 block">
-                      अतिरिक्त विवरण (वैकल्पिक)
-                    </label>
-                    <textarea
-                      value={details}
-                      onChange={(e) => setDetails(e.target.value)}
-                      placeholder="यदि आप कुछ और बताना चाहते हैं, तो यहाँ लिखें..."
-                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm placeholder-white/40 focus:outline-none focus:border-red-500/50 transition-all resize-none min-h-[100px]"
-                      maxLength={500}
-                    />
+                    <label className="text-xs font-bold text-white/70 uppercase tracking-wider mb-2 block">अतिरिक्त विवरण (वैकल्पिक)</label>
+                    <textarea value={details} onChange={(e) => setDetails(e.target.value)} placeholder="यदि आप कुछ और बताना चाहते हैं, तो यहाँ लिखें..." className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm placeholder-white/40 focus:outline-none focus:border-red-500/50 transition-all resize-none min-h-[100px]" maxLength={500} />
                     <p className="text-[10px] text-white/40 mt-1 text-right">{details.length}/500</p>
                   </motion.div>
                 )}
               </>
             )}
           </div>
-
-          {/* Footer */}
           {!checking && !alreadyReported && (
             <div className="p-4 border-t border-stone-700 bg-stone-900 flex-shrink-0 flex gap-3">
-              <button
-                onClick={onClose}
-                disabled={submitting}
-                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 text-white text-sm font-bold rounded-xl hover:bg-white/10 transition-all disabled:opacity-50"
-              >
-                रद्द करें
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!selectedReason || submitting}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold rounded-xl hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {submitting ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> सबमिट हो रहा है...</>
-                ) : (
-                  <><Flag className="w-4 h-4" /> रिपोर्ट सबमिट करें</>
-                )}
+              <button onClick={onClose} disabled={submitting} className="flex-1 px-4 py-3 bg-white/5 border border-white/10 text-white text-sm font-bold rounded-xl hover:bg-white/10 transition-all disabled:opacity-50">रद्द करें</button>
+              <button onClick={handleSubmit} disabled={!selectedReason || submitting} className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold rounded-xl hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> सबमिट हो रहा है...</> : <><Flag className="w-4 h-4" /> रिपोर्ट सबमिट करें</>}
               </button>
             </div>
           )}
@@ -305,7 +272,7 @@ const ReportModal = ({
 // ═══════════════════════════════════════════════════════════
 // CREATE SPOTLIGHT MODAL (WITH ADVANCED CAMERA)
 // ═══════════════════════════════════════════════════════════
-const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: boolean; onClose: () => void; onPostCreated: () => void; }) => {
+const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { isOpen: boolean; onClose: () => void; onPostCreated: () => void; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [hashtags, setHashtags] = useState("");
@@ -327,7 +294,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
   const recordedChunksRef = useRef<Blob[]>([]);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturate: 100, hueRotate: 0, blur: 0 });
 
   useEffect(() => {
@@ -346,15 +312,10 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
     }
   }, [isCameraActive]);
 
-  useEffect(() => {
-    if (!isOpen) stopCameraCleanup();
-  }, [isOpen]);
+  useEffect(() => { if (!isOpen) stopCameraCleanup(); }, [isOpen]);
 
   const stopCameraCleanup = () => {
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(track => track.stop());
-      mediaStreamRef.current = null;
-    }
+    if (mediaStreamRef.current) { mediaStreamRef.current.getTracks().forEach(track => track.stop()); mediaStreamRef.current = null; }
     setIsCameraActive(false); setIsRecording(false); setRecordingTime(0); setShowSettings(false);
     if (timerRef.current) clearInterval(timerRef.current);
   };
@@ -362,7 +323,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) return alert("केवल छवि या वीडियो फ़ाइल चुनें।");
+    if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) { showToast("केवल छवि या वीडियो फ़ाइल चुनें।", "error"); return; }
     setMediaFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setMediaPreview(reader.result as string);
@@ -372,17 +333,13 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
 
   const openCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
-        audio: !isMuted
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: !isMuted });
       mediaStreamRef.current = stream;
-      setIsCameraActive(true);
-      setMediaFile(null); setMediaPreview("");
+      setIsCameraActive(true); setMediaFile(null); setMediaPreview("");
       setFilters({ brightness: 100, contrast: 100, saturate: 100, hueRotate: 0, blur: 0 });
     } catch (err) {
       console.error("Camera error:", err);
-      alert("कैमरा एक्सेस अस्वीकार कर दिया गया या उपलब्ध नहीं है।");
+      showToast("कैमरा एक्सेस अस्वीकार कर दिया गया या उपलब्ध नहीं है।", "error");
     }
   };
 
@@ -391,18 +348,14 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
     setCameraFacingMode(newMode);
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach(track => track.stop());
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: newMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
-        audio: !isMuted
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: newMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: !isMuted });
       mediaStreamRef.current = stream;
       if (videoPreviewRef.current) videoPreviewRef.current.srcObject = stream;
     } catch (err) { console.error("Switch camera error:", err); }
   };
 
   const toggleMute = () => {
-    const newMuteState = !isMuted;
-    setIsMuted(newMuteState);
+    const newMuteState = !isMuted; setIsMuted(newMuteState);
     if (mediaStreamRef.current) mediaStreamRef.current.getAudioTracks().forEach(track => { track.enabled = !newMuteState; });
   };
 
@@ -420,16 +373,13 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
       reader.readAsDataURL(file);
       stopCameraCleanup();
     };
-    mediaRecorderRef.current = recorder;
-    recorder.start();
-    setIsRecording(true);
+    mediaRecorderRef.current = recorder; recorder.start(); setIsRecording(true);
     timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+      mediaRecorderRef.current.stop(); setIsRecording(false);
       if (timerRef.current) clearInterval(timerRef.current);
     }
   };
@@ -437,7 +387,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
   const clearMedia = () => { setMediaFile(null); setMediaPreview(""); };
 
   const generateAICaption = async () => {
-    if (!title.trim() && !mediaFile) return alert("कृपया पहले शीर्षक दर्ज करें या मीडिया चुनें।");
+    if (!title.trim() && !mediaFile) { showToast("कृपया पहले शीर्षक दर्ज करें या मीडिया चुनें।", "error"); return; }
     try {
       const promptText = title.trim() || (mediaFile ? "आलमनगर का एक शानदार वीडियो" : "एक शानदार पोस्ट");
       const prompt = `Write a highly engaging, viral short video caption in Hindi with 3-5 trending hashtags for: "${promptText}". Keep it under 150 characters. Return ONLY the caption and hashtags.`;
@@ -487,9 +437,11 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
         likes: 0, comments: 0, shares: 0, views: 0, likedBy: [], createdAt: serverTimestamp(),
       });
       setTitle(""); setContent(""); setHashtags(""); clearMedia();
+      showToast("स्पॉटलाइट सफलतापूर्वक प्रकाशित हो गया!", "success");
       onClose(); onPostCreated();
     } catch (error: any) {
-      alert(error.message.includes("Upload failed") ? "मीडिया अपलोड विफल।" : "पोस्ट करने में त्रुटि।");
+      console.error(error);
+      showToast(error.message.includes("Upload failed") ? "मीडिया अपलोड विफल।" : "पोस्ट करने में त्रुटि।", "error");
     } finally { setUploading(false); }
   };
 
@@ -503,7 +455,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
             <h3 className="text-lg font-bold text-white flex items-center gap-2"><Star className="w-5 h-5 text-amber-500 fill-amber-500" /> स्पॉटलाइट बनाएं</h3>
             <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5 text-white/70" /></button>
           </div>
-
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px] flex-shrink-0">
@@ -516,24 +467,19 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
                 <p className="text-xs text-white/50">सार्वजनिक स्पॉटलाइट में पोस्ट कर रहे हैं</p>
               </div>
             </div>
-
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="एक आकर्षक शीर्षक जोड़ें..." className="w-full bg-transparent text-white placeholder-white/40 focus:outline-none text-lg font-semibold border-b border-white/10 pb-2" />
             <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="आलमनगर के लिए आज क्या विशेष है?" className="w-full bg-transparent text-white placeholder-white/40 resize-none focus:outline-none text-base min-h-[80px]" />
             <div className="relative">
               <Hash className="absolute left-3 top-3 w-4 h-4 text-white/40" />
               <input value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="#आलमनगर #मधेपुरा #बिहार" className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50 transition-all" />
             </div>
-
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={generateAICaption} className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-500/10 to-amber-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold uppercase tracking-wider hover:from-emerald-500/20 hover:to-amber-500/20 transition-all">
               <Wand2 className="w-4 h-4" /> AI से कैप्शन और हैशटैग बनाएं
             </motion.button>
-
-            {/* ADVANCED CAMERA UI */}
             <div className="relative w-full aspect-video bg-black/50 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center group">
               {isCameraActive ? (
                 <>
                   <video ref={videoPreviewRef} autoPlay muted={isMuted} playsInline className="w-full h-full object-cover relative z-0" style={{ filter: `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%) hue-rotate(${filters.hueRotate}deg) blur(${filters.blur}px)` }} />
-                  
                   <AnimatePresence>
                     {showSettings && (
                       <>
@@ -555,7 +501,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
                       </>
                     )}
                   </AnimatePresence>
-
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end pb-6 items-center gap-4 z-10">
                     <div className="absolute top-3 right-3 flex items-center gap-2">
                       <button onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded-full backdrop-blur-md transition-colors ${showSettings ? "bg-amber-500 text-white" : "bg-black/60 text-white hover:bg-black/80"}`}><Sliders className="w-5 h-5" /></button>
@@ -600,7 +545,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
             </div>
             <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="hidden" />
           </div>
-
           <div className="p-4 border-t border-stone-700 bg-stone-900 flex-shrink-0">
             <button onClick={handlePost} disabled={uploading || (!content.trim() && !mediaFile && !title.trim())} className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
               {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> प्रकाशित हो रहा है...</> : <><Send className="w-4 h-4" /> स्पॉटलाइट प्रकाशित करें</>}
@@ -613,9 +557,9 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated }: { isOpen: bool
 };
 
 // ══════════════════════════════════════════════════════════
-// SPOTLIGHT CARD COMPONENT (WITH REPORT INTEGRATION)
+// SPOTLIGHT CARD COMPONENT
 // ══════════════════════════════════════════════════════════
-const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDelete, postId }: { post: SpotlightPost; currentUserId: string; currentUserObj?: any; requireAuth: (action: string, postId?: string) => boolean; onDelete: (id: string) => void; postId: string; }) => {
+const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDelete, postId, showToast }: { post: SpotlightPost; currentUserId: string; currentUserObj?: any; requireAuth: (action: string, postId?: string) => boolean; onDelete: (id: string) => void; postId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [liked, setLiked] = useState(post.likedBy?.includes(currentUserId) || false);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -624,7 +568,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false); // NEW
+  const [showReportModal, setShowReportModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -633,7 +577,9 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [hasTrackedView, setHasTrackedView] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const isOwnPost = currentUserId === post.userId;
   const engagementMetrics: EngagementMetrics = { views: post.views || 0, likes: post.likes || 0, comments: post.comments || 0, shares: post.shares || 0 };
@@ -642,30 +588,58 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   useEffect(() => { setSaved(getSavedPosts().includes(post.id)); }, [post.id]);
 
+  // 👁️ WORLD-CLASS: Intersection Observer for Accurate View Tracking
+  useEffect(() => {
+    if (hasTrackedView || !currentUserId) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasTrackedView(true);
+          updateDoc(doc(db, "spotlights", postId), { views: increment(1) }).catch(console.error);
+        }
+      },
+      { threshold: 0.5 } // 50% of the post must be visible
+    );
+    if (cardRef.current) observer.observe(cardRef.current);
+    return () => { if (cardRef.current) observer.unobserve(cardRef.current); };
+  }, [postId, currentUserId, hasTrackedView]);
+
   useEffect(() => {
     if (!showComments) return;
     setLoadingComments(true);
-    const q = query(collection(db, "spotlights", post.id, "comments"), orderBy("createdAt", "desc"));
+    const q = query(collection(db, "spotlights", postId, "comments"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setComments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment)));
       setLoadingComments(false);
     });
     return () => unsubscribe();
-  }, [showComments, post.id]);
+  }, [showComments, postId]);
 
+  // ⚡ WORLD-CLASS: Optimistic UI for Instant Like Feedback
   const handleLike = async () => {
     if (!auth.currentUser) { requireAuth("like", postId); return; }
-    const postRef = doc(db, "spotlights", post.id);
+    const postRef = doc(db, "spotlights", postId);
+    
+    const prevLiked = liked;
+    const prevCount = likeCount;
+    
+    // Optimistic update
+    setLiked(!prevLiked);
+    setLikeCount(prevLiked ? prevCount - 1 : prevCount + 1);
+
     try {
-      if (liked) {
-        await updateDoc(postRef, { likes: increment(-1), likedBy: post.likedBy.filter((id: string) => id !== currentUserId) });
-        setLikeCount(prev => prev - 1);
+      if (prevLiked) {
+        await updateDoc(postRef, { likes: increment(-1), likedBy: arrayRemove(currentUserId) });
       } else {
-        await updateDoc(postRef, { likes: increment(1), likedBy: [...post.likedBy, currentUserId] });
-        setLikeCount(prev => prev + 1);
+        await updateDoc(postRef, { likes: increment(1), likedBy: arrayUnion(currentUserId) });
       }
-      setLiked(!liked);
-    } catch (error) { console.error("Like error:", error); }
+    } catch (error) { 
+      console.error("Like error:", error);
+      // Revert on failure
+      setLiked(prevLiked);
+      setLikeCount(prevCount);
+      showToast("लाइक करने में त्रुटि हुई।", "error");
+    }
   };
 
   const handleAddComment = async () => {
@@ -675,22 +649,27 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
     try {
       const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
       const userData = userDoc.exists() ? userDoc.data() : {};
-      await addDoc(collection(db, "spotlights", post.id, "comments"), {
+      await addDoc(collection(db, "spotlights", postId, "comments"), {
         userId: auth.currentUser.uid, userName: auth.currentUser.displayName || "User", userPhoto: userData.photoURL || auth.currentUser.photoURL || "", text: newComment.trim(), createdAt: serverTimestamp(),
       });
-      await updateDoc(doc(db, "spotlights", post.id), { comments: increment(1) });
+      await updateDoc(doc(db, "spotlights", postId), { comments: increment(1) });
       setNewComment("");
-    } catch (error) { console.error("Comment error:", error); } finally { setPostingComment(false); }
+      showToast("टिप्पणी सफलतापूर्वक जोड़ी गई!", "success");
+    } catch (error) { 
+      console.error("Comment error:", error); 
+      showToast("टिप्पणी जोड़ने में त्रुटि हुई।", "error");
+    } finally { setPostingComment(false); }
   };
 
   const handleShare = async (platform: string) => {
     if (!auth.currentUser) { requireAuth("share", postId); return; }
-    const shareUrl = `${window.location.origin}/community?post=${post.id}`;
+    const shareUrl = `${window.location.origin}/community?post=${postId}`;
     try {
-      await updateDoc(doc(db, "spotlights", post.id), { shares: increment(1) });
+      await updateDoc(doc(db, "spotlights", postId), { shares: increment(1) });
       if (platform === 'copy') {
         await navigator.clipboard.writeText(shareUrl);
         setCopied(true);
+        showToast("लिंक कॉपी हो गया!", "success");
         setTimeout(() => setCopied(false), 2000);
       } else if (platform === 'whatsapp') {
         window.open(`https://wa.me/?text=${encodeURIComponent("आलमनगर स्पॉटलाइट देखें: ")}${encodeURIComponent(shareUrl)}`, '_blank');
@@ -702,9 +681,13 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   const handleDeletePost = async () => {
     setDeleting(true);
     try {
-      await deleteDoc(doc(db, "spotlights", post.id));
-      setShowDeleteConfirm(false); setShowMenu(false); onDelete(post.id);
-    } catch (error) { console.error("Delete error:", error); } finally { setDeleting(false); }
+      await deleteDoc(doc(db, "spotlights", postId));
+      setShowDeleteConfirm(false); setShowMenu(false); onDelete(postId);
+      showToast("पोस्ट सफलतापूर्वक हटा दी गई।", "success");
+    } catch (error) { 
+      console.error("Delete error:", error); 
+      showToast("पोस्ट हटाने में त्रुटि हुई।", "error");
+    } finally { setDeleting(false); }
   };
 
   const getMediaClasses = () => {
@@ -733,7 +716,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   return (
     <>
-      <motion.article initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className={`bg-stone-900 border rounded-2xl overflow-hidden mb-4 shadow-xl shadow-black/20 relative ${getCardBorderClass()}`}>
+      <motion.article ref={cardRef} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className={`bg-stone-900 border rounded-2xl overflow-hidden mb-4 shadow-xl shadow-black/20 relative ${getCardBorderClass()}`}>
         <div className="flex items-center justify-between p-4 relative">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px]">
@@ -750,13 +733,8 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* 🚩 REPORT BUTTON (Only for other users' posts) */}
             {currentUserId && !isOwnPost && (
-              <button 
-                onClick={() => { setShowMenu(false); setShowReportModal(true); }}
-                className="p-2 hover:bg-red-500/10 rounded-full transition-colors group"
-                title="रिपोर्ट करें"
-              >
+              <button onClick={() => { setShowMenu(false); setShowReportModal(true); }} className="p-2 hover:bg-red-500/10 rounded-full transition-colors group" title="रिपोर्ट करें">
                 <Flag className="w-4 h-4 text-white/50 group-hover:text-red-400 transition-colors" />
               </button>
             )}
@@ -846,7 +824,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           <motion.button whileTap={{ scale: 0.9 }} onClick={() => { if (!auth.currentUser) { requireAuth("comment", postId); return; } setShowComments(true); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-white/70">
             <MessageSquare className="w-5 h-5" /> <span className="text-sm font-medium">टिप्पणी</span>
           </motion.button>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setSaved(toggleSavedPost(post.id).includes(post.id))} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors ${saved ? "text-amber-500" : "text-white/70"}`}>
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => { const isSaved = toggleSavedPost(postId).includes(postId); setSaved(isSaved); showToast(isSaved ? "पोस्ट सेव कर ली गई!" : "पोस्ट अनसेव कर दी गई!", "success"); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors ${saved ? "text-amber-500" : "text-white/70"}`}>
             <Bookmark className={`w-5 h-5 ${saved ? "fill-current" : ""}`} /> <span className="text-sm font-medium">{saved ? "सेव" : "सेव करें"}</span>
           </motion.button>
           <motion.button whileTap={{ scale: 0.9 }} onClick={() => { if (!auth.currentUser) { requireAuth("share", postId); return; } setShowShareSheet(true); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-white/70">
@@ -855,13 +833,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
         </div>
       </motion.article>
 
-      {/* 🚩 REPORT MODAL INTEGRATION */}
-      <ReportModal 
-        isOpen={showReportModal} 
-        onClose={() => setShowReportModal(false)} 
-        postId={post.id} 
-        postOwnerId={post.userId} 
-      />
+      <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} postId={postId} postOwnerId={post.userId} showToast={showToast} />
 
       <AnimatePresence>
         {showDeleteConfirm && (
@@ -959,7 +931,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 };
 
 // ═══════════════════════════════════════════════════════════
-// MAIN SPOTLIGHT CONTENT (unchanged - same as before)
+// MAIN SPOTLIGHT CONTENT
 // ═══════════════════════════════════════════════════════════
 function SpotlightContent() {
   const router = useRouter();
@@ -969,6 +941,10 @@ function SpotlightContent() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [savedOnly, setSavedOnly] = useState(false);
   const [filterMode, setFilterMode] = useState<'all' | 'featured' | 'trending'>('all');
+  
+  // Toast State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -991,7 +967,7 @@ function SpotlightContent() {
   }, []);
 
   const requireAuth = (action: string, postId?: string): boolean => {
-    if (!user?.uid) { router.push(`/community?login=true`); return false; }
+    if (!user?.uid) { router.push(`/auth`); return false; }
     return true;
   };
 
@@ -1005,7 +981,12 @@ function SpotlightContent() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 pb-20">
+    <div className="min-h-screen bg-stone-50 text-stone-900 pb-20 relative">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      </AnimatePresence>
+
       <header className="sticky top-20 z-40 bg-stone-50/90 backdrop-blur-xl border-b border-stone-200">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -1048,7 +1029,7 @@ function SpotlightContent() {
               <p className="text-sm text-stone-900 font-semibold">समुदाय से जुड़ें</p>
               <p className="text-xs text-stone-600">लाइक, कमेंट, शेयर और पोस्ट करने के लिए लॉगिन करें</p>
             </div>
-            <button onClick={() => router.push("/community?login=true")} className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-amber-600 text-white text-xs font-bold rounded-full hover:from-emerald-700 hover:to-amber-700 transition-all">
+            <button onClick={() => router.push("/auth")} className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-amber-600 text-white text-xs font-bold rounded-full hover:from-emerald-700 hover:to-amber-700 transition-all">
               लॉगिन
             </button>
           </motion.div>
@@ -1064,9 +1045,10 @@ function SpotlightContent() {
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mb-4" />
-            <p className="text-stone-500 text-sm font-medium">स्पॉटलाइट लोड हो रहा है...</p>
+          <div className="space-y-4">
+            <SkeletonPost />
+            <SkeletonPost />
+            <SkeletonPost />
           </div>
         ) : getFilteredPosts().length === 0 ? (
           <div className="text-center py-20">
@@ -1080,13 +1062,13 @@ function SpotlightContent() {
         ) : (
           <div className="space-y-4">
             {getFilteredPosts().map((post) => (
-              <SpotlightCard key={post.id} post={post} currentUserId={user?.uid || ""} currentUserObj={user} requireAuth={requireAuth} onDelete={handlePostDeleted} postId={post.id} />
+              <SpotlightCard key={post.id} post={post} currentUserId={user?.uid || ""} currentUserObj={user} requireAuth={requireAuth} onDelete={handlePostDeleted} postId={post.id} showToast={showToast} />
             ))}
           </div>
         )}
       </main>
 
-      <AnimatePresence>{showCreatePost && <CreateSpotlightModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} onPostCreated={() => {}} />}</AnimatePresence>
+      <AnimatePresence>{showCreatePost && <CreateSpotlightModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} onPostCreated={() => {}} showToast={showToast} />}</AnimatePresence>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-40 pb-[env(safe-area-inset-bottom)]">
         <div className="max-w-2xl mx-auto px-2 py-1 flex items-center justify-between">
