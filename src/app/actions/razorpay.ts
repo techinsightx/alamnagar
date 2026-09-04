@@ -1,43 +1,88 @@
 "use server";
 
-import Razorpay from "razorpay";
+const RAZORPAY_API_URL = "https://api.razorpay.com/v1";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+function getAuthHeader(): string {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  
+  if (!keyId || !keySecret) {
+    throw new Error("Razorpay credentials missing");
+  }
+  
+  // Basic Auth: base64(key_id:key_secret)
+  const credentials = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+  return `Basic ${credentials}`;
+}
 
-export async function createOrder(amount: number, currency: string = "INR") {
+export async function createRazorpayOrder(amount: number, currency: string = "INR") {
   try {
-    const options = {
-      amount: amount * 100, // Razorpay accepts amount in paise
-      currency,
-      receipt: `receipt_${Date.now()}`,
-    };
+    const authHeader = getAuthHeader();
+    
+    const response = await fetch(`${RAZORPAY_API_URL}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": authHeader,
+      },
+      body: JSON.stringify({
+        amount: Math.round(amount * 100), // Amount in paise
+        currency,
+        receipt: `receipt_${Date.now()}`,
+        payment_capture: 1, // Auto capture
+      }),
+    });
 
-    const order = await razorpay.orders.create(options);
-    return { success: true, order };
-  } catch (error) {
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Razorpay API error:", errorData);
+      throw new Error(errorData.error?.description || "Order creation failed");
+    }
+
+    const order = await response.json();
+    return { 
+      success: true, 
+      order: {
+        id: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        receipt: order.receipt,
+        status: order.status,
+      }
+    };
+  } catch (error: any) {
     console.error("Razorpay order creation error:", error);
-    return { success: false, error: "Order creation failed" };
+    return { success: false, error: error.message || "Order creation failed" };
   }
 }
 
-export async function verifyPayment(paymentId: string, orderId: string, signature: string) {
+export async function verifyRazorpayPayment(
+  razorpayOrderId: string,
+  razorpayPaymentId: string,
+  razorpaySignature: string
+) {
   try {
-    const crypto = require("crypto");
-    const generated_signature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(orderId + "|" + paymentId)
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    
+    if (!keySecret) {
+      throw new Error("Razorpay secret missing");
+    }
+
+    // Use Node.js built-in crypto (no package needed)
+    const crypto = await import("crypto");
+    
+    const generatedSignature = crypto
+      .createHmac("sha256", keySecret)
+      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
       .digest("hex");
 
-    if (generated_signature === signature) {
+    if (generatedSignature === razorpaySignature) {
       return { success: true };
     } else {
-      return { success: false, error: "Invalid signature" };
+      return { success: false, error: "Invalid payment signature" };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Payment verification error:", error);
-    return { success: false, error: "Verification failed" };
+    return { success: false, error: error.message || "Verification failed" };
   }
 }
