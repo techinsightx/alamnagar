@@ -5,15 +5,41 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Image as ImageIcon, UploadCloud, X, Heart, MapPin, 
   Calendar, User, Camera, Sparkles, Loader2, CheckCircle,
-  Filter, Star, MessageCircle
+  Filter, Star, MessageCircle, Cloud, Zap, CheckCircle2, AlertCircle
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { 
   collection, addDoc, query, orderBy, onSnapshot, 
-  serverTimestamp, doc, getDoc, updateDoc, increment, arrayUnion
+  serverTimestamp, doc, getDoc, updateDoc, increment, arrayUnion, arrayRemove
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
+
+// ══════════════════════════════════════════════════════════
+// 🍞 CUSTOM TOAST NOTIFICATION COMPONENT
+// ══════════════════════════════════════════════════════════
+const Toast = ({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3500);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.9 }}
+      className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border ${
+        type === 'success' 
+          ? 'bg-emerald-900/90 border-emerald-500/30 text-emerald-100 backdrop-blur-md' 
+          : 'bg-red-900/90 border-red-500/30 text-red-100 backdrop-blur-md'
+      }`}
+    >
+      {type === 'success' ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : <AlertCircle className="w-5 h-5 text-red-400" />}
+      <span className="font-semibold text-sm">{message}</span>
+    </motion.div>
+  );
+};
 
 interface GalleryImage {
   id: string;
@@ -55,6 +81,16 @@ export default function GalleryPage() {
   const [uploadCategory, setUploadCategory] = useState<"event" | "space" | "adventure" | "legacy">("event");
   const [uploadLocation, setUploadLocation] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+
+  // Cinematic Upload State
+  const [uploadStage, setUploadStage] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [uploadMessage, setUploadMessage] = useState("");
+
+  // Toast State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -75,41 +111,90 @@ export default function GalleryPage() {
     return () => unsubscribe();
   }, []);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) return alert("कृपया केवल छवि (Image) फ़ाइल चुनें।");
-    if (file.size > 10 * 1024 * 1024) return alert("छवि 10MB से कम होनी चाहिए।");
-    
+  // Close lightbox on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedImage(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragActive(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragActive(false); };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileSelectFile(file);
+  };
+
+  const handleFileSelectFile = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      showToast("कृपया केवल छवि (Image) फ़ाइल चुनें।", "error");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast("छवि 10MB से कम होनी चाहिए।", "error");
+      return;
+    }
     setUploadFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setUploadPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileSelectFile(file);
+  };
+
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "alamnagar-uploads");
+    formData.append("folder", "alamnagar/gallery");
+    
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      { method: "POST", body: formData }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || "Upload failed");
+    }
+    
+    const data = await response.json();
+    let optimizedUrl = data.secure_url;
+    // 🚀 Createra-style auto-optimization
+    if (optimizedUrl.includes('/image/upload/')) {
+      optimizedUrl = optimizedUrl.replace('/image/upload/', '/image/upload/q_auto,f_auto,w_1200/');
+    }
+    return optimizedUrl;
+  };
+
   const handleUpload = async () => {
     if (!user || !uploadFile || !uploadTitle.trim() || !uploadStory.trim()) {
-      alert("कृपया सभी आवश्यक फ़ील्ड भरें और एक छवि चुनें।");
+      showToast("कृपया सभी आवश्यक फ़ील्ड भरें और एक छवि चुनें।", "error");
       return;
     }
 
     setUploading(true);
-    try {
-      // 1. Upload to Cloudinary
-      const formData = new FormData();
-      formData.append("file", uploadFile);
-      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "alamnagar_unsigned");
-      
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: "POST", body: formData }
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error("Upload failed");
+    setUploadStage(1);
+    setProgress(20);
+    setUploadMessage("छवि क्लाउड पर अपलोड हो रही है...");
 
-      // 2. Save to Firestore
+    try {
+      // Stage 1: Upload to Cloudinary
+      const imageUrl = await uploadToCloudinary(uploadFile);
+      setProgress(60);
+      setUploadStage(2);
+      setUploadMessage("विरासत में सहेजा जा रहा है...");
+
+      // Stage 2: Save to Firestore
       await addDoc(collection(db, "gallery"), {
-        url: data.secure_url,
+        url: imageUrl,
         title: uploadTitle.trim(),
         story: uploadStory.trim(),
         category: uploadCategory,
@@ -122,18 +207,28 @@ export default function GalleryPage() {
         createdAt: serverTimestamp(),
       });
 
-      // Reset form
-      setUploadFile(null);
-      setUploadPreview("");
-      setUploadTitle("");
-      setUploadStory("");
-      setUploadLocation("");
-      setShowUploadModal(false);
-    } catch (error) {
+      setProgress(100);
+      setUploadStage(3);
+      
+      setTimeout(() => {
+        showToast("तस्वीर सफलतापूर्वक विरासत में जोड़ दी गई!", "success");
+        setUploadFile(null);
+        setUploadPreview("");
+        setUploadTitle("");
+        setUploadStory("");
+        setUploadLocation("");
+        setShowUploadModal(false);
+        setUploading(false);
+        setUploadStage(0);
+        setProgress(0);
+      }, 1000);
+
+    } catch (error: any) {
       console.error("Upload error:", error);
-      alert("अपलोड करने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
-    } finally {
+      showToast(error.message || "अपलोड करने में त्रुटि हुई।", "error");
       setUploading(false);
+      setUploadStage(0);
+      setProgress(0);
     }
   };
 
@@ -149,16 +244,17 @@ export default function GalleryPage() {
       if (isLiked) {
         await updateDoc(imageRef, {
           likes: increment(-1),
-          likedBy: currentLikedBy.filter((id) => id !== user.uid)
+          likedBy: arrayRemove(user.uid)
         });
       } else {
         await updateDoc(imageRef, {
           likes: increment(1),
-          likedBy: [...currentLikedBy, user.uid]
+          likedBy: arrayUnion(user.uid)
         });
       }
     } catch (error) {
       console.error("Like error:", error);
+      showToast("लाइक करने में त्रुटि हुई।", "error");
     }
   };
 
@@ -167,7 +263,75 @@ export default function GalleryPage() {
     : images.filter(img => img.category === activeCategory);
 
   return (
-    <main className="min-h-screen bg-stone-50">
+    <main className="min-h-screen bg-stone-50 relative">
+      <AnimatePresence>{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}</AnimatePresence>
+
+      {/* 🎬 CINEMATIC UPLOAD OVERLAY */}
+      <AnimatePresence>
+        {uploading && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[100] bg-stone-900/95 backdrop-blur-xl flex items-center justify-center"
+          >
+            <div className="absolute inset-0 overflow-hidden">
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }} 
+                transition={{ duration: 4, repeat: Infinity }} 
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-emerald-500/30 via-amber-500/30 to-emerald-500/30 rounded-full blur-[120px]" 
+              />
+            </div>
+            
+            <div className="relative z-10 max-w-md w-full mx-4 text-center">
+              <motion.div 
+                initial={{ scale: 0, rotate: -180 }} 
+                animate={{ scale: 1, rotate: 0 }} 
+                transition={{ duration: 0.8, type: "spring" }} 
+                className="flex justify-center mb-8"
+              >
+                <div className="relative">
+                  <motion.div 
+                    animate={{ rotate: 360 }} 
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }} 
+                    className="w-24 h-24 rounded-full border-4 border-emerald-500/30 border-t-emerald-500" 
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {uploadStage === 1 && <Cloud className="w-10 h-10 text-emerald-500" />}
+                    {uploadStage === 2 && <Zap className="w-10 h-10 text-amber-500" />}
+                    {uploadStage === 3 && <CheckCircle2 className="w-10 h-10 text-emerald-500" />}
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+                <motion.h2 key={uploadStage} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-white mb-2">
+                  {uploadStage === 1 && "छवि अपलोड हो रही है"}
+                  {uploadStage === 2 && "विरासत में सहेजा जा रहा है"}
+                  {uploadStage === 3 && "सफलतापूर्वक जोड़ दिया गया!"}
+                </motion.h2>
+                <p className="text-stone-400 text-sm font-mono uppercase tracking-wider">{uploadMessage}</p>
+              </motion.div>
+              
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mb-4">
+                <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 rounded-full" 
+                    initial={{ width: 0 }} 
+                    animate={{ width: `${progress}%` }} 
+                    transition={{ duration: 0.5 }} 
+                  />
+                </div>
+                <div className="flex justify-between items-center mt-3">
+                  <span className="text-xs text-stone-500 font-mono uppercase">Stage {uploadStage} of 3</span>
+                  <span className="text-sm text-white font-mono font-bold">{Math.round(progress)}%</span>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* 🌟 Cinematic Hero Section */}
       <section className="relative bg-stone-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518176258769-f227c798150e?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-30" />
@@ -320,7 +484,7 @@ export default function GalleryPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setShowUploadModal(false)}
+            onClick={() => !uploading && setShowUploadModal(false)}
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
@@ -334,39 +498,48 @@ export default function GalleryPage() {
                   <h2 className="text-2xl font-extrabold text-stone-900">विरासत में अपना योगदान दें</h2>
                   <p className="text-sm text-stone-500">अपनी तस्वीर और उसके पीछे की कहानी साझा करें</p>
                 </div>
-                <button onClick={() => setShowUploadModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
+                <button onClick={() => !uploading && setShowUploadModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
                   <X className="w-6 h-6 text-stone-500" />
                 </button>
               </div>
 
               <div className="p-6 space-y-6">
-                {/* Image Upload Area */}
+                {/* Image Upload Area with Drag & Drop */}
                 <div
-                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => !uploadPreview && fileInputRef.current?.click()}
                   className={`relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
-                    uploadPreview 
+                    isDragActive 
                       ? "border-emerald-500 bg-emerald-50" 
-                      : "border-stone-300 hover:border-emerald-500 hover:bg-stone-50"
+                      : uploadPreview 
+                        ? "border-emerald-500 bg-emerald-50/50" 
+                        : "border-stone-300 hover:border-emerald-500 hover:bg-stone-50"
                   }`}
                 >
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
                   {uploadPreview ? (
-                    <div className="relative">
+                    <div className="relative inline-block">
                       <img src={uploadPreview} alt="Preview" className="max-h-64 mx-auto rounded-xl shadow-md" />
                       <button
                         onClick={(e) => { e.stopPropagation(); setUploadFile(null); setUploadPreview(""); }}
-                        className="absolute -top-3 -right-3 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        className="absolute -top-3 -right-3 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
                       >
                         <X className="w-4 h-4" />
                       </button>
+                      <div className="mt-3 flex items-center justify-center gap-2 text-xs text-stone-600 bg-white px-3 py-1.5 rounded-full shadow-sm border border-stone-200 mx-auto w-fit">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="truncate max-w-[200px]">{uploadFile?.name}</span>
+                      </div>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-3">
-                      <div className="p-4 bg-emerald-100 rounded-full">
-                        <UploadCloud className="w-8 h-8 text-emerald-600" />
+                      <div className="p-4 bg-stone-100 rounded-full">
+                        <UploadCloud className={`w-8 h-8 ${isDragActive ? "text-emerald-600" : "text-stone-500"}`} />
                       </div>
                       <div>
-                        <p className="font-bold text-stone-900">तस्वीर चुनें या यहाँ ड्रैग करें</p>
+                        <p className="font-bold text-stone-900">{isDragActive ? "यहाँ छोड़ें (Drop)" : "तस्वीर चुनें या यहाँ ड्रैग करें"}</p>
                         <p className="text-sm text-stone-500 mt-1">PNG, JPG अधिकतम 10MB</p>
                       </div>
                     </div>
@@ -432,7 +605,7 @@ export default function GalleryPage() {
                   className="w-full py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
                 >
                   {uploading ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /> विरासत सहेजी जा रही है...</>
+                    <><Loader2 className="w-5 h-5 animate-spin" /> प्रक्रिया चल रही है...</>
                   ) : (
                     <><CheckCircle className="w-5 h-5" /> विरासत में जोड़ें</>
                   )}
@@ -477,11 +650,11 @@ export default function GalleryPage() {
               <div className="md:w-2/5 p-6 md:p-8 flex flex-col overflow-y-auto">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px]">
-                    <div className="w-full h-full rounded-full bg-stone-800 overflow-hidden">
+                    <div className="w-full h-full rounded-full bg-stone-800 overflow-hidden flex items-center justify-center">
                       {selectedImage.uploaderPhoto ? (
                         <img src={selectedImage.uploaderPhoto} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <User className="w-6 h-6 text-stone-400 m-2" />
+                        <User className="w-6 h-6 text-stone-400" />
                       )}
                     </div>
                   </div>
