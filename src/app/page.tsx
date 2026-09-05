@@ -1,15 +1,20 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { 
   MapPin, BookOpen, Users, ArrowRight, Camera, Phone, 
   ShoppingBag, Sparkles, Landmark, TreePine, Heart, 
-  Star, Quote, Mail, ChevronDown, Wheat, Sun, Music
+  Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
+  Zap, UserPlus, MessageCircle, Share2, Activity
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { db } from "@/lib/firebase";
+import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 
-// Animation variants
+// ═══════════════════════════════════════════════════════════
+// ANIMATION VARIANTS
+// ═══════════════════════════════════════════════════════════
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } },
@@ -20,34 +25,203 @@ const staggerContainer = {
   visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
 };
 
-// Madhubani-inspired subtle pattern component
+// ═══════════════════════════════════════════════════════════
+// ANIMATED NUMBER COMPONENT
+// ═══════════════════════════════════════════════════════════
+const AnimatedNumber = ({ value }: { value: string }) => {
+  const [count, setCount] = useState(0);
+  const numericValue = parseInt(value.replace(/\D/g, ""));
+  
+  useEffect(() => {
+    let start = 0;
+    const end = numericValue;
+    const duration = 2000;
+    const increment = end / (duration / 16);
+    
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) {
+        setCount(end);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+    
+    return () => clearInterval(timer);
+  }, [numericValue]);
+
+  return <span>{count}{value.replace(/\d/g, "")}</span>;
+};
+
+// ═══════════════════════════════════════════════════════════
+// LIVING MADHUBANI PATTERN
+// ═══════════════════════════════════════════════════════════
 const MadhubaniPattern = () => (
-  <div className="absolute inset-0 opacity-[0.03] pointer-events-none overflow-hidden">
-    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="madhubani" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-          <path d="M50 0 L100 50 L50 100 L0 50 Z" fill="none" stroke="currentColor" strokeWidth="1" />
-          <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="1" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#madhubani)" />
-    </svg>
-  </div>
+  <motion.div 
+    animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+    className="absolute inset-0 opacity-[0.04] pointer-events-none overflow-hidden"
+    style={{
+      backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+      backgroundSize: "60px 60px"
+    }}
+  />
 );
+
+// ═══════════════════════════════════════════════════════════
+// 🚀 LIVE ACTIVITY TICKER COMPONENT
+// ═══════════════════════════════════════════════════════════
+interface TickerItem {
+  id: string;
+  type: 'post' | 'join' | 'milestone';
+  userName: string;
+  userPhoto?: string;
+  title?: string;
+  metrics?: { likes: number; comments: number; shares: number };
+  timestamp: number;
+}
+
+const LiveActivityTicker = () => {
+  const [items, setItems] = useState<TickerItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // 1. Listen to latest posts (Real-time updates for likes, comments, shares)
+    const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(5));
+    const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => {
+      const newItems: TickerItem[] = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          type: 'post',
+          userName: data.userName || "आलमनगर वासी",
+          userPhoto: data.userPhoto,
+          title: data.title || "एक नई तस्वीर",
+          metrics: {
+            likes: data.likes || 0,
+            comments: data.comments || 0,
+            shares: data.shares || 0
+          },
+          timestamp: data.createdAt?.toDate?.()?.getTime() || Date.now()
+        };
+      });
+      
+      // Merge with existing users or just update posts. 
+      // For simplicity, we'll fetch users separately and combine.
+      setItems(prev => {
+        const users = prev.filter(i => i.type === 'join');
+        return [...newItems, ...users].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+      });
+      setIsLoading(false);
+    });
+
+    // 2. Listen to latest joined members
+    const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(5));
+    const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
+      const newUsers: TickerItem[] = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          type: 'join',
+          userName: data.displayName || "नया सदस्य",
+          userPhoto: data.photoURL,
+          timestamp: data.createdAt?.toDate?.()?.getTime() || Date.now()
+        };
+      });
+
+      setItems(prev => {
+        const posts = prev.filter(i => i.type === 'post');
+        return [...posts, ...newUsers].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+      });
+    });
+
+    return () => {
+      unsubscribePosts();
+      unsubscribeUsers();
+    };
+  }, []);
+
+  if (isLoading || items.length === 0) return null;
+
+  // Duplicate items for seamless infinite marquee
+  const marqueeItems = [...items, ...items];
+
+  return (
+    <div className="relative bg-stone-900/95 backdrop-blur-md border-y border-amber-500/20 overflow-hidden py-3">
+      {/* Live Indicator */}
+      <div className="absolute left-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-r from-stone-900 to-transparent flex items-center px-4">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+          </span>
+          <span className="text-xs font-black text-red-400 uppercase tracking-widest">LIVE</span>
+        </div>
+      </div>
+
+      <div className="absolute right-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-l from-stone-900 to-transparent" />
+
+      {/* Marquee Animation */}
+      <motion.div 
+        className="flex gap-8 whitespace-nowrap"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+      >
+        {marqueeItems.map((item, index) => (
+          <div key={`${item.id}-${index}`} className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+            {item.type === 'post' ? (
+              <>
+                <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
+                <span className="text-sm text-stone-300">
+                  <span className="font-bold text-amber-400">{item.userName}</span> ने पोस्ट किया: 
+                  <span className="text-white font-semibold ml-1">"{item.title}"</span>
+                </span>
+                <div className="flex items-center gap-3 text-xs text-stone-400 border-l border-white/10 pl-3">
+                  <span className="flex items-center gap-1"><Heart className="w-3 h-3 text-red-400" /> {item.metrics?.likes}</span>
+                  <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3 text-blue-400" /> {item.metrics?.comments}</span>
+                  <span className="flex items-center gap-1"><Share2 className="w-3 h-3 text-emerald-400" /> {item.metrics?.shares}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm text-stone-300">
+                  <span className="font-bold text-emerald-400">{item.userName}</span> आलमनगर परिवार से जुड़े! 🎉
+                </span>
+              </>
+            )}
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  );
+};
 
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
   const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
       
+      {/* Scroll Progress Bar */}
+      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
+
       {/* ===== 1. CINEMATIC HERO SECTION ===== */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-950 via-green-900 to-amber-950 text-white px-6">
-        {/* Animated Background Glow */}
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[150px] animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-amber-500/20 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: "1.5s" }} />
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px]" 
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.3, 0.2] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber-500/20 rounded-full blur-[150px]" 
+        />
         
         <MadhubaniPattern />
 
@@ -68,7 +242,10 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-none"
           >
-            आलम<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 drop-shadow-lg">नगर</span>
+            आलम
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 drop-shadow-lg">
+              नगर
+            </span>
           </motion.h1>
 
           <motion.p 
@@ -110,7 +287,6 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          {/* Scroll Indicator */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -123,8 +299,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 2. QUICK STATS (Floating Cards) ===== */}
-      <section className="py-20 px-6 bg-stone-50 relative -mt-20 z-20">
+      {/* ===== 🚀 LIVE ACTIVITY TICKER ===== */}
+      <LiveActivityTicker />
+
+      {/* ===== 2. QUICK STATS (Floating Cards with Counter) ===== */}
+      <section className="py-20 px-6 bg-stone-50 relative z-20">
         <div className="max-w-6xl mx-auto">
           <motion.div 
             variants={staggerContainer}
@@ -142,13 +321,16 @@ export default function HomePage() {
               <motion.div 
                 key={stat.label}
                 variants={fadeInUp}
-                className="group bg-white rounded-3xl p-8 shadow-lg shadow-stone-200/50 border border-stone-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 text-center relative overflow-hidden"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group bg-white rounded-3xl p-8 shadow-lg shadow-stone-200/50 border border-stone-100 transition-all duration-500 text-center relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-transparent to-stone-50 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:scale-150" />
                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${stat.color} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
                   <stat.icon className="w-8 h-8" />
                 </div>
-                <div className="text-4xl font-black text-stone-900 mb-2">{stat.value}</div>
+                <div className="text-4xl font-black text-stone-900 mb-2">
+                  <AnimatedNumber value={stat.value} />
+                </div>
                 <div className="text-sm font-bold text-stone-500 uppercase tracking-wider">{stat.label}</div>
               </motion.div>
             ))}
@@ -195,20 +377,36 @@ export default function HomePage() {
             variants={fadeInUp}
             className="relative"
           >
-            <div className="aspect-[4/3] bg-gradient-to-br from-emerald-50 via-stone-50 to-amber-50 rounded-[2rem] flex items-center justify-center shadow-2xl border-4 border-white relative overflow-hidden group">
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                <p className="text-2xl font-bold mb-2">गाँव की तस्वीरें</p>
-                <p className="text-white/80 text-sm flex items-center gap-2">
-                  <Camera className="w-4 h-4" />
-                  अपनी यादें गैलरी में अपलोड करें
-                </p>
+            <Link href="/gallery" className="block group">
+              <div className="aspect-[4/3] bg-gradient-to-br from-emerald-50 via-stone-50 to-amber-50 rounded-[2rem] flex items-center justify-center shadow-2xl border-4 border-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/20 to-transparent" />
+                
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+                    <Play className="w-8 h-8 text-white fill-white ml-1" />
+                  </div>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <p className="text-2xl font-bold mb-2">गाँव की तस्वीरें</p>
+                  <p className="text-white/80 text-sm flex items-center gap-2">
+                    <Camera className="w-4 h-4" />
+                    अपनी यादें गैलरी में अपलोड करें
+                  </p>
+                </div>
               </div>
-            </div>
-            {/* Decorative elements */}
-            <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-amber-200 rounded-[2rem] -z-10 opacity-60 rotate-6" />
-            <div className="absolute -top-8 -left-8 w-32 h-32 bg-emerald-200 rounded-[2rem] -z-10 opacity-60 -rotate-6" />
+            </Link>
+            <motion.div 
+              animate={{ rotate: [6, -6, 6] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-8 -right-8 w-40 h-40 bg-amber-200 rounded-[2rem] -z-10 opacity-60" 
+            />
+            <motion.div 
+              animate={{ rotate: [-6, 6, -6] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute -top-8 -left-8 w-32 h-32 bg-emerald-200 rounded-[2rem] -z-10 opacity-60" 
+            />
           </motion.div>
         </div>
       </section>
@@ -260,8 +458,8 @@ export default function HomePage() {
                 accent: "group-hover:bg-rose-600 group-hover:text-white"
               },
             ].map((card, i) => (
-              <motion.div key={card.title} variants={fadeInUp}>
-                <Link href={card.href} className="group block bg-white rounded-[2rem] p-10 shadow-sm border border-stone-200 hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 h-full relative overflow-hidden">
+              <motion.div key={card.title} variants={fadeInUp} whileHover={{ y: -12 }}>
+                <Link href={card.href} className="group block bg-white rounded-[2rem] p-10 shadow-sm border border-stone-200 hover:shadow-2xl hover:border-emerald-200 transition-all duration-500 h-full relative overflow-hidden">
                   <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 ${card.color} ${card.accent} transition-all duration-300 shadow-sm`}>
                     <card.icon className="w-10 h-10" />
                   </div>
@@ -322,13 +520,17 @@ export default function HomePage() {
               <motion.div 
                 key={i} 
                 variants={fadeInUp}
-                className="bg-white/5 backdrop-blur-sm rounded-[2rem] p-8 border border-white/10 hover:bg-white/10 hover:border-amber-500/30 hover:scale-105 transition-all duration-300 group"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="bg-white/5 backdrop-blur-sm rounded-[2rem] p-8 border border-white/10 hover:bg-white/10 hover:border-amber-500/30 transition-all duration-300 group relative overflow-hidden"
               >
-                <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-colors">
-                  <item.icon className="w-8 h-8 text-amber-400 group-hover:text-white transition-colors" />
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/10 group-hover:to-transparent transition-all duration-500" />
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-colors duration-300">
+                    <item.icon className="w-8 h-8 text-amber-400 group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-2xl font-black mb-3 text-white">{item.title}</h3>
+                  <p className="text-base text-white/60 leading-relaxed">{item.desc}</p>
                 </div>
-                <h3 className="text-2xl font-black mb-3 text-white">{item.title}</h3>
-                <p className="text-base text-white/60 leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -374,7 +576,12 @@ export default function HomePage() {
               { quote: "गाँव की यादें हमेशा दिल के करीब रहती हैं। यहाँ अपनी पुरानी तस्वीरें देखकर बचपन की यादें ताज़ा हो गईं।", author: "सुनीता देवी", location: "मुंबई, भारत", role: "शिक्षिका" },
               { quote: "मिथिला की संस्कृति और आलमनगर का प्यार - यह हमारी पहचान है। विदेश में बैठे हमें अपने गाँव से जोड़े रखने के लिए धन्यवाद।", author: "अमित सिंह", location: "अमेरिका", role: "सॉफ्टवेयर इंजीनियर" },
             ].map((t, i) => (
-              <motion.div key={i} variants={fadeInUp} className="bg-stone-50 rounded-[2rem] p-10 border border-stone-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative">
+              <motion.div 
+                key={i} 
+                variants={fadeInUp} 
+                whileHover={{ y: -8 }}
+                className="bg-stone-50 rounded-[2rem] p-10 border border-stone-100 hover:shadow-2xl hover:border-emerald-200 transition-all duration-300 relative"
+              >
                 <Quote className="w-12 h-12 text-amber-400 mb-6 opacity-30 absolute top-8 right-8" />
                 <p className="text-stone-700 leading-relaxed mb-8 text-lg italic relative z-10">"{t.quote}"</p>
                 <div className="flex items-center gap-4">
@@ -435,13 +642,12 @@ export default function HomePage() {
                 मधेपुरा, बिहार, भारत का आधिकारिक डिजिटल प्लेटफॉर्म। हमारी विरासत, हमारा समुदाय, हमारा गौरव।
               </p>
               <div className="flex gap-4">
-                {/* Social placeholders */}
-                <div className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer">
+                <Link href="/community" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer">
                   <Users className="w-5 h-5" />
-                </div>
-                <div className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer">
+                </Link>
+                <Link href="/gallery" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer">
                   <Camera className="w-5 h-5" />
-                </div>
+                </Link>
               </div>
             </div>
             <div>
