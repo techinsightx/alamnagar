@@ -258,16 +258,17 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-none tiranga-shimmer drop-shadow-2xl"
+            className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl pt-2"
           >
             आलमनगर
           </motion.h1>
 
+          {/* ✅ FIXED: Added 'leading-relaxed' and 'py-1' to prevent Hindi matras (vowels) from getting clipped */}
           <motion.p 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md"
+            className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md leading-relaxed py-1"
           >
             "जड़ों से जुड़ा, मिथिला की धरती का गौरव"
           </motion.p>
@@ -276,7 +277,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-base md:text-lg text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed"
+            className="text-base md:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed"
           >
             हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।
           </motion.p>
