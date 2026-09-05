@@ -42,15 +42,14 @@ interface PostData {
   userPhoto?: string;
 }
 
-// 🔥 CRITICAL FIX: Updated with your exact Admin UID
 const ADMIN_UIDS = [
-  "5fPCK8mGRTaAvIBTzUn7MEMQ2id2", // Tumhara UID
+  "5fPCK8mGRTaAvIBTzUn7MEMQ2id2",
 ];
 
 export default function AdminReportsPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [reports, setReports] = useState<Report[]>([]);
+  const [allReports, setAllReports] = useState<Report[]>([]); // 🔥 Saare reports store karo
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [postData, setPostData] = useState<PostData | null>(null);
@@ -76,20 +75,15 @@ export default function AdminReportsPage() {
     return () => unsubscribe();
   }, [router]);
 
-  // 🔥 FIXED: Added Error Handler to prevent infinite spinner
+  // 🔥 INSTANT FIX: Pehle saare reports fetch karo (bina where clause ke), fir client-side filter karo
   useEffect(() => {
     if (!user) return;
     
-    let reportsQuery;
-    if (filter === "all") {
-      reportsQuery = query(collection(db, "reports"), orderBy("createdAt", "desc"));
-    } else {
-      reportsQuery = query(
-        collection(db, "reports"), 
-        where("status", "==", filter),
-        orderBy("createdAt", "desc")
-      );
-    }
+    // Sirf orderBy use karo, where clause hata diya (no index needed!)
+    const reportsQuery = query(
+      collection(db, "reports"), 
+      orderBy("createdAt", "desc")
+    );
     
     const unsubscribe = onSnapshot(
       reportsQuery, 
@@ -98,31 +92,26 @@ export default function AdminReportsPage() {
           id: doc.id,
           ...doc.data()
         } as Report));
-        setReports(reportsData);
+        setAllReports(reportsData);
         setLoading(false);
       },
       (error) => {
-        // 🔥 CRITICAL: Agar query fail hoti hai, toh loading false karo taaki spinner ruke
         console.error("🔥 Firestore Reports Query Error:", error);
-        setLoading(false); 
-        
-        // Firebase missing index errors mein console mein ek link deta hai
-        if (error.code === 'failed-precondition') {
-          setToast({ 
-            message: "Missing Database Index. Check Browser Console (F12) for the fix link!", 
-            type: "error" 
-          });
-        } else {
-          setToast({ 
-            message: "Data load error. Check permissions or console.", 
-            type: "error" 
-          });
-        }
+        setLoading(false);
+        setToast({ 
+          message: "Data load error. Check console for details.", 
+          type: "error" 
+        });
       }
     );
     
     return () => unsubscribe();
-  }, [user, filter]);
+  }, [user]);
+
+  // 🔥 Client-side filtering (no database index needed!)
+  const filteredReports = filter === "all" 
+    ? allReports 
+    : allReports.filter(r => r.status === filter);
 
   useEffect(() => {
     if (!selectedReport) {
@@ -136,7 +125,7 @@ export default function AdminReportsPage() {
         if (postDoc.exists()) {
           setPostData({ id: postDoc.id, ...postDoc.data() } as PostData);
         } else {
-          setPostData(null); // Post already deleted
+          setPostData(null);
         }
       } catch (error) {
         console.error("Error fetching post:", error);
@@ -146,11 +135,10 @@ export default function AdminReportsPage() {
     fetchPost();
   }, [selectedReport]);
 
-  // 🔥 UPGRADED: Delete with Confirmation & Better Error Handling
   const handleDeletePost = async () => {
     if (!selectedReport) return;
     
-    const confirmDelete = window.confirm("⚠️ Kya aap sach mein is post ko permanently delete karna chahte hain? Ye action wapas nahi hoga.");
+    const confirmDelete = window.confirm("⚠️ Kya aap sach mein is post ko permanently delete karna chahte hain?");
     if (!confirmDelete) return;
 
     setActionLoading(true);
@@ -169,7 +157,7 @@ export default function AdminReportsPage() {
     } catch (error: any) {
       console.error("Delete error:", error);
       const errorMsg = error.code === 'permission-denied' 
-        ? "Permission Denied: Firebase Rules mein Admin UID check karein!" 
+        ? "Permission Denied: Firebase Rules check karein!" 
         : `Post delete karne mein truti: ${error.message}`;
       setToast({ message: errorMsg, type: "error" });
     } finally {
@@ -219,7 +207,7 @@ export default function AdminReportsPage() {
   const handleBanUser = async () => {
     if (!selectedReport) return;
     
-    const confirmBan = window.confirm("🚫 Kya aap sach mein is user ko BAN karna chahte hain? Ye action aasani se wapas nahi hoga.");
+    const confirmBan = window.confirm("🚫 Kya aap sach mein is user ko BAN karna chahte hain?");
     if (!confirmBan) return;
     
     setActionLoading(true);
@@ -295,7 +283,7 @@ export default function AdminReportsPage() {
     }
   };
 
-  const pendingCount = reports.filter(r => r.status === "pending").length;
+  const pendingCount = allReports.filter(r => r.status === "pending").length;
 
   if (loading) {
     return (
@@ -326,7 +314,6 @@ export default function AdminReportsPage() {
         )}
       </AnimatePresence>
 
-      {/* Header */}
       <div className="sticky top-0 z-40 bg-stone-950/95 backdrop-blur-xl border-b border-stone-800">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -363,12 +350,11 @@ export default function AdminReportsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-stone-900 border border-stone-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-2">
               <Flag className="w-6 h-6 text-red-400" />
-              <span className="text-2xl font-bold">{reports.length}</span>
+              <span className="text-2xl font-bold">{allReports.length}</span>
             </div>
             <p className="text-sm text-stone-400">Total Reports</p>
           </motion.div>
@@ -384,7 +370,7 @@ export default function AdminReportsPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-stone-900 border border-emerald-500/20 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-2">
               <CheckCircle className="w-6 h-6 text-emerald-400" />
-              <span className="text-2xl font-bold text-emerald-400">{reports.filter(r => r.status === "resolved").length}</span>
+              <span className="text-2xl font-bold text-emerald-400">{allReports.filter(r => r.status === "resolved").length}</span>
             </div>
             <p className="text-sm text-stone-400">Resolved</p>
           </motion.div>
@@ -392,19 +378,18 @@ export default function AdminReportsPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-stone-900 border border-stone-500/20 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-2">
               <X className="w-6 h-6 text-stone-400" />
-              <span className="text-2xl font-bold">{reports.filter(r => r.status === "dismissed").length}</span>
+              <span className="text-2xl font-bold">{allReports.filter(r => r.status === "dismissed").length}</span>
             </div>
             <p className="text-sm text-stone-400">Dismissed</p>
           </motion.div>
         </div>
 
-        {/* Filter Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {[
             { id: "pending", label: "Pending", count: pendingCount },
-            { id: "resolved", label: "Resolved", count: reports.filter(r => r.status === "resolved").length },
-            { id: "dismissed", label: "Dismissed", count: reports.filter(r => r.status === "dismissed").length },
-            { id: "all", label: "All", count: reports.length }
+            { id: "resolved", label: "Resolved", count: allReports.filter(r => r.status === "resolved").length },
+            { id: "dismissed", label: "Dismissed", count: allReports.filter(r => r.status === "dismissed").length },
+            { id: "all", label: "All", count: allReports.length }
           ].map(tab => (
             <button
               key={tab.id}
@@ -420,8 +405,7 @@ export default function AdminReportsPage() {
           ))}
         </div>
 
-        {/* Reports List */}
-        {reports.length === 0 ? (
+        {filteredReports.length === 0 ? (
           <div className="text-center py-20 bg-stone-900 rounded-2xl border border-stone-800">
             <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
             <h3 className="text-xl font-bold mb-2">{filter === "pending" ? "No pending reports!" : "No reports found"}</h3>
@@ -431,7 +415,7 @@ export default function AdminReportsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {reports.map((report, idx) => (
+            {filteredReports.map((report, idx) => (
               <motion.div
                 key={report.id}
                 initial={{ opacity: 0, y: 10 }}
@@ -468,7 +452,6 @@ export default function AdminReportsPage() {
         )}
       </div>
 
-      {/* Report Detail Modal */}
       <AnimatePresence>
         {selectedReport && (
           <motion.div
@@ -499,7 +482,6 @@ export default function AdminReportsPage() {
               </div>
 
               <div className="p-5 space-y-5">
-                {/* Reporter Info */}
                 <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700">
                   <h3 className="text-sm font-bold text-stone-400 mb-3 flex items-center gap-2">
                     <User className="w-4 h-4" /> Reporter Information
@@ -523,7 +505,6 @@ export default function AdminReportsPage() {
                   </div>
                 </div>
 
-                {/* Report Reason */}
                 <div className="bg-red-500/10 rounded-xl p-4 border border-red-500/20">
                   <h3 className="text-sm font-bold text-red-400 mb-2 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" /> Reason
@@ -532,7 +513,6 @@ export default function AdminReportsPage() {
                   {selectedReport.details && <p className="text-sm text-stone-300 leading-relaxed">{selectedReport.details}</p>}
                 </div>
 
-                {/* Reported Post */}
                 {postData ? (
                   <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700">
                     <h3 className="text-sm font-bold text-stone-400 mb-3 flex items-center gap-2">
@@ -553,11 +533,10 @@ export default function AdminReportsPage() {
                 ) : (
                   <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700 text-center">
                     <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                    <p className="text-sm text-stone-300">Ye post pehle hi delete ho chuki hai ya exist nahi karti.</p>
+                    <p className="text-sm text-stone-300">Ye post pehle hi delete ho chuki hai.</p>
                   </div>
                 )}
 
-                {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-stone-700">
                   <button
                     onClick={handleDeletePost}
