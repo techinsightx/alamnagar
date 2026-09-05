@@ -9,16 +9,16 @@ import {
   Flame, Award, TrendingUp, LogIn
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { db, auth } from "@/lib/firebase";
 import { collection, query, orderBy, limit, onSnapshot, where, getDocs } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 ADMIN UIDs (Inhe apne project ke hisaab se update karo)
+// 🔥 ADMIN UIDs
 // ═══════════════════════════════════════════════════════════
 const ADMIN_UIDS = [
-  "5fPCK8mGRTaAvIBTzUn7MEMQ2id2", // Tumhara UID
+  "5fPCK8mGRTaAvIBTzUn7MEMQ2id2",
 ];
 
 // ═══════════════════════════════════════════════════════════
@@ -35,7 +35,7 @@ const staggerContainer = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🚀 ANIMATED NUMBER COMPONENT (Live Counting Effect)
+// 🌟 ANIMATED NUMBER COMPONENT
 // ═══════════════════════════════════════════════════════════
 const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string }) => {
   const [count, setCount] = useState(0);
@@ -65,6 +65,78 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
   }, [value]);
 
   return <span>{count.toLocaleString('hi-IN')}{suffix}</span>;
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🌌 STARRY SKY COMPONENT (NEW - Night Sky with Falling Stars)
+// ═══════════════════════════════════════════════════════════
+const StarrySky = () => {
+  // Generate 200+ random stars with useMemo for performance
+  const stars = useMemo(() => {
+    return Array.from({ length: 200 }, (_, i) => ({
+      id: i,
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      size: Math.random() * 2 + 0.5,
+      opacity: Math.random() * 0.8 + 0.2,
+      twinkleDelay: Math.random() * 3,
+      twinkleDuration: Math.random() * 2 + 2,
+    }));
+  }, []);
+
+  // Generate 3 shooting stars
+  const shootingStars = useMemo(() => {
+    return Array.from({ length: 3 }, (_, i) => ({
+      id: i,
+      top: Math.random() * 50,
+      left: Math.random() * 50,
+      delay: i * 5 + Math.random() * 3,
+      duration: Math.random() * 2 + 2,
+    }));
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Static Twinkling Stars */}
+      {stars.map((star) => (
+        <div
+          key={star.id}
+          className="absolute rounded-full bg-white star-twinkle"
+          style={{
+            top: `${star.top}%`,
+            left: `${star.left}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            opacity: star.opacity,
+            animationDelay: `${star.twinkleDelay}s`,
+            animationDuration: `${star.twinkleDuration}s`,
+            boxShadow: `0 0 ${star.size * 2}px rgba(255, 255, 255, ${star.opacity})`,
+          }}
+        />
+      ))}
+
+      {/* Shooting Stars (Falling Meteors) */}
+      {shootingStars.map((star) => (
+        <div
+          key={`shooting-${star.id}`}
+          className="absolute shooting-star"
+          style={{
+            top: `${star.top}%`,
+            left: `${star.left}%`,
+            animationDelay: `${star.delay}s`,
+            animationDuration: `${star.duration}s`,
+          }}
+        >
+          <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_6px_2px_rgba(255,255,255,0.8)]" />
+          <div className="absolute top-0 left-0 w-20 h-[1px] bg-gradient-to-r from-white via-white/50 to-transparent -translate-x-full" />
+        </div>
+      ))}
+
+      {/* Subtle Nebula Glow */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+    </div>
+  );
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -210,7 +282,6 @@ export default function HomePage() {
   const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
-  // 🔥 NEW: Live Stats State
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [liveStats, setLiveStats] = useState({
     totalUsers: 0,
@@ -219,7 +290,6 @@ export default function HomePage() {
     totalLikes: 0
   });
 
-  // 🔥 NEW: Auth State Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -227,15 +297,12 @@ export default function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  // 🔥 NEW: Real-Time Stats Fetcher
   useEffect(() => {
-    // Total Users Count
     const usersQuery = query(collection(db, "users"));
     const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
       setLiveStats(prev => ({ ...prev, totalUsers: snapshot.size }));
     });
 
-    // Total Posts + Total Views + Total Likes
     const postsQuery = query(collection(db, "spotlights"));
     const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
       let totalViews = 0;
@@ -264,7 +331,7 @@ export default function HomePage() {
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
       
-      {/* 🎨 CUSTOM SHIMMER ANIMATIONS */}
+      {/* 🎨 CUSTOM ANIMATIONS - Updated with Starry Sky */}
       <style>{`
         .tiranga-shimmer {
           background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 25%, #138808 50%, #FFFFFF 75%, #FF9933 100%);
@@ -293,27 +360,62 @@ export default function HomePage() {
         .floating {
           animation: float 6s ease-in-out infinite;
         }
+        
+        /* 🌟 Star Twinkling Animation */
+        @keyframes starTwinkle {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
+        .star-twinkle {
+          animation: starTwinkle ease-in-out infinite;
+        }
+        
+        /* 🌠 Shooting Star Animation */
+        @keyframes shootingStar {
+          0% {
+            transform: translate(0, 0) rotate(-45deg);
+            opacity: 0;
+          }
+          5% {
+            opacity: 1;
+          }
+          70% {
+            opacity: 1;
+          }
+          100% {
+            transform: translate(400px, 400px) rotate(-45deg);
+            opacity: 0;
+          }
+        }
+        .shooting-star {
+          animation: shootingStar linear infinite;
+        }
       `}</style>
 
       {/* Scroll Progress Bar */}
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-      {/* ===== 1. CINEMATIC HERO SECTION ===== */}
+      {/* ===== 1. CINEMATIC HERO SECTION - Now with Starry Sky! ===== */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-950 via-green-900 to-amber-950 text-white px-6">
+        
+        {/* 🌌 NEW: Starry Sky Background */}
+        <StarrySky />
+        
+        {/* Glowing Orbs */}
         <motion.div 
           animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px]" 
+          className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px] z-0" 
         />
         <motion.div 
           animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.3, 0.2] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber-500/20 rounded-full blur-[150px]" 
+          className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber-500/20 rounded-full blur-[150px] z-0" 
         />
         
         <MadhubaniPattern />
 
-        {/* 🔥 NEW: Admin Badge (Top Right) */}
+        {/* Admin Badge */}
         {isAdmin && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
@@ -332,7 +434,7 @@ export default function HomePage() {
         )}
 
         <div className="relative z-10 text-center max-w-5xl mx-auto pt-20">
-          {/* 🔥 NEW: Personalized Greeting for Logged-In Users */}
+          {/* Personalized Greeting */}
           {currentUser ? (
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
@@ -365,7 +467,7 @@ export default function HomePage() {
             </motion.div>
           )}
 
-          {/* ✅ FULL "आलमनगर" WITH TIRANGA SHIMMER */}
+          {/* FULL "आलमनगर" WITH TIRANGA SHIMMER */}
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -393,7 +495,7 @@ export default function HomePage() {
             हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।
           </motion.p>
 
-          {/* 🔥 NEW: Live Platform Stats Banner */}
+          {/* Live Platform Stats Banner */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -458,7 +560,7 @@ export default function HomePage() {
       {/* ===== 🚀 LIVE ACTIVITY TICKER ===== */}
       <LiveActivityTicker />
 
-      {/* ===== 2. QUICK STATS (🔥 UPGRADED: Now with Real-Time Live Data) ===== */}
+      {/* ===== 2. QUICK STATS ===== */}
       <section className="py-20 px-6 bg-stone-50 relative z-20">
         <div className="max-w-6xl mx-auto">
           <motion.div 
@@ -498,7 +600,6 @@ export default function HomePage() {
                   <AnimatedNumber value={stat.value} />
                 </div>
                 <div className="text-sm font-bold text-stone-500 uppercase tracking-wider">{stat.label}</div>
-                {/* Live indicator dot */}
                 <div className="flex items-center justify-center gap-1.5 mt-3">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -512,7 +613,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 3. ABOUT PREVIEW (Mithila Vibe) ===== */}
+      {/* ===== 3. ABOUT PREVIEW ===== */}
       <section className="py-24 px-6 bg-white relative overflow-hidden">
         <MadhubaniPattern />
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
@@ -585,7 +686,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 4. EXPLORE SECTIONS (Chaupal Style) ===== */}
+      {/* ===== 4. EXPLORE SECTIONS ===== */}
       <section className="py-24 px-6 bg-stone-100">
         <div className="max-w-6xl mx-auto">
           <motion.div 
@@ -649,7 +750,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 5. MARKETPLACE TEASER (Gaon ka Haat) ===== */}
+      {/* ===== 5. MARKETPLACE TEASER ===== */}
       <section className="py-24 px-6 bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         <MadhubaniPattern />
@@ -724,7 +825,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 6. TESTIMONIALS (Chaupal Stories) ===== */}
+      {/* ===== 6. TESTIMONIALS ===== */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <motion.div 
@@ -832,7 +933,6 @@ export default function HomePage() {
                 <li><Link href="/community" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> समुदाय</Link></li>
                 <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
                 <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
-                {/* 🔥 NEW: Admin Dashboard Link (Only visible to admins) */}
                 {isAdmin && (
                   <li>
                     <Link href="/admin/reports" className="hover:text-red-400 transition-colors flex items-center gap-2 border-l-2 border-red-500/50 pl-2">
