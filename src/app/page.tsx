@@ -87,7 +87,6 @@ const LiveActivityTicker = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Listen to latest posts (Real-time updates for likes, comments, shares)
     const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(5));
     const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => {
       const newItems: TickerItem[] = snapshot.docs.map(doc => {
@@ -114,7 +113,6 @@ const LiveActivityTicker = () => {
       setIsLoading(false);
     });
 
-    // 2. Listen to latest joined members
     const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(5));
     const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
       const newUsers: TickerItem[] = snapshot.docs.map(doc => {
@@ -142,12 +140,10 @@ const LiveActivityTicker = () => {
 
   if (isLoading || items.length === 0) return null;
 
-  // Duplicate items for seamless infinite marquee
   const marqueeItems = [...items, ...items];
 
   return (
     <div className="relative bg-stone-900/95 backdrop-blur-md border-y border-amber-500/20 overflow-hidden py-3">
-      {/* Live Indicator */}
       <div className="absolute left-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-r from-stone-900 to-transparent flex items-center px-4">
         <div className="flex items-center gap-2">
           <span className="relative flex h-3 w-3">
@@ -160,7 +156,6 @@ const LiveActivityTicker = () => {
 
       <div className="absolute right-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-l from-stone-900 to-transparent" />
 
-      {/* Marquee Animation */}
       <motion.div 
         className="flex gap-8 whitespace-nowrap"
         animate={{ x: ["0%", "-50%"] }}
@@ -205,6 +200,30 @@ export default function HomePage() {
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
       
+      {/* 🎨 CUSTOM SHIMMER ANIMATIONS */}
+      <style>{`
+        .tiranga-shimmer {
+          background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 25%, #138808 50%, #FFFFFF 75%, #FF9933 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: shimmer 4s linear infinite;
+        }
+        .golden-shimmer {
+          background: linear-gradient(90deg, #FCD34D 0%, #FFFFFF 40%, #F59E0B 60%, #FCD34D 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: shimmer 3s linear infinite;
+        }
+        @keyframes shimmer {
+          0% { background-position: 0% center; }
+          100% { background-position: -200% center; }
+        }
+      `}</style>
+
       {/* Scroll Progress Bar */}
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
@@ -240,17 +259,15 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-none"
           >
-            आलम
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 drop-shadow-lg">
-              नगर
-            </span>
+            <span className="text-white drop-shadow-2xl">आलम</span>
+            <span className="tiranga-shimmer drop-shadow-2xl">नगर</span>
           </motion.h1>
 
           <motion.p 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-2xl md:text-4xl text-amber-100 mb-6 font-medium italic"
+            className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md"
           >
             "जड़ों से जुड़ा, मिथिला की धरती का गौरव"
           </motion.p>
@@ -661,9 +678,9 @@ export default function HomePage() {
             <div>
               <h4 className="text-white font-black mb-6 text-lg">संपर्क</h4>
               <ul className="space-y-4 text-base">
-                {/* ✅ UPDATED: Contact Page Link */}
+                {/* ✅ PERFECTLY INTEGRATED CONTACT PAGE LINK */}
                 <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
-                {/* ✅ UPDATED: Correct Email Display */}
+                {/* ✅ PERFECTLY INTEGRATED EMAIL */}
                 <li><a href="mailto:digitechinfo.india@gmail.com" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> digitechinfo.india@gmail.com</a></li>
               </ul>
             </div>
