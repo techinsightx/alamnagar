@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 // ══════════════════════════════════════════════════════════
-// INLINE PLACEHOLDERS (To prevent missing module errors)
+// INLINE PLACEHOLDERS
 // ══════════════════════════════════════════════════════════
 const createNotification = async (toUserId: string, type: string, fromUserId: string, fromUserName: string, fromUserPhoto: string, postId?: string, postTitle?: string, commentText?: string, followBack?: boolean, metadata?: any, userHandle?: string) => {
   try {
@@ -70,9 +70,6 @@ const AudioUpload = ({ isOpen, onClose, onUploadSuccess }: any) => {
   );
 };
 
-// ══════════════════════════════════════════════════════════
-// 🍞 CUSTOM TOAST NOTIFICATION COMPONENT
-// ══════════════════════════════════════════════════════════
 const Toast = ({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) => {
   useEffect(() => {
     const timer = setTimeout(onClose, 3500);
@@ -96,9 +93,6 @@ const Toast = ({ message, type, onClose }: { message: string; type: 'success' | 
   );
 };
 
-// ══════════════════════════════════════════════════════════
-// 💀 SKELETON LOADER COMPONENT
-// ══════════════════════════════════════════════════════════
 const SkeletonPost = () => (
   <div className="bg-stone-900 border border-stone-700 rounded-2xl overflow-hidden mb-4 p-4 animate-pulse">
     <div className="flex items-center gap-3 mb-4">
@@ -121,9 +115,6 @@ const SkeletonPost = () => (
   </div>
 );
 
-// ══════════════════════════════════════════════════════════
-//  AUTOMATIC FEATURED LOGIC
-// ═══════════════════════════════════════════════════════════
 interface EngagementMetrics { views: number; likes: number; comments: number; shares: number; }
 const calculateEngagementScore = (metrics: EngagementMetrics) => (metrics.views * 1) + (metrics.likes * 3) + (metrics.comments * 5) + (metrics.shares * 10);
 const isAutoFeatured = (metrics: EngagementMetrics) => metrics.views >= 500 || metrics.likes >= 50 || metrics.comments >= 10 || calculateEngagementScore(metrics) >= 200;
@@ -142,9 +133,6 @@ const getFeaturedLevel = (metrics: EngagementMetrics, isManualFeatured: boolean)
   return 'none';
 };
 
-// ═══════════════════════════════════════════════════════════
-// TYPING EFFECT HOOK
-// ══════════════════════════════════════════════════════════
 const useTypingEffect = (words: string[], typingSpeed = 80, deletingSpeed = 40, pauseTime = 2000) => {
   const [text, setText] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
@@ -173,9 +161,6 @@ const useTypingEffect = (words: string[], typingSpeed = 80, deletingSpeed = 40, 
   return text;
 };
 
-// ═══════════════════════════════════════════════════════════
-// INTERFACES
-// ═══════════════════════════════════════════════════════════
 interface SpotlightPost {
   id: string; userId: string; userName: string; userPhoto: string; isVerified: boolean; isFeatured?: boolean;
   title: string; content: string; hashtags: string[]; mediaUrl: string; mediaType: "image" | "video" | null;
@@ -194,9 +179,6 @@ const REPORT_REASONS = [
   { id: "other", label: "अन्य (विवरण दें)", icon: "📝" },
 ];
 
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
 const getMediaDimensions = (file: File): Promise<{ width: number; height: number }> => {
   return new Promise((resolve) => {
     if (file.type.startsWith("image/")) {
@@ -214,9 +196,6 @@ const toggleSavedPost = (id: string): string[] => {
   return next;
 };
 
-// ═══════════════════════════════════════════════════════════
-// FEATURED BADGE COMPONENT
-// ═══════════════════════════════════════════════════════════
 const FeaturedBadge = ({ level, isTrendingPost }: { level: 'platinum' | 'gold' | 'silver' | 'none'; isTrendingPost: boolean }) => {
   if (level === 'none' && !isTrendingPost) return null;
   if (isTrendingPost) return (
@@ -240,9 +219,6 @@ const FeaturedBadge = ({ level, isTrendingPost }: { level: 'platinum' | 'gold' |
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// ENGAGEMENT SCORE DISPLAY
-// ═══════════════════════════════════════════════════════════
 const EngagementScore = ({ metrics }: { metrics: EngagementMetrics }) => {
   const score = calculateEngagementScore(metrics);
   const level = score >= 1000 ? 'platinum' : score >= 500 ? 'gold' : score >= 200 ? 'silver' : 'bronze';
@@ -256,9 +232,6 @@ const EngagementScore = ({ metrics }: { metrics: EngagementMetrics }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// NOTIFICATIONS DRAWER
-// ═══════════════════════════════════════════════════════════
 const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boolean; onClose: () => void; currentUserId: string }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -314,9 +287,6 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// 🚩 REPORT MODAL COMPONENT
-// ═══════════════════════════════════════════════════════════
 const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOpen: boolean; onClose: () => void; postId: string; postOwnerId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [selectedReason, setSelectedReason] = useState("");
   const [details, setDetails] = useState("");
@@ -425,9 +395,6 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
   );
 };
 
-// ══════════════════════════════════════════════════════════
-// CREATE SPOTLIGHT MODAL (WITH ADVANCED CAMERA & AUDIO)
-// ═══════════════════════════════════════════════════════════
 const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { isOpen: boolean; onClose: () => void; onPostCreated: () => void; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -758,9 +725,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   );
 };
 
-// ══════════════════════════════════════════════════════════
-// SPOTLIGHT CARD COMPONENT (WITH DOUBLE TAP, FOLLOW, ENGAGEMENT)
-// ══════════════════════════════════════════════════════════
 const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDelete, postId, showToast }: { post: SpotlightPost; currentUserId: string; currentUserObj?: any; requireAuth: (action: string, postId?: string) => boolean; onDelete: (id: string) => void; postId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [liked, setLiked] = useState(post.likedBy?.includes(currentUserId) || false);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
@@ -784,11 +748,9 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   const [followLoading, setFollowLoading] = useState(false);
   
   const [hasTrackedView, setHasTrackedView] = useState(false);
-  
   const [expanded, setExpanded] = useState(false);
   const [needsClamp, setNeedsClamp] = useState(false);
   
-  // ✅ FIX: Separated refs to prevent collision between card observer and paragraph clamping
   const cardRef = useRef<HTMLDivElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -799,7 +761,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   const featuredLevel = getFeaturedLevel(engagementMetrics, post.isFeatured || false);
   const trending = isTrending(engagementMetrics, post.createdAt);
 
-  // ✅ FIX: Paragraph clamping logic using correct ref
   useEffect(() => {
     const el = paragraphRef.current;
     if (el && !expanded) {
@@ -809,16 +770,13 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   useEffect(() => { setSaved(getSavedPosts().includes(post.id)); }, [post.id]);
 
-  // ✅ FIX: Reliable IntersectionObserver for View Tracking (Replaced fragile 3s timer)
   useEffect(() => {
     if (hasTrackedView) return;
-
     const viewKey = `spotlight_viewed_${post.id}`;
     const lastViewed = typeof window !== 'undefined' ? localStorage.getItem(viewKey) : null;
     const now = Date.now();
     const twentyFourHours = 24 * 60 * 60 * 1000;
 
-    // Prevent recounting within 24 hours
     if (lastViewed && (now - parseInt(lastViewed)) < twentyFourHours) {
       setHasTrackedView(true);
       return;
@@ -828,16 +786,10 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       ([entry]) => {
         if (entry.isIntersecting) {
           setHasTrackedView(true);
-          
-          // 1. Increment main view count immediately
           updateDoc(doc(db, "spotlights", post.id), { views: increment(1) }).catch(console.error);
-          
-          // 2. Save to localStorage
           if (typeof window !== 'undefined') {
             localStorage.setItem(viewKey, now.toString());
           }
-
-          // 3. Record detailed user view if logged in
           if (currentUserId) {
             const viewDocRef = doc(db, "spotlights", post.id, "views", currentUserId);
             getDoc(viewDocRef).then((snap) => {
@@ -848,18 +800,11 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           }
         }
       },
-      { threshold: 0.5 } // Triggers when 50% of the post is visible on screen
+      { threshold: 0.5 }
     );
 
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-
-    return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current);
-      }
-    };
+    if (cardRef.current) observer.observe(cardRef.current);
+    return () => { if (cardRef.current) observer.unobserve(cardRef.current); };
   }, [post.id, currentUserId, hasTrackedView]);
 
   useEffect(() => {
@@ -900,10 +845,10 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
         }
       }
       setLiked(!liked);
-    } catch (error) { 
-      console.error("Like error:", error);
+    } catch (error: any) { 
+      console.error("Like Error Details:", error.message); // यह कंसोल में "Permission denied" दिखाएगा अगर रूल्स गलत हैं
       setLiked(liked); setLikeCount(likeCount);
-      showToast("लाइक करने में त्रुटि हुई।", "error");
+      showToast("इस कार्रवाई के लिए अनुमति नहीं है या नेटवर्क त्रुटि।", "error");
     }
   };
 
@@ -931,8 +876,10 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
         createNotification(post.userId, "follow", currentUserId, auth.currentUser.displayName || "User", auth.currentUser.photoURL || "").catch(console.warn);
       }
       await batch.commit();
-    } catch (error) { console.error("Follow error:", error); } 
-    finally { setFollowLoading(false); }
+    } catch (error: any) { 
+      console.error("Follow Error Details:", error.message);
+      showToast("फॉलो करने में त्रुटि हुई।", "error");
+    } finally { setFollowLoading(false); }
   };
 
   const handleAddComment = async () => {
@@ -951,8 +898,8 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       }
       setNewComment("");
       showToast("टिप्पणी सफलतापूर्वक जोड़ी गई!", "success");
-    } catch (error) { 
-      console.error("Comment error:", error); 
+    } catch (error: any) { 
+      console.error("Comment Error Details:", error.message);
       showToast("टिप्पणी जोड़ने में त्रुटि हुई।", "error");
     } finally { setPostingComment(false); }
   };
@@ -970,7 +917,10 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       } else if (platform === 'whatsapp') {
         window.open(`https://wa.me/?text=${encodeURIComponent("आलमनगर स्पॉटलाइट देखें: ")}${encodeURIComponent(shareUrl)}`, '_blank');
       }
-    } catch (error) { console.error("Share error:", error); }
+    } catch (error: any) { 
+      console.error("Share Error Details:", error.message);
+      showToast("शेयर करने में त्रुटि हुई।", "error");
+    }
     if (platform !== 'copy') setShowShareSheet(false);
   };
 
@@ -1070,7 +1020,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
         {post.content && (
           <div className="px-4 pb-3 relative">
-            {/* ✅ FIX: Using paragraphRef for accurate clamping */}
             <p ref={paragraphRef} className={`text-white/90 text-[15px] leading-relaxed whitespace-pre-wrap transition-all duration-300 ${expanded ? "" : "line-clamp-4"}`}>{post.content}</p>
             {(needsClamp || expanded) && (
               <button onClick={() => setExpanded(!expanded)} className="mt-2 flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-bold uppercase tracking-wider transition-colors">
@@ -1241,9 +1190,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// MAIN SPOTLIGHT CONTENT
-// ═══════════════════════════════════════════════════════════
 function SpotlightContent() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
