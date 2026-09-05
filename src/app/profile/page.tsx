@@ -29,6 +29,8 @@ interface UserProfile {
   isVerified: boolean;
   followersCount?: number;
   followingCount?: number;
+  followers?: string[];
+  following?: string[];
 }
 
 interface PostStats {
@@ -80,17 +82,17 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
 
+  // 🔥 UPGRADED: Real-time listener with smart array length fallback
   useEffect(() => {
-    const fetchUser = async () => {
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        router.push("/auth");
-        return;
-      }
-      
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      router.push("/auth");
+      return;
+    }
+    
+    const userRef = doc(db, "users", currentUser.uid);
+    
+    const unsubscribe = onSnapshot(userRef, async (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as UserProfile;
         setUser(data);
@@ -100,8 +102,15 @@ export default function ProfilePage() {
         setWebsite(data.website || "");
         setPhotoURL(data.photoURL || currentUser.photoURL || "");
         setCoverPhotoURL(data.coverPhotoURL || "");
-        setFollowersCount(data.followersCount || 0);
-        setFollowingCount(data.followingCount || 0);
+        
+        // ✅ MAGIC FIX: Agar count field 0 ya undefined hai, toh array ki length gin lo!
+        const followersArray = data.followers || [];
+        const followingArray = data.following || [];
+        
+        setFollowersCount(data.followersCount ?? followersArray.length);
+        setFollowingCount(data.followingCount ?? followingArray.length);
+        
+        setLoading(false);
       } else {
         const userData = {
           uid: currentUser.uid,
@@ -116,23 +125,14 @@ export default function ProfilePage() {
           isVerified: false,
           followersCount: 0,
           followingCount: 0,
+          followers: [],
+          following: []
         };
-        await setDoc(docRef, userData, { merge: true });
-        setUser(userData as UserProfile);
-        setName(userData.displayName);
-        setBio(userData.bio);
-        setLocation(userData.location);
-        setWebsite(userData.website);
-        setPhotoURL(userData.photoURL);
-        setCoverPhotoURL(userData.coverPhotoURL || "");
-        setFollowersCount(0);
-        setFollowingCount(0);
+        await setDoc(userRef, userData, { merge: true });
       }
-      
-      setLoading(false);
-    };
+    });
     
-    fetchUser();
+    return () => unsubscribe();
   }, [router]);
 
   useEffect(() => {
@@ -498,7 +498,7 @@ export default function ProfilePage() {
                     </div>
                     <p className="text-stone-500 flex items-center gap-2 mb-4"><Mail className="w-4 h-4" /> {user.email}</p>
                     
-                    {/* 🔥 FOLLOWERS & FOLLOWING COUNT */}
+                    {/* 🔥 FOLLOWERS & FOLLOWING COUNT (Now with smart fallback) */}
                     <div className="flex items-center gap-6 text-stone-700">
                       <div className="flex items-center gap-2">
                         <Users className="w-5 h-5 text-emerald-600" />
