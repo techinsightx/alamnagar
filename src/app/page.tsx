@@ -18,7 +18,7 @@ import { onAuthStateChanged } from "firebase/auth";
 // 🔥 ADMIN UIDs (Inhe apne project ke hisaab se update karo)
 // ═══════════════════════════════════════════════════════════
 const ADMIN_UIDS = [
-  "XIbwZecsh1hg2ou9Q9UC1OwLEa12", // Tumhara UID
+  "5fPCK8mGRTaAvIBTzUn7MEMQ2id2", // Tumhara UID
 ];
 
 // ═══════════════════════════════════════════════════════════

@@ -32,7 +32,6 @@ interface Report {
   reviewedBy?: string;
 }
 
-// ✅ FIX: Added 'userId' to PostData interface
 interface PostData {
   id: string;
   userId?: string;
@@ -43,10 +42,9 @@ interface PostData {
   userPhoto?: string;
 }
 
-// 🔥 IMPORTANT: Yahan apne admin UIDs daalo
+// 🔥 CRITICAL FIX: Updated with your exact Admin UID
 const ADMIN_UIDS = [
-  "XIbwZecsh1hg2ou9Q9UC1OwLEa12", // Tumhara UID
-  // Aur admin UIDs yahan add karo
+  "5fPCK8mGRTaAvIBTzUn7MEMQ2id2", // Tumhara UID
 ];
 
 export default function AdminReportsPage() {
@@ -67,7 +65,6 @@ export default function AdminReportsPage() {
         return;
       }
       
-      // 🔥 Admin check
       if (!ADMIN_UIDS.includes(currentUser.uid)) {
         alert("Access Denied: You are not an admin!");
         router.push("/");
@@ -79,7 +76,6 @@ export default function AdminReportsPage() {
     return () => unsubscribe();
   }, [router]);
 
-  // 🔥 Real-time reports listener
   useEffect(() => {
     if (!user) return;
     
@@ -106,7 +102,6 @@ export default function AdminReportsPage() {
     return () => unsubscribe();
   }, [user, filter]);
 
-  // 🔥 Fetch post details when a report is selected
   useEffect(() => {
     if (!selectedReport) {
       setPostData(null);
@@ -118,6 +113,8 @@ export default function AdminReportsPage() {
         const postDoc = await getDoc(doc(db, "spotlights", selectedReport.postId));
         if (postDoc.exists()) {
           setPostData({ id: postDoc.id, ...postDoc.data() } as PostData);
+        } else {
+          setPostData(null); // Post already deleted
         }
       } catch (error) {
         console.error("Error fetching post:", error);
@@ -127,16 +124,17 @@ export default function AdminReportsPage() {
     fetchPost();
   }, [selectedReport]);
 
-  // 🔥 ACTION: Delete the reported post
+  // 🔥 UPGRADED: Delete with Confirmation & Better Error Handling
   const handleDeletePost = async () => {
-    if (!selectedReport || !postData) return;
-    setActionLoading(true);
+    if (!selectedReport) return;
     
+    const confirmDelete = window.confirm("⚠️ Kya aap sach mein is post ko permanently delete karna chahte hain? Ye action wapas nahi hoga.");
+    if (!confirmDelete) return;
+
+    setActionLoading(true);
     try {
-      // Delete the post
       await deleteDoc(doc(db, "spotlights", selectedReport.postId));
       
-      // Update report status
       await updateDoc(doc(db, "reports", selectedReport.id), {
         status: "resolved",
         action: "post_deleted",
@@ -144,24 +142,25 @@ export default function AdminReportsPage() {
         reviewedBy: user.uid
       });
       
-      setToast({ message: "Post successfully deleted!", type: "success" });
+      setToast({ message: "Post safaltapoorvak delete ho gayi!", type: "success" });
       setSelectedReport(null);
     } catch (error: any) {
       console.error("Delete error:", error);
-      setToast({ message: error.message || "Failed to delete post", type: "error" });
+      const errorMsg = error.code === 'permission-denied' 
+        ? "Permission Denied: Firebase Rules mein Admin UID check karein!" 
+        : `Post delete karne mein truti: ${error.message}`;
+      setToast({ message: errorMsg, type: "error" });
     } finally {
       setActionLoading(false);
     }
   };
 
-  // 🔥 ACTION: Warn the user (add warning to their profile)
   const handleWarnUser = async () => {
-    if (!selectedReport || !postData) return;
+    if (!selectedReport) return;
     setActionLoading(true);
     
     try {
-      // Add warning to user's profile
-      const targetUserId = postData.userId || selectedReport.postOwnerId;
+      const targetUserId = postData?.userId || selectedReport.postOwnerId;
       const userRef = doc(db, "users", targetUserId);
       const userDoc = await getDoc(userRef);
       
@@ -175,11 +174,9 @@ export default function AdminReportsPage() {
           issuedAt: serverTimestamp(),
           issuedBy: user.uid
         });
-        
         await updateDoc(userRef, { warnings });
       }
       
-      // Update report status
       await updateDoc(doc(db, "reports", selectedReport.id), {
         status: "resolved",
         action: "user_warned",
@@ -187,27 +184,24 @@ export default function AdminReportsPage() {
         reviewedBy: user.uid
       });
       
-      setToast({ message: "User has been warned!", type: "success" });
+      setToast({ message: "User ko warning de di gayi hai!", type: "success" });
       setSelectedReport(null);
     } catch (error: any) {
       console.error("Warn error:", error);
-      setToast({ message: error.message || "Failed to warn user", type: "error" });
+      setToast({ message: error.message || "Warning dene mein truti hui", type: "error" });
     } finally {
       setActionLoading(false);
     }
   };
 
-  // 🔥 ACTION: Ban the user
   const handleBanUser = async () => {
     if (!selectedReport) return;
     
-    const confirmBan = confirm("Are you sure you want to ban this user? This action cannot be undone easily.");
+    const confirmBan = window.confirm("🚫 Kya aap sach mein is user ko BAN karna chahte hain? Ye action aasani se wapas nahi hoga.");
     if (!confirmBan) return;
     
     setActionLoading(true);
-    
     try {
-      // Mark user as banned
       const targetUserId = selectedReport.postOwnerId;
       const userRef = doc(db, "users", targetUserId);
       await updateDoc(userRef, {
@@ -217,7 +211,6 @@ export default function AdminReportsPage() {
         banReason: selectedReport.reason
       });
       
-      // Update report status
       await updateDoc(doc(db, "reports", selectedReport.id), {
         status: "resolved",
         action: "user_banned",
@@ -225,17 +218,16 @@ export default function AdminReportsPage() {
         reviewedBy: user.uid
       });
       
-      setToast({ message: "User has been banned!", type: "success" });
+      setToast({ message: "User ko successfully BAN kar diya gaya!", type: "success" });
       setSelectedReport(null);
     } catch (error: any) {
       console.error("Ban error:", error);
-      setToast({ message: error.message || "Failed to ban user", type: "error" });
+      setToast({ message: error.message || "User ban karne mein truti hui", type: "error" });
     } finally {
       setActionLoading(false);
     }
   };
 
-  // 🔥 ACTION: Dismiss the report (no action needed)
   const handleDismiss = async () => {
     if (!selectedReport) return;
     setActionLoading(true);
@@ -248,11 +240,11 @@ export default function AdminReportsPage() {
         reviewedBy: user.uid
       });
       
-      setToast({ message: "Report dismissed", type: "success" });
+      setToast({ message: "Report dismiss kar di gayi", type: "success" });
       setSelectedReport(null);
     } catch (error: any) {
       console.error("Dismiss error:", error);
-      setToast({ message: error.message || "Failed to dismiss", type: "error" });
+      setToast({ message: error.message || "Dismiss karne mein truti hui", type: "error" });
     } finally {
       setActionLoading(false);
     }
@@ -293,7 +285,6 @@ export default function AdminReportsPage() {
 
   return (
     <main className="min-h-screen bg-stone-950 text-white pb-20">
-      {/* Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -351,11 +342,7 @@ export default function AdminReportsPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-stone-900 border border-stone-800 rounded-2xl p-5"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-stone-900 border border-stone-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-2">
               <Flag className="w-6 h-6 text-red-400" />
               <span className="text-2xl font-bold">{reports.length}</span>
@@ -363,12 +350,7 @@ export default function AdminReportsPage() {
             <p className="text-sm text-stone-400">Total Reports</p>
           </motion.div>
           
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-stone-900 border border-amber-500/20 rounded-2xl p-5"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-stone-900 border border-amber-500/20 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-2">
               <Clock className="w-6 h-6 text-amber-400" />
               <span className="text-2xl font-bold text-amber-400">{pendingCount}</span>
@@ -376,32 +358,18 @@ export default function AdminReportsPage() {
             <p className="text-sm text-stone-400">Pending Review</p>
           </motion.div>
           
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-stone-900 border border-emerald-500/20 rounded-2xl p-5"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-stone-900 border border-emerald-500/20 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-2">
               <CheckCircle className="w-6 h-6 text-emerald-400" />
-              <span className="text-2xl font-bold text-emerald-400">
-                {reports.filter(r => r.status === "resolved").length}
-              </span>
+              <span className="text-2xl font-bold text-emerald-400">{reports.filter(r => r.status === "resolved").length}</span>
             </div>
             <p className="text-sm text-stone-400">Resolved</p>
           </motion.div>
           
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-stone-900 border border-stone-500/20 rounded-2xl p-5"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-stone-900 border border-stone-500/20 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-2">
               <X className="w-6 h-6 text-stone-400" />
-              <span className="text-2xl font-bold">
-                {reports.filter(r => r.status === "dismissed").length}
-              </span>
+              <span className="text-2xl font-bold">{reports.filter(r => r.status === "dismissed").length}</span>
             </div>
             <p className="text-sm text-stone-400">Dismissed</p>
           </motion.div>
@@ -433,13 +401,9 @@ export default function AdminReportsPage() {
         {reports.length === 0 ? (
           <div className="text-center py-20 bg-stone-900 rounded-2xl border border-stone-800">
             <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-            <h3 className="text-xl font-bold mb-2">
-              {filter === "pending" ? "No pending reports!" : "No reports found"}
-            </h3>
+            <h3 className="text-xl font-bold mb-2">{filter === "pending" ? "No pending reports!" : "No reports found"}</h3>
             <p className="text-stone-400">
-              {filter === "pending" 
-                ? "All reports have been reviewed. Great job!" 
-                : "Reports will appear here when users submit them."}
+              {filter === "pending" ? "All reports have been reviewed. Great job!" : "Reports will appear here when users submit them."}
             </p>
           </div>
         ) : (
@@ -452,40 +416,26 @@ export default function AdminReportsPage() {
                 transition={{ delay: idx * 0.03 }}
                 onClick={() => setSelectedReport(report)}
                 className={`bg-stone-900 border rounded-2xl p-5 cursor-pointer transition-all hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 ${
-                  selectedReport?.id === report.id 
-                    ? "border-emerald-500/50 shadow-lg shadow-emerald-500/10" 
-                    : "border-stone-800"
+                  selectedReport?.id === report.id ? "border-emerald-500/50 shadow-lg shadow-emerald-500/10" : "border-stone-800"
                 }`}
               >
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 flex items-center justify-center flex-shrink-0">
                     <Flag className="w-5 h-5 text-red-400" />
                   </div>
-                  
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-md text-xs font-bold border ${getStatusColor(report.status)}`}>
                         {report.status.toUpperCase()}
                       </span>
-                      <span className="text-xs text-stone-500">
-                        {getReasonLabel(report.reason)}
-                      </span>
+                      <span className="text-xs text-stone-500">{getReasonLabel(report.reason)}</span>
                       <span className="text-xs text-stone-500 ml-auto">
-                        {report.createdAt?.toDate 
-                          ? new Date(report.createdAt.toDate()).toLocaleString('hi-IN')
-                          : "Recently"}
+                        {report.createdAt?.toDate ? new Date(report.createdAt.toDate()).toLocaleString('hi-IN') : "Recently"}
                       </span>
                     </div>
-                    
-                    <p className="text-sm text-stone-300 line-clamp-2 mb-2">
-                      {report.details || "No details provided"}
-                    </p>
-                    
+                    <p className="text-sm text-stone-300 line-clamp-2 mb-2">{report.details || "No details provided"}</p>
                     <div className="flex items-center gap-3 text-xs text-stone-500">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        Reported by: {report.reporterName}
-                      </span>
+                      <span className="flex items-center gap-1"><User className="w-3 h-3" /> Reported by: {report.reporterName}</span>
                     </div>
                   </div>
                 </div>
@@ -512,7 +462,6 @@ export default function AdminReportsPage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-stone-900 border border-stone-700 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
             >
-              {/* Modal Header */}
               <div className="sticky top-0 bg-stone-900 border-b border-stone-700 p-5 flex items-center justify-between z-10">
                 <div className="flex items-center gap-3">
                   <Flag className="w-6 h-6 text-red-400" />
@@ -521,10 +470,7 @@ export default function AdminReportsPage() {
                     <p className="text-xs text-stone-400">Review and take action</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setSelectedReport(null)}
-                  className="p-2 hover:bg-stone-800 rounded-lg"
-                >
+                <button onClick={() => setSelectedReport(null)} className="p-2 hover:bg-stone-800 rounded-lg">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -548,9 +494,7 @@ export default function AdminReportsPage() {
                     <div>
                       <p className="font-bold">{selectedReport.reporterName}</p>
                       <p className="text-xs text-stone-400">
-                        {selectedReport.createdAt?.toDate 
-                          ? new Date(selectedReport.createdAt.toDate()).toLocaleString('hi-IN')
-                          : "Recently"}
+                        {selectedReport.createdAt?.toDate ? new Date(selectedReport.createdAt.toDate()).toLocaleString('hi-IN') : "Recently"}
                       </p>
                     </div>
                   </div>
@@ -562,40 +506,31 @@ export default function AdminReportsPage() {
                     <AlertTriangle className="w-4 h-4" /> Reason
                   </h3>
                   <p className="text-lg font-bold mb-2">{getReasonLabel(selectedReport.reason)}</p>
-                  {selectedReport.details && (
-                    <p className="text-sm text-stone-300 leading-relaxed">{selectedReport.details}</p>
-                  )}
+                  {selectedReport.details && <p className="text-sm text-stone-300 leading-relaxed">{selectedReport.details}</p>}
                 </div>
 
                 {/* Reported Post */}
-                {postData && (
+                {postData ? (
                   <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700">
                     <h3 className="text-sm font-bold text-stone-400 mb-3 flex items-center gap-2">
                       <MessageSquare className="w-4 h-4" /> Reported Post
                     </h3>
-                    
                     {postData.mediaUrl && (
                       <div className="mb-3 rounded-lg overflow-hidden bg-black">
-                        <img 
-                          src={postData.mediaUrl} 
-                          alt="" 
-                          className="w-full max-h-64 object-cover"
-                        />
+                        <img src={postData.mediaUrl} alt="" className="w-full max-h-64 object-cover" />
                       </div>
                     )}
-                    
-                    {postData.title && (
-                      <h4 className="font-bold mb-2">{postData.title}</h4>
-                    )}
-                    
-                    {postData.content && (
-                      <p className="text-sm text-stone-300 line-clamp-3 mb-3">{postData.content}</p>
-                    )}
-                    
+                    {postData.title && <h4 className="font-bold mb-2">{postData.title}</h4>}
+                    {postData.content && <p className="text-sm text-stone-300 line-clamp-3 mb-3">{postData.content}</p>}
                     <div className="flex items-center gap-2 text-xs text-stone-400">
                       <User className="w-3 h-3" />
                       <span>Posted by: {postData.userName || "Unknown"}</span>
                     </div>
+                  </div>
+                ) : (
+                  <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700 text-center">
+                    <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                    <p className="text-sm text-stone-300">Ye post pehle hi delete ho chuki hai ya exist nahi karti.</p>
                   </div>
                 )}
 
@@ -604,7 +539,7 @@ export default function AdminReportsPage() {
                   <button
                     onClick={handleDeletePost}
                     disabled={actionLoading || !postData}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl font-bold hover:bg-red-500/30 transition-all disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl font-bold hover:bg-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                     Delete Post
@@ -613,7 +548,7 @@ export default function AdminReportsPage() {
                   <button
                     onClick={handleWarnUser}
                     disabled={actionLoading}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-500/20 border border-amber-500/30 text-amber-400 rounded-xl font-bold hover:bg-amber-500/30 transition-all disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-500/20 border border-amber-500/30 text-amber-400 rounded-xl font-bold hover:bg-amber-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
                     Warn User
@@ -622,7 +557,7 @@ export default function AdminReportsPage() {
                   <button
                     onClick={handleBanUser}
                     disabled={actionLoading}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-purple-500/20 border border-purple-500/30 text-purple-400 rounded-xl font-bold hover:bg-purple-500/30 transition-all disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-purple-500/20 border border-purple-500/30 text-purple-400 rounded-xl font-bold hover:bg-purple-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
                     Ban User
@@ -631,7 +566,7 @@ export default function AdminReportsPage() {
                   <button
                     onClick={handleDismiss}
                     disabled={actionLoading}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-stone-500/20 border border-stone-500/30 text-stone-400 rounded-xl font-bold hover:bg-stone-500/30 transition-all disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-stone-500/20 border border-stone-500/30 text-stone-400 rounded-xl font-bold hover:bg-stone-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
                     Dismiss
