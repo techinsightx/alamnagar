@@ -5,12 +5,21 @@ import {
   MapPin, BookOpen, Users, ArrowRight, Camera, Phone, 
   ShoppingBag, Sparkles, Landmark, TreePine, Heart, 
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
-  Zap, UserPlus, MessageCircle, Share2, Activity
+  Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
+  Flame, Award, TrendingUp, LogIn
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { db } from "@/lib/firebase";
-import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
+import { collection, query, orderBy, limit, onSnapshot, where, getDocs } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+
+// ═══════════════════════════════════════════════════════════
+// 🔥 ADMIN UIDs (Inhe apne project ke hisaab se update karo)
+// ═══════════════════════════════════════════════════════════
+const ADMIN_UIDS = [
+  "XIbwZecsh1hg2ou9Q9UC1OwLEa12", // Tumhara UID
+];
 
 // ═══════════════════════════════════════════════════════════
 // ANIMATION VARIANTS
@@ -26,17 +35,21 @@ const staggerContainer = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// ANIMATED NUMBER COMPONENT
+// 🚀 ANIMATED NUMBER COMPONENT (Live Counting Effect)
 // ═══════════════════════════════════════════════════════════
-const AnimatedNumber = ({ value }: { value: string }) => {
+const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string }) => {
   const [count, setCount] = useState(0);
-  const numericValue = parseInt(value.replace(/\D/g, ""));
   
   useEffect(() => {
     let start = 0;
-    const end = numericValue;
+    const end = value;
     const duration = 2000;
     const increment = end / (duration / 16);
+    
+    if (end === 0) {
+      setCount(0);
+      return;
+    }
     
     const timer = setInterval(() => {
       start += increment;
@@ -49,9 +62,9 @@ const AnimatedNumber = ({ value }: { value: string }) => {
     }, 16);
     
     return () => clearInterval(timer);
-  }, [numericValue]);
+  }, [value]);
 
-  return <span>{count}{value.replace(/\d/g, "")}</span>;
+  return <span>{count.toLocaleString('hi-IN')}{suffix}</span>;
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -197,6 +210,57 @@ export default function HomePage() {
   const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
+  // 🔥 NEW: Live Stats State
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [liveStats, setLiveStats] = useState({
+    totalUsers: 0,
+    totalPosts: 0,
+    totalViews: 0,
+    totalLikes: 0
+  });
+
+  // 🔥 NEW: Auth State Listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 🔥 NEW: Real-Time Stats Fetcher
+  useEffect(() => {
+    // Total Users Count
+    const usersQuery = query(collection(db, "users"));
+    const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
+      setLiveStats(prev => ({ ...prev, totalUsers: snapshot.size }));
+    });
+
+    // Total Posts + Total Views + Total Likes
+    const postsQuery = query(collection(db, "spotlights"));
+    const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
+      let totalViews = 0;
+      let totalLikes = 0;
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        totalViews += data.views || 0;
+        totalLikes += data.likes || 0;
+      });
+      setLiveStats(prev => ({
+        ...prev,
+        totalPosts: snapshot.size,
+        totalViews,
+        totalLikes
+      }));
+    });
+
+    return () => {
+      unsubUsers();
+      unsubPosts();
+    };
+  }, []);
+
+  const isAdmin = currentUser && ADMIN_UIDS.includes(currentUser.uid);
+
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
       
@@ -222,6 +286,13 @@ export default function HomePage() {
           0% { background-position: 0% center; }
           100% { background-position: -200% center; }
         }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .floating {
+          animation: float 6s ease-in-out infinite;
+        }
       `}</style>
 
       {/* Scroll Progress Bar */}
@@ -242,16 +313,57 @@ export default function HomePage() {
         
         <MadhubaniPattern />
 
-        <div className="relative z-10 text-center max-w-5xl mx-auto pt-20">
+        {/* 🔥 NEW: Admin Badge (Top Right) */}
+        {isAdmin && (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-3 mb-8 shadow-lg hover:bg-white/20 transition-colors cursor-default"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="absolute top-24 right-6 z-20"
           >
-            <MapPin className="w-5 h-5 text-amber-400" />
-            <span className="text-sm font-semibold tracking-wide">मधेपुरा, मिथिलांचल, बिहार</span>
+            <Link 
+              href="/admin/reports" 
+              className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-5 py-2.5 hover:bg-red-500/30 transition-all group shadow-lg"
+            >
+              <Shield className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
+              <span className="text-sm font-bold text-red-300">Admin Panel</span>
+            </Link>
           </motion.div>
+        )}
+
+        <div className="relative z-10 text-center max-w-5xl mx-auto pt-20">
+          {/* 🔥 NEW: Personalized Greeting for Logged-In Users */}
+          {currentUser ? (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="inline-flex items-center gap-3 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 rounded-full px-6 py-3 mb-6 shadow-lg"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px]">
+                <div className="w-full h-full rounded-full bg-stone-900 overflow-hidden flex items-center justify-center">
+                  {currentUser.photoURL ? (
+                    <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold">{currentUser.displayName?.[0] || "U"}</span>
+                  )}
+                </div>
+              </div>
+              <span className="text-sm font-bold text-emerald-200">
+                स्वागत है, <span className="text-amber-300">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span>! 🙏
+              </span>
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-3 mb-8 shadow-lg hover:bg-white/20 transition-colors cursor-default"
+            >
+              <MapPin className="w-5 h-5 text-amber-400" />
+              <span className="text-sm font-semibold tracking-wide">मधेपुरा, मिथिलांचल, बिहार</span>
+            </motion.div>
+          )}
 
           {/* ✅ FULL "आलमनगर" WITH TIRANGA SHIMMER */}
           <motion.h1 
@@ -263,7 +375,6 @@ export default function HomePage() {
             आलमनगर
           </motion.h1>
 
-          {/* ✅ FIXED: Added 'leading-relaxed' and 'py-1' to prevent Hindi matras (vowels) from getting clipped */}
           <motion.p 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -281,6 +392,35 @@ export default function HomePage() {
           >
             हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।
           </motion.p>
+
+          {/* 🔥 NEW: Live Platform Stats Banner */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.55 }}
+            className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12 px-4"
+          >
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
+              <Users className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs text-white/70">सदस्य</span>
+              <span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
+              <Star className="w-4 h-4 text-amber-400" />
+              <span className="text-xs text-white/70">पोस्ट</span>
+              <span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
+              <Eye className="w-4 h-4 text-blue-400" />
+              <span className="text-xs text-white/70">व्यूज़</span>
+              <span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
+              <Heart className="w-4 h-4 text-red-400" />
+              <span className="text-xs text-white/70">लाइक</span>
+              <span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span>
+            </div>
+          </motion.div>
 
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -318,9 +458,19 @@ export default function HomePage() {
       {/* ===== 🚀 LIVE ACTIVITY TICKER ===== */}
       <LiveActivityTicker />
 
-      {/* ===== 2. QUICK STATS (Floating Cards with Counter) ===== */}
+      {/* ===== 2. QUICK STATS (🔥 UPGRADED: Now with Real-Time Live Data) ===== */}
       <section className="py-20 px-6 bg-stone-50 relative z-20">
         <div className="max-w-6xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">लाइव स्टैट्स</span>
+            <h2 className="text-3xl md:text-5xl font-black text-stone-900">आलमनगर आज</h2>
+          </motion.div>
+
           <motion.div 
             variants={staggerContainer}
             initial="hidden"
@@ -329,10 +479,10 @@ export default function HomePage() {
             className="grid grid-cols-2 md:grid-cols-4 gap-6"
           >
             {[
-              { icon: TreePine, label: "वर्षों की विरासत", value: "100+", color: "bg-emerald-100 text-emerald-700" },
-              { icon: Users, label: "जुड़े परिवार", value: "500+", color: "bg-amber-100 text-amber-700" },
-              { icon: Landmark, label: "पवित्र स्थल", value: "10+", color: "bg-rose-100 text-rose-700" },
-              { icon: Heart, label: "विदेश में हमारे लोग", value: "200+", color: "bg-purple-100 text-purple-700" },
+              { icon: Users, label: "जुड़े परिवार", value: liveStats.totalUsers, color: "bg-emerald-100 text-emerald-700" },
+              { icon: Star, label: "कुल पोस्ट", value: liveStats.totalPosts, color: "bg-amber-100 text-amber-700" },
+              { icon: Eye, label: "कुल व्यूज़", value: liveStats.totalViews, color: "bg-blue-100 text-blue-700" },
+              { icon: Heart, label: "कुल लाइक", value: liveStats.totalLikes, color: "bg-rose-100 text-rose-700" },
             ].map((stat, i) => (
               <motion.div 
                 key={stat.label}
@@ -348,6 +498,14 @@ export default function HomePage() {
                   <AnimatedNumber value={stat.value} />
                 </div>
                 <div className="text-sm font-bold text-stone-500 uppercase tracking-wider">{stat.label}</div>
+                {/* Live indicator dot */}
+                <div className="flex items-center justify-center gap-1.5 mt-3">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-[10px] text-emerald-600 font-semibold uppercase">Live</span>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -674,13 +832,23 @@ export default function HomePage() {
                 <li><Link href="/community" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> समुदाय</Link></li>
                 <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
                 <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
+                {/* 🔥 NEW: Admin Dashboard Link (Only visible to admins) */}
+                {isAdmin && (
+                  <li>
+                    <Link href="/admin/reports" className="hover:text-red-400 transition-colors flex items-center gap-2 border-l-2 border-red-500/50 pl-2">
+                      <Shield className="w-3 h-3" /> Admin Dashboard
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
             <div>
               <h4 className="text-white font-black mb-6 text-lg">संपर्क</h4>
               <ul className="space-y-4 text-base">
-                {/* ✅ ONLY CONTACT LINK, NO EMAIL */}
                 <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
+                {!currentUser && (
+                  <li><Link href="/auth" className="hover:text-amber-400 transition-colors flex items-center gap-2"><LogIn className="w-3 h-3" /> लॉगिन / रजिस्टर</Link></li>
+                )}
               </ul>
             </div>
           </div>
