@@ -76,13 +76,15 @@ export default function ProfilePage() {
   const [website, setWebsite] = useState("");
   const [photoURL, setPhotoURL] = useState("");
   const [coverPhotoURL, setCoverPhotoURL] = useState("");
-  const [followersCount, setFollowersCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
+  
+  // ✅ Strictly initialized as numbers to prevent NaN
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
 
-  // 🔥 BULLETPROOF REAL-TIME LISTENER
+  // 🔥 BULLETPROOF REAL-TIME LISTENER (NaN Fix)
   useEffect(() => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -103,12 +105,16 @@ export default function ProfilePage() {
         setPhotoURL(data.photoURL || currentUser.photoURL || "");
         setCoverPhotoURL(data.coverPhotoURL || "");
         
-        // ✅ MAGIC FIX: Agar count 0 hai lekin array mein items hain, toh array ki length ko saccha maano!
-        const followersArray = data.followers || [];
-        const followingArray = data.following || [];
+        // ✅ STRICT TYPE CHECKING TO PREVENT "NaN"
+        const followersArray = Array.isArray(data.followers) ? data.followers : [];
+        const followingArray = Array.isArray(data.following) ? data.following : [];
         
-        const safeFollowersCount = Math.max(data.followersCount || 0, followersArray.length);
-        const safeFollowingCount = Math.max(data.followingCount || 0, followingArray.length);
+        const dbFollowersCount = Number(data.followersCount) || 0;
+        const dbFollowingCount = Number(data.followingCount) || 0;
+        
+        // Math.max ensures we always get a valid number, never NaN
+        const safeFollowersCount = Math.max(dbFollowersCount, followersArray.length);
+        const safeFollowingCount = Math.max(dbFollowingCount, followingArray.length);
         
         setFollowersCount(safeFollowersCount);
         setFollowingCount(safeFollowingCount);
@@ -153,10 +159,10 @@ export default function ProfilePage() {
         content: d.data().content || "",
         mediaUrl: d.data().mediaUrl || "",
         mediaType: d.data().mediaType || "",
-        likes: d.data().likes || 0,
-        comments: d.data().comments || 0,
-        views: d.data().views || 0,
-        shares: d.data().shares || 0,
+        likes: Number(d.data().likes) || 0,
+        comments: Number(d.data().comments) || 0,
+        views: Number(d.data().views) || 0,
+        shares: Number(d.data().shares) || 0,
         hashtags: d.data().hashtags || [],
         createdAt: d.data().createdAt || null,
       }));
@@ -392,8 +398,12 @@ export default function ProfilePage() {
         >
           {/* 🎨 COVER PHOTO SECTION */}
           <div className="h-48 md:h-64 bg-gradient-to-r from-emerald-600 via-green-600 to-amber-500 relative overflow-hidden group">
-            {coverPhotoURL && (
+            {coverPhotoURL ? (
               <img src={coverPhotoURL} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <ImageIcon className="w-16 h-16 text-white/30" />
+              </div>
             )}
             <div className="absolute inset-0 bg-black/10" />
             
@@ -479,7 +489,7 @@ export default function ProfilePage() {
                     </div>
                     <p className="text-stone-500 flex items-center gap-2 mb-6"><Mail className="w-4 h-4" /> {user.email}</p>
                     
-                    {/* 🔥 WORLD-CLASS FOLLOWER COUNT DISPLAY WITH ANIMATION */}
+                    {/* 🔥 100% NaN-PROOF FOLLOWER COUNT DISPLAY */}
                     <div className="flex items-center gap-8 text-stone-700">
                       <motion.div 
                         whileHover={{ scale: 1.05 }}
@@ -492,7 +502,8 @@ export default function ProfilePage() {
                           animate={{ scale: 1, opacity: 1 }}
                           className="text-xl font-extrabold text-stone-900"
                         >
-                          {followersCount}
+                          {/* ✅ Final Fallback: If somehow it's NaN, show 0 */}
+                          {isNaN(followersCount) ? 0 : followersCount}
                         </motion.span>
                         <span className="text-sm font-medium text-stone-500">फ़ॉलोअर्स</span>
                       </motion.div>
@@ -510,7 +521,7 @@ export default function ProfilePage() {
                           animate={{ scale: 1, opacity: 1 }}
                           className="text-xl font-extrabold text-stone-900"
                         >
-                          {followingCount}
+                          {isNaN(followingCount) ? 0 : followingCount}
                         </motion.span>
                         <span className="text-sm font-medium text-stone-500">फ़ॉलोइंग</span>
                       </motion.div>
@@ -570,28 +581,28 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <Star className="w-8 h-8 text-emerald-600" />
-              <span className="text-3xl font-extrabold text-stone-900">{stats.totalPosts}</span>
+              <span className="text-3xl font-extrabold text-stone-900">{isNaN(stats.totalPosts) ? 0 : stats.totalPosts}</span>
             </div>
             <p className="text-stone-600 font-medium">पोस्ट</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <Heart className="w-8 h-8 text-red-500" />
-              <span className="text-3xl font-extrabold text-stone-900">{stats.totalLikes}</span>
+              <span className="text-3xl font-extrabold text-stone-900">{isNaN(stats.totalLikes) ? 0 : stats.totalLikes}</span>
             </div>
             <p className="text-stone-600 font-medium">लाइक</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <MessageSquare className="w-8 h-8 text-blue-500" />
-              <span className="text-3xl font-extrabold text-stone-900">{stats.totalComments}</span>
+              <span className="text-3xl font-extrabold text-stone-900">{isNaN(stats.totalComments) ? 0 : stats.totalComments}</span>
             </div>
             <p className="text-stone-600 font-medium">टिप्पणियाँ</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <Eye className="w-8 h-8 text-amber-500" />
-              <span className="text-3xl font-extrabold text-stone-900">{stats.totalViews}</span>
+              <span className="text-3xl font-extrabold text-stone-900">{isNaN(stats.totalViews) ? 0 : stats.totalViews}</span>
             </div>
             <p className="text-stone-600 font-medium">व्यूज़</p>
           </div>
