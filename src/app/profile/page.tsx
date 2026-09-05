@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { 
-  doc, getDoc, updateDoc, setDoc, serverTimestamp, 
+  doc, updateDoc, setDoc, serverTimestamp, 
   collection, query, where, onSnapshot 
 } from "firebase/firestore";
 import { updateProfile, signOut } from "firebase/auth";
@@ -82,7 +82,7 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
 
-  // 🔥 UPGRADED: Real-time listener with smart array length fallback
+  // 🔥 BULLETPROOF REAL-TIME LISTENER
   useEffect(() => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -103,12 +103,15 @@ export default function ProfilePage() {
         setPhotoURL(data.photoURL || currentUser.photoURL || "");
         setCoverPhotoURL(data.coverPhotoURL || "");
         
-        // ✅ MAGIC FIX: Agar count field 0 ya undefined hai, toh array ki length gin lo!
+        // ✅ MAGIC FIX: Agar count 0 hai lekin array mein items hain, toh array ki length ko saccha maano!
         const followersArray = data.followers || [];
         const followingArray = data.following || [];
         
-        setFollowersCount(data.followersCount ?? followersArray.length);
-        setFollowingCount(data.followingCount ?? followingArray.length);
+        const safeFollowersCount = Math.max(data.followersCount || 0, followersArray.length);
+        const safeFollowingCount = Math.max(data.followingCount || 0, followingArray.length);
+        
+        setFollowersCount(safeFollowersCount);
+        setFollowingCount(safeFollowingCount);
         
         setLoading(false);
       } else {
@@ -175,16 +178,13 @@ export default function ProfilePage() {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  // 🚀 PROFILE PICTURE UPLOAD LOGIC
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       setToast({ message: "कृपया केवल छवि (Image) फ़ाइल चुनें।", type: "error" });
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       setToast({ message: "प्रोफ़ाइल छवि 5MB से कम होनी चाहिए।", type: "error" });
       return;
@@ -216,23 +216,19 @@ export default function ProfilePage() {
       setPhotoURL(optimizedUrl);
       setToast({ message: "प्रोफ़ाइल छवि सफलतापूर्वक अपडेट हो गई!", type: "success" });
     } catch (error: any) {
-      console.error("Image upload error:", error);
       setToast({ message: error.message || "छवि अपलोड करने में त्रुटि हुई।", type: "error" });
     } finally {
       setUploading(false);
     }
   };
 
-  // 🚀 COVER PHOTO UPLOAD LOGIC
   const handleCoverPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       setToast({ message: "कृपया केवल छवि (Image) फ़ाइल चुनें।", type: "error" });
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       setToast({ message: "कवर फ़ोटो 5MB से कम होनी चाहिए।", type: "error" });
       return;
@@ -264,7 +260,6 @@ export default function ProfilePage() {
       setCoverPhotoURL(optimizedUrl);
       setToast({ message: "कवर फ़ोटो सफलतापूर्वक अपडेट हो गई!", type: "success" });
     } catch (error: any) {
-      console.error("Cover photo upload error:", error);
       setToast({ message: error.message || "छवि अपलोड करने में त्रुटि हुई।", type: "error" });
     } finally {
       setUploading(false);
@@ -277,10 +272,7 @@ export default function ProfilePage() {
     
     setSaving(true);
     try {
-      await updateProfile(auth.currentUser!, { 
-        displayName: name, 
-        photoURL: photoURL 
-      });
+      await updateProfile(auth.currentUser!, { displayName: name, photoURL: photoURL });
       
       await updateDoc(doc(db, "users", user.uid), {
         displayName: name,
@@ -292,20 +284,10 @@ export default function ProfilePage() {
         updatedAt: serverTimestamp(),
       });
       
-      setUser({
-        ...user,
-        displayName: name,
-        photoURL: photoURL,
-        coverPhotoURL: coverPhotoURL,
-        bio: bio,
-        location: location,
-        website: website,
-      });
-      
+      setUser({ ...user, displayName: name, photoURL, coverPhotoURL, bio, location, website });
       setEditing(false);
       setToast({ message: "प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई!", type: "success" });
     } catch (error) {
-      console.error("Profile update error:", error);
       setToast({ message: "प्रोफ़ाइल अपडेट करने में त्रुटि हुई।", type: "error" });
     } finally {
       setSaving(false);
@@ -317,7 +299,6 @@ export default function ProfilePage() {
       await signOut(auth);
       router.push("/");
     } catch (error) {
-      console.error("Logout error:", error);
       setToast({ message: "लॉगआउट करने में त्रुटि हुई।", type: "error" });
     }
   };
@@ -410,9 +391,9 @@ export default function ProfilePage() {
           className="bg-white rounded-3xl shadow-xl border border-stone-100 overflow-hidden mb-6"
         >
           {/* 🎨 COVER PHOTO SECTION */}
-          <div className="h-48 md:h-64 bg-gradient-to-r from-emerald-600 via-green-600 to-amber-500 relative overflow-hidden">
+          <div className="h-48 md:h-64 bg-gradient-to-r from-emerald-600 via-green-600 to-amber-500 relative overflow-hidden group">
             {coverPhotoURL && (
-              <img src={coverPhotoURL} alt="Cover" className="w-full h-full object-cover" />
+              <img src={coverPhotoURL} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             )}
             <div className="absolute inset-0 bg-black/10" />
             
@@ -430,9 +411,9 @@ export default function ProfilePage() {
           
           <div className="px-8 pb-8 relative">
             <div className="relative -mt-20 mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-              {/* Profile Picture */}
+              {/* Profile Picture with Glow */}
               <div className="relative group">
-                <div className="w-36 h-36 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-stone-100 flex items-center justify-center">
+                <div className="w-36 h-36 rounded-2xl border-4 border-white shadow-2xl overflow-hidden bg-stone-100 flex items-center justify-center ring-4 ring-emerald-500/20">
                   {photoURL ? (
                     <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -443,9 +424,9 @@ export default function ProfilePage() {
                   <button 
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    className="absolute bottom-2 right-2 p-3 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed group"
+                    className="absolute bottom-2 right-2 p-3 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed group/btn"
                   >
-                    {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+                    {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />}
                   </button>
                 )}
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
@@ -496,21 +477,43 @@ export default function ProfilePage() {
                         <div className="p-1 bg-emerald-500 rounded-full"><CheckCircle className="w-5 h-5 text-white" /></div>
                       )}
                     </div>
-                    <p className="text-stone-500 flex items-center gap-2 mb-4"><Mail className="w-4 h-4" /> {user.email}</p>
+                    <p className="text-stone-500 flex items-center gap-2 mb-6"><Mail className="w-4 h-4" /> {user.email}</p>
                     
-                    {/* 🔥 FOLLOWERS & FOLLOWING COUNT (Now with smart fallback) */}
-                    <div className="flex items-center gap-6 text-stone-700">
-                      <div className="flex items-center gap-2">
+                    {/* 🔥 WORLD-CLASS FOLLOWER COUNT DISPLAY WITH ANIMATION */}
+                    <div className="flex items-center gap-8 text-stone-700">
+                      <motion.div 
+                        whileHover={{ scale: 1.05 }}
+                        className="flex items-center gap-2 cursor-pointer hover:bg-stone-50 p-2 rounded-xl transition-colors"
+                      >
                         <Users className="w-5 h-5 text-emerald-600" />
-                        <span className="text-xl font-extrabold text-stone-900">{followersCount}</span>
-                        <span className="text-sm font-medium">फ़ॉलोअर्स</span>
-                      </div>
-                      <div className="w-px h-6 bg-stone-300" />
-                      <div className="flex items-center gap-2">
+                        <motion.span 
+                          key={followersCount}
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-xl font-extrabold text-stone-900"
+                        >
+                          {followersCount}
+                        </motion.span>
+                        <span className="text-sm font-medium text-stone-500">फ़ॉलोअर्स</span>
+                      </motion.div>
+                      
+                      <div className="w-px h-8 bg-stone-200" />
+                      
+                      <motion.div 
+                        whileHover={{ scale: 1.05 }}
+                        className="flex items-center gap-2 cursor-pointer hover:bg-stone-50 p-2 rounded-xl transition-colors"
+                      >
                         <Users className="w-5 h-5 text-amber-600" />
-                        <span className="text-xl font-extrabold text-stone-900">{followingCount}</span>
-                        <span className="text-sm font-medium">फ़ॉलोइंग</span>
-                      </div>
+                        <motion.span 
+                          key={followingCount}
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-xl font-extrabold text-stone-900"
+                        >
+                          {followingCount}
+                        </motion.span>
+                        <span className="text-sm font-medium text-stone-500">फ़ॉलोइंग</span>
+                      </motion.div>
                     </div>
                   </>
                 )}
@@ -549,7 +552,7 @@ export default function ProfilePage() {
                 )
               )}
 
-              <div className="flex items-center gap-2 text-stone-500 text-sm">
+              <div className="flex items-center gap-2 text-stone-500 text-sm pt-4 border-t border-stone-100">
                 <Calendar className="w-4 h-4" />
                 <span>सदस्य बने: {formatDate(user.createdAt)}</span>
               </div>
@@ -564,28 +567,28 @@ export default function ProfilePage() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
         >
-          <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm">
+          <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <Star className="w-8 h-8 text-emerald-600" />
               <span className="text-3xl font-extrabold text-stone-900">{stats.totalPosts}</span>
             </div>
             <p className="text-stone-600 font-medium">पोस्ट</p>
           </div>
-          <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm">
+          <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <Heart className="w-8 h-8 text-red-500" />
               <span className="text-3xl font-extrabold text-stone-900">{stats.totalLikes}</span>
             </div>
             <p className="text-stone-600 font-medium">लाइक</p>
           </div>
-          <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm">
+          <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <MessageSquare className="w-8 h-8 text-blue-500" />
               <span className="text-3xl font-extrabold text-stone-900">{stats.totalComments}</span>
             </div>
             <p className="text-stone-600 font-medium">टिप्पणियाँ</p>
           </div>
-          <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm">
+          <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <Eye className="w-8 h-8 text-amber-500" />
               <span className="text-3xl font-extrabold text-stone-900">{stats.totalViews}</span>
@@ -601,10 +604,11 @@ export default function ProfilePage() {
           transition={{ delay: 0.2 }}
           className="bg-white rounded-3xl shadow-xl border border-stone-100 overflow-hidden"
         >
-          <div className="p-6 border-b border-stone-100">
+          <div className="p-6 border-b border-stone-100 flex items-center justify-between">
             <h2 className="text-2xl font-extrabold text-stone-900 flex items-center gap-2">
               <Star className="w-6 h-6 text-amber-500" /> मेरी पोस्ट
             </h2>
+            <span className="text-sm text-stone-500 font-medium">{userPosts.length} पोस्ट्स</span>
           </div>
 
           {userPosts.length === 0 ? (
@@ -622,7 +626,7 @@ export default function ProfilePage() {
                   {post.title && <h3 className="text-lg font-bold text-stone-900 mb-2">{post.title}</h3>}
                   {post.content && <p className="text-stone-700 mb-3 line-clamp-2">{post.content}</p>}
                   {post.mediaUrl && (
-                    <div className="mb-3 rounded-lg overflow-hidden">
+                    <div className="mb-3 rounded-lg overflow-hidden bg-stone-100">
                       {post.mediaType === "video" ? (
                         <video src={post.mediaUrl} className="w-full max-h-64 object-cover" controls />
                       ) : (
