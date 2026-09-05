@@ -107,8 +107,6 @@ const LiveActivityTicker = () => {
         };
       });
       
-      // Merge with existing users or just update posts. 
-      // For simplicity, we'll fetch users separately and combine.
       setItems(prev => {
         const users = prev.filter(i => i.type === 'join');
         return [...newItems, ...users].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
@@ -657,14 +655,15 @@ export default function HomePage() {
                 <li><Link href="/gallery" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> गैलरी</Link></li>
                 <li><Link href="/community" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> समुदाय</Link></li>
                 <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
+                {/* ✅ NEW: Legal Page Link Added Here */}
+                <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-black mb-6 text-lg">संपर्क</h4>
               <ul className="space-y-4 text-base">
                 <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
-                <li><a href="#" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> आपातकालीन</a></li>
-                <li><a href="#" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> योगदान दें</a></li>
+                <li><a href="mailto:digitechinfo.india@gmail.com" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> support@alamnagar.in</a></li>
               </ul>
             </div>
           </div>

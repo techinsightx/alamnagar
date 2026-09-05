@@ -162,7 +162,7 @@ export default function LegalPage() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-bold text-stone-900">क्या आपके पास कोई प्रश्न है?</p>
-                <p className="text-sm text-stone-600">हमारी कानूनी टीम से संपर्क करें: <a href="mailto:legal@alamnagar.in" className="text-emerald-600 font-semibold hover:underline">legal@alamnagar.in</a></p>
+                <p className="text-sm text-stone-600">हमारी कानूनी टीम से संपर्क करें: <a href="mailto:digitechinfo.india@gmail.com" className="text-emerald-600 font-semibold hover:underline">legal@alamnagar.in</a></p>
               </div>
             </div>
             <p className="text-xs text-stone-400 mt-6">
