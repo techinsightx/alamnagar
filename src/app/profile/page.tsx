@@ -27,10 +27,7 @@ interface UserProfile {
   website: string;
   createdAt: any;
   isVerified: boolean;
-  followersCount?: number;
-  followingCount?: number;
-  followers?: string[];
-  following?: string[];
+  [key: string]: any; // Allow dynamic keys for flexible field reading
 }
 
 interface PostStats {
@@ -70,14 +67,13 @@ export default function ProfilePage() {
   const [photoURL, setPhotoURL] = useState("");
   const [coverPhotoURL, setCoverPhotoURL] = useState("");
   
-  // ✅ STRICTLY INITIALIZED AS NUMBERS TO PREVENT "NaN"
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
 
-  // 🔥 BULLETPROOF REAL-TIME LISTENER (NaN Fix)
+  // 🔥 BULLETPROOF REAL-TIME LISTENER WITH EXHAUSTIVE FALLBACKS
   useEffect(() => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -87,9 +83,13 @@ export default function ProfilePage() {
     
     const userRef = doc(db, "users", currentUser.uid);
     
-    const unsubscribe = onSnapshot(userRef, async (docSnap) => {
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as UserProfile;
+        
+        // 🔍 DEBUG LOG: Ye browser console (F12) mein dikhega ki DB se exactly kya aa raha hai
+        console.log("🔥 PROFILE DB DATA RECEIVED:", data);
+        
         setUser(data);
         setName(data.displayName || "");
         setBio(data.bio || "");
@@ -98,22 +98,25 @@ export default function ProfilePage() {
         setPhotoURL(data.photoURL || currentUser.photoURL || "");
         setCoverPhotoURL(data.coverPhotoURL || "");
         
-        // ✅ 100% SAFE FALLBACK LOGIC FOR FOLLOWERS
+        // 🔥 EXHAUSTIVE FOLLOWER COUNT EXTRACTION (Checks all possible field names)
+        const rawFollowersCount = data.followersCount ?? data.followers_count ?? data.followerCount ?? 0;
         const followersArray = Array.isArray(data.followers) ? data.followers : [];
+        
+        // Trust the array length if it's greater than the count field (fixes sync issues)
+        const finalFollowersCount = Math.max(Number(rawFollowersCount) || 0, followersArray.length);
+        
+        const rawFollowingCount = data.followingCount ?? data.following_count ?? data.followingCount ?? 0;
         const followingArray = Array.isArray(data.following) ? data.following : [];
+        const finalFollowingCount = Math.max(Number(rawFollowingCount) || 0, followingArray.length);
+
+        console.log("✅ CALCULATED FOLLOWERS:", finalFollowersCount, "| Array Length:", followersArray.length);
         
-        const dbFollowersCount = Number(data.followersCount) || 0;
-        const dbFollowingCount = Number(data.followingCount) || 0;
-        
-        // Math.max ensures we always get a valid number, never NaN
-        const safeFollowersCount = Math.max(dbFollowersCount, followersArray.length);
-        const safeFollowingCount = Math.max(dbFollowingCount, followingArray.length);
-        
-        setFollowersCount(safeFollowersCount);
-        setFollowingCount(safeFollowingCount);
+        setFollowersCount(finalFollowersCount);
+        setFollowingCount(finalFollowingCount);
         
         setLoading(false);
       } else {
+        // Create document if it doesn't exist
         const userData = {
           uid: currentUser.uid,
           displayName: currentUser.displayName || "User",
@@ -130,7 +133,7 @@ export default function ProfilePage() {
           followers: [],
           following: []
         };
-        await setDoc(userRef, userData, { merge: true });
+        setDoc(userRef, userData, { merge: true });
       }
     });
     
@@ -376,7 +379,6 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl shadow-xl border border-stone-100 overflow-hidden mb-6"
         >
-          {/* 🎨 COVER PHOTO SECTION */}
           <div className="h-48 md:h-64 bg-gradient-to-r from-emerald-600 via-green-600 to-amber-500 relative overflow-hidden group">
             {coverPhotoURL ? (
               <img src={coverPhotoURL} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -401,7 +403,6 @@ export default function ProfilePage() {
           
           <div className="px-8 pb-8 relative">
             <div className="relative -mt-20 mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-              {/* Profile Picture with Glow */}
               <div className="relative group">
                 <div className="w-36 h-36 rounded-2xl border-4 border-white shadow-2xl overflow-hidden bg-stone-100 flex items-center justify-center ring-4 ring-emerald-500/20">
                   {photoURL ? (
@@ -422,7 +423,6 @@ export default function ProfilePage() {
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
               </div>
 
-              {/* Action Buttons */}
               <div className="flex gap-3 w-full md:w-auto">
                 {editing ? (
                   <>
@@ -482,7 +482,6 @@ export default function ProfilePage() {
                           animate={{ scale: 1, opacity: 1 }}
                           className="text-xl font-extrabold text-stone-900"
                         >
-                          {/* ✅ Final Fallback: If somehow it's NaN, show 0 */}
                           {isNaN(followersCount) ? 0 : followersCount}
                         </motion.span>
                         <span className="text-sm font-medium text-stone-500">फ़ॉलोअर्स</span>
