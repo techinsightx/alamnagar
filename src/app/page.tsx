@@ -9,9 +9,9 @@ import {
   Flame, Award, TrendingUp, LogIn, Lock
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
-import { collection, query, orderBy, limit, onSnapshot, where, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 // ═══════════════════════════════════════════════════════════
@@ -65,162 +65,6 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
   }, [value]);
 
   return <span>{count.toLocaleString('hi-IN')}{suffix}</span>;
-};
-
-// ═══════════════════════════════════════════════════════════
-// 🌌 WORLD-CLASS PREMIUM BACKGROUND COMPONENT
-// Micro-level programming for village marketplace feel
-// ═══════════════════════════════════════════════════════════
-const PremiumVillageBackdrop = () => {
-  // Reduced stars - only 50 for elegant minimal look
-  const stars = useMemo(() => {
-    return Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      top: Math.random() * 70, // Stars only in top 70%
-      left: Math.random() * 100,
-      size: Math.random() * 1.5 + 0.5, // Smaller, more delicate
-      opacity: Math.random() * 0.6 + 0.2,
-      twinkleDelay: Math.random() * 4,
-      twinkleDuration: Math.random() * 3 + 3,
-    }));
-  }, []);
-
-  // Vertical falling stars (upar se niche)
-  const fallingStars = useMemo(() => {
-    return Array.from({ length: 4 }, (_, i) => ({
-      id: i,
-      startX: Math.random() * 80 + 10, // Random horizontal position
-      delay: i * 7 + Math.random() * 5, // Staggered timing
-      duration: Math.random() * 2 + 2.5,
-      length: Math.random() * 80 + 100, // Tail length
-    }));
-  }, []);
-
-  // Floating dust particles (warm village evening feel)
-  const dustParticles = useMemo(() => {
-    return Array.from({ length: 25 }, (_, i) => ({
-      id: i,
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      opacity: Math.random() * 0.3 + 0.1,
-      duration: Math.random() * 20 + 15,
-      delay: Math.random() * 10,
-    }));
-  }, []);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      
-      {/* Layer 1: Deep space gradient base */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0612] via-[#1a0f2e] to-[#2d1810]" />
-      
-      {/* Layer 2: Subtle grain texture for premium feel */}
-      <div 
-        className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
-
-      {/* Layer 3: Distant warm glows (like village lanterns) */}
-      <motion.div 
-        animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.1, 1] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-[20%] left-[15%] w-64 h-64 bg-amber-500/10 rounded-full blur-[100px]" 
-      />
-      <motion.div 
-        animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.15, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute bottom-[25%] right-[20%] w-80 h-80 bg-orange-500/8 rounded-full blur-[120px]" 
-      />
-      <motion.div 
-        animate={{ opacity: [0.15, 0.35, 0.15], scale: [1, 1.2, 1] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-        className="absolute top-[30%] left-[50%] w-72 h-72 bg-rose-500/5 rounded-full blur-[110px]" 
-      />
-
-      {/* Layer 4: Village silhouette at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 opacity-20">
-        <svg viewBox="0 0 1200 200" className="w-full h-full" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="villageGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#000000" stopOpacity="0" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="0.8" />
-            </linearGradient>
-          </defs>
-          {/* Village silhouette path */}
-          <path 
-            d="M0,200 L0,150 L50,150 L50,130 L70,130 L70,140 L100,140 L100,120 L115,120 L115,100 L130,100 L130,120 L150,120 L150,140 L180,140 L180,110 L200,110 L200,90 L215,90 L215,110 L240,110 L240,130 L280,130 L280,100 L295,100 L295,80 L310,80 L310,100 L340,100 L340,120 L380,120 L380,90 L400,90 L400,70 L415,70 L415,90 L440,90 L440,110 L480,110 L480,130 L520,130 L520,100 L540,100 L540,80 L555,80 L555,100 L580,100 L580,120 L620,120 L620,90 L640,90 L640,70 L655,70 L655,90 L680,90 L680,110 L720,110 L720,130 L760,130 L760,100 L780,100 L780,80 L795,80 L795,100 L820,100 L820,120 L860,120 L860,90 L880,90 L880,70 L895,70 L895,90 L920,90 L920,110 L960,110 L960,130 L1000,130 L1000,100 L1020,100 L1020,80 L1035,80 L1035,100 L1060,100 L1060,120 L1100,120 L1100,140 L1150,140 L1150,120 L1200,120 L1200,200 Z"
-            fill="url(#villageGradient)"
-          />
-          {/* Small temple/hut details */}
-          <path d="M200,90 L207,70 L215,90 Z" fill="#000000" opacity="0.6" />
-          <path d="M400,70 L407,50 L415,70 Z" fill="#000000" opacity="0.6" />
-          <path d="M640,70 L647,50 L655,70 Z" fill="#000000" opacity="0.6" />
-          <path d="M880,70 L887,50 L895,70 Z" fill="#000000" opacity="0.6" />
-        </svg>
-      </div>
-
-      {/* Layer 5: Twinkling stars (minimal) */}
-      {stars.map((star) => (
-        <div
-          key={star.id}
-          className="absolute rounded-full bg-white star-twinkle"
-          style={{
-            top: `${star.top}%`,
-            left: `${star.left}%`,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            opacity: star.opacity,
-            animationDelay: `${star.twinkleDelay}s`,
-            animationDuration: `${star.twinkleDuration}s`,
-            boxShadow: `0 0 ${star.size * 3}px rgba(255, 255, 255, ${star.opacity * 0.8})`,
-          }}
-        />
-      ))}
-
-      {/* Layer 6: Vertical falling stars (upar se niche) */}
-      {fallingStars.map((star) => (
-        <div
-          key={`falling-${star.id}`}
-          className="absolute falling-star-vertical"
-          style={{
-            left: `${star.startX}%`,
-            top: '-10%',
-            animationDelay: `${star.delay}s`,
-            animationDuration: `${star.duration}s`,
-          }}
-        >
-          <div 
-            className="w-[1px] bg-gradient-to-b from-transparent via-white to-white/80 rounded-full"
-            style={{ height: `${star.length}px` }}
-          />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full shadow-[0_0_8px_3px_rgba(255,255,255,0.9)]" />
-        </div>
-      ))}
-
-      {/* Layer 7: Floating dust particles */}
-      {dustParticles.map((particle) => (
-        <div
-          key={`dust-${particle.id}`}
-          className="absolute rounded-full dust-float"
-          style={{
-            top: `${particle.top}%`,
-            left: `${particle.left}%`,
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-            background: `radial-gradient(circle, rgba(255, 200, 150, ${particle.opacity}) 0%, transparent 70%)`,
-            animationDelay: `${particle.delay}s`,
-            animationDuration: `${particle.duration}s`,
-          }}
-        />
-      ))}
-
-      {/* Layer 8: Subtle horizon glow */}
-      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-amber-950/20 via-transparent to-transparent" />
-    </div>
-  );
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -362,8 +206,6 @@ const LiveActivityTicker = () => {
 
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
-  const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -415,7 +257,7 @@ export default function HomePage() {
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
       
-      {/* 🎨 WORLD-CLASS PREMIUM ANIMATIONS */}
+      {/* 🎨 CLEAN SHIMMER ANIMATIONS */}
       <style>{`
         .tiranga-shimmer {
           background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 25%, #138808 50%, #FFFFFF 75%, #FF9933 100%);
@@ -437,77 +279,25 @@ export default function HomePage() {
           0% { background-position: 0% center; }
           100% { background-position: -200% center; }
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        .floating {
-          animation: float 6s ease-in-out infinite;
-        }
-        
-        /* 🌟 Star Twinkling Animation */
-        @keyframes starTwinkle {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.3); }
-        }
-        .star-twinkle {
-          animation: starTwinkle ease-in-out infinite;
-        }
-        
-        /* 🌠 Vertical Falling Star Animation (Upar se Niche) */
-        @keyframes fallingStarVertical {
-          0% {
-            transform: translateY(-100px);
-            opacity: 0;
-          }
-          10% {
-            opacity: 1;
-          }
-          80% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(calc(100vh + 100px));
-            opacity: 0;
-          }
-        }
-        .falling-star-vertical {
-          animation: fallingStarVertical linear infinite;
-        }
-        
-        /* ✨ Floating Dust Particles */
-        @keyframes dustFloat {
-          0% {
-            transform: translate(0, 0) scale(1);
-            opacity: 0;
-          }
-          20% {
-            opacity: 1;
-          }
-          50% {
-            transform: translate(30px, -50px) scale(1.2);
-          }
-          80% {
-            opacity: 1;
-          }
-          100% {
-            transform: translate(-20px, -100px) scale(0.8);
-            opacity: 0;
-          }
-        }
-        .dust-float {
-          animation: dustFloat ease-in-out infinite;
-        }
       `}</style>
 
       {/* Scroll Progress Bar */}
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-      {/* ===== 1. CINEMATIC HERO SECTION - World-Class Premium ===== */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden text-white px-6">
+      {/* ===== 1. CINEMATIC HERO SECTION - Clean & Premium ===== */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-950 via-green-900 to-amber-950 text-white px-6">
         
-        {/* 🌌 WORLD-CLASS PREMIUM VILLAGE BACKGROUND */}
-        <PremiumVillageBackdrop />
+        {/* Subtle Glowing Orbs (Original Premium Feel) */}
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px]" 
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.3, 0.2] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber-500/20 rounded-full blur-[150px]" 
+        />
         
         <MadhubaniPattern />
 
@@ -829,7 +619,7 @@ export default function HomePage() {
                 href: "#", 
                 color: "bg-rose-100 text-rose-700",
                 accent: "",
-                active: false // 🔥 UNLINKED - Coming Soon
+                active: false
               },
             ].map((card, i) => (
               <motion.div key={card.title} variants={fadeInUp} whileHover={card.active ? { y: -12 } : {}}>
