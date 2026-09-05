@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   User, Mail, Camera, Loader2, Save, ArrowLeft, Image as ImageIcon,
   Edit3, X, Heart, Eye, MessageSquare, Star, LogOut, Calendar,
-  MapPin, Link as LinkIcon, CheckCircle, AlertCircle
+  MapPin, Link as LinkIcon, CheckCircle, AlertCircle, Cloud, Zap, CheckCircle2
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { 
-  doc, getDoc, updateDoc, serverTimestamp, 
+  doc, getDoc, updateDoc, setDoc, serverTimestamp, 
   collection, query, where, onSnapshot 
 } from "firebase/firestore";
 import { updateProfile, signOut } from "firebase/auth";
@@ -93,7 +93,8 @@ export default function ProfilePage() {
         setWebsite(data.website || "");
         setPhotoURL(data.photoURL || currentUser.photoURL || "");
       } else {
-        await updateDoc(docRef, {
+        // ✅ FIX: Use setDoc with merge: true to safely create the document
+        const userData = {
           uid: currentUser.uid,
           displayName: currentUser.displayName || "User",
           email: currentUser.email,
@@ -103,11 +104,14 @@ export default function ProfilePage() {
           website: "",
           createdAt: serverTimestamp(),
           isVerified: false,
-        });
-        const newDoc = await getDoc(docRef);
-        if (newDoc.exists()) {
-          setUser(newDoc.data() as UserProfile);
-        }
+        };
+        await setDoc(docRef, userData, { merge: true });
+        setUser(userData as UserProfile);
+        setName(userData.displayName);
+        setBio(userData.bio);
+        setLocation(userData.location);
+        setWebsite(userData.website);
+        setPhotoURL(userData.photoURL);
       }
       
       setLoading(false);
@@ -156,12 +160,18 @@ export default function ProfilePage() {
     return () => unsubscribe();
   }, [user?.uid]);
 
+  // 🚀 WORLD-CLASS CLOUDINARY UPLOAD LOGIC
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!file.type.startsWith("image/")) {
+      setToast({ message: "कृपया केवल छवि (Image) फ़ाइल चुनें।", type: "error" });
+      return;
+    }
+
     if (file.size > 5 * 1024 * 1024) {
-      setToast({ message: "छवि 5MB से कम होनी चाहिए।", type: "error" });
+      setToast({ message: "प्रोफ़ाइल छवि 5MB से कम होनी चाहिए।", type: "error" });
       return;
     }
 
@@ -169,19 +179,32 @@ export default function ProfilePage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "alamnagar_unsigned");
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "alamnagar-uploads");
+      formData.append("folder", "alamnagar/profiles");
       
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
         { method: "POST", body: formData }
       );
       
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Upload failed");
+      }
+      
       const data = await response.json();
-      setPhotoURL(data.secure_url);
-      setToast({ message: "छवि सफलतापूर्वक अपलोड हो गई!", type: "success" });
-    } catch (error) {
+      
+      // 🚀 Auto-optimize profile picture for fast loading (w_640 is more than enough for avatars)
+      let optimizedUrl = data.secure_url;
+      if (optimizedUrl.includes('/image/upload/')) {
+        optimizedUrl = optimizedUrl.replace('/image/upload/', '/image/upload/q_auto,f_auto,w_640/');
+      }
+      
+      setPhotoURL(optimizedUrl);
+      setToast({ message: "प्रोफ़ाइल छवि सफलतापूर्वक अपडेट हो गई!", type: "success" });
+    } catch (error: any) {
       console.error("Image upload error:", error);
-      setToast({ message: "छवि अपलोड करने में त्रुटि हुई।", type: "error" });
+      setToast({ message: error.message || "छवि अपलोड करने में त्रुटि हुई।", type: "error" });
     } finally {
       setUploading(false);
     }
@@ -193,11 +216,13 @@ export default function ProfilePage() {
     
     setSaving(true);
     try {
+      // Update Firebase Auth
       await updateProfile(auth.currentUser!, { 
         displayName: name, 
         photoURL: photoURL 
       });
       
+      // Update Firestore
       await updateDoc(doc(db, "users", user.uid), {
         displayName: name,
         photoURL: photoURL,
@@ -259,19 +284,58 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 pb-20">
+    <main className="min-h-screen bg-stone-50 pb-20 relative">
+      {/* 🍞 CUSTOM TOAST NOTIFICATION */}
       <AnimatePresence>
         {toast && (
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 ${
-              toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+            className={`fixed top-24 left-1/2 -translate-x-1/2 z-[100] px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border ${
+              toast.type === 'success' 
+                ? 'bg-emerald-900/90 border-emerald-500/30 text-emerald-100 backdrop-blur-md' 
+                : 'bg-red-900/90 border-red-500/30 text-red-100 backdrop-blur-md'
             }`}
           >
             {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
             <span className="font-semibold text-sm">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🎬 CINEMATIC UPLOAD OVERLAY */}
+      <AnimatePresence>
+        {uploading && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[100] bg-stone-900/80 backdrop-blur-md flex items-center justify-center"
+          >
+            <div className="relative z-10 max-w-md w-full mx-4 text-center">
+              <motion.div 
+                initial={{ scale: 0, rotate: -180 }} 
+                animate={{ scale: 1, rotate: 0 }} 
+                transition={{ duration: 0.8, type: "spring" }} 
+                className="flex justify-center mb-6"
+              >
+                <div className="relative">
+                  <motion.div 
+                    animate={{ rotate: 360 }} 
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }} 
+                    className="w-20 h-20 rounded-full border-4 border-emerald-500/30 border-t-emerald-500" 
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Cloud className="w-8 h-8 text-emerald-500" />
+                  </div>
+                </div>
+              </motion.div>
+              <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-xl font-bold text-white mb-2">
+                प्रोफ़ाइल छवि अपलोड हो रही है...
+              </motion.h2>
+              <p className="text-stone-400 text-sm">कृपया प्रतीक्षा करें</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -304,9 +368,9 @@ export default function ProfilePage() {
                   <button 
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    className="absolute bottom-2 right-2 p-3 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="absolute bottom-2 right-2 p-3 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed group"
                   >
-                    {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
+                    {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
                   </button>
                 )}
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
