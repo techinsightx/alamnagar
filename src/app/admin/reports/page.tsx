@@ -76,6 +76,7 @@ export default function AdminReportsPage() {
     return () => unsubscribe();
   }, [router]);
 
+  // 🔥 FIXED: Added Error Handler to prevent infinite spinner
   useEffect(() => {
     if (!user) return;
     
@@ -90,14 +91,35 @@ export default function AdminReportsPage() {
       );
     }
     
-    const unsubscribe = onSnapshot(reportsQuery, (snapshot) => {
-      const reportsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Report));
-      setReports(reportsData);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      reportsQuery, 
+      (snapshot) => {
+        const reportsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as Report));
+        setReports(reportsData);
+        setLoading(false);
+      },
+      (error) => {
+        // 🔥 CRITICAL: Agar query fail hoti hai, toh loading false karo taaki spinner ruke
+        console.error("🔥 Firestore Reports Query Error:", error);
+        setLoading(false); 
+        
+        // Firebase missing index errors mein console mein ek link deta hai
+        if (error.code === 'failed-precondition') {
+          setToast({ 
+            message: "Missing Database Index. Check Browser Console (F12) for the fix link!", 
+            type: "error" 
+          });
+        } else {
+          setToast({ 
+            message: "Data load error. Check permissions or console.", 
+            type: "error" 
+          });
+        }
+      }
+    );
     
     return () => unsubscribe();
   }, [user, filter]);
@@ -277,8 +299,9 @@ export default function AdminReportsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+        <p className="text-stone-400 text-sm">Loading Admin Dashboard...</p>
       </div>
     );
   }
