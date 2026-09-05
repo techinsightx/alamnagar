@@ -11,7 +11,6 @@ import {
   Music, Upload, Bell, UserPlus, UserCheck, BarChart3, Award
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
-// ✅ FIX: Added 'setDoc' to the imports below
 import { 
   collection, query, orderBy, limit, onSnapshot, 
   addDoc, doc, updateDoc, increment, serverTimestamp, deleteDoc,
@@ -186,10 +185,10 @@ interface Comment { id: string; userId: string; userName: string; userPhoto: str
 
 const REPORT_REASONS = [
   { id: "inappropriate", label: "अश्लील या अनुचित सामग्री", icon: "🔞" },
-  { id: "spam", label: "स्पैम या विज्ञापन", icon: "" },
+  { id: "spam", label: "स्पैम या विज्ञापन", icon: "🚫" },
   { id: "hate", label: "नफरत फैलाने वाली भाषा", icon: "⚠️" },
   { id: "fraud", label: "धोखाधड़ी या स्कैम", icon: "💰" },
-  { id: "violence", label: "हिंसा या खतरनाक सामग्री", icon: "" },
+  { id: "violence", label: "हिंसा या खतरनाक सामग्री", icon: "🚨" },
   { id: "misinfo", label: "गलत जानकारी या अफवाह", icon: "❌" },
   { id: "privacy", label: "निजता का उल्लंघन", icon: "🔒" },
   { id: "other", label: "अन्य (विवरण दें)", icon: "📝" },
@@ -440,7 +439,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
-  // Audio States
   const [showAudioLibrary, setShowAudioLibrary] = useState(false);
   const [showAudioUpload, setShowAudioUpload] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<any>(null);
@@ -657,7 +655,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
               {isGeneratingAI ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Wand2 className="w-4 h-4" /> AI से कैप्शन और हैशटैग बनाएं</>}
             </motion.button>
 
-            {/* Audio Selection UI */}
             <div className="space-y-2">
               <label className="text-[10px] font-semibold text-white/50 uppercase tracking-wider">Background Audio (Optional)</label>
               <div className="flex gap-3">
@@ -787,21 +784,24 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   const [followLoading, setFollowLoading] = useState(false);
   
   const [hasTrackedView, setHasTrackedView] = useState(false);
-  const viewTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   const [expanded, setExpanded] = useState(false);
   const [needsClamp, setNeedsClamp] = useState(false);
-  const contentRef = useRef<HTMLParagraphElement>(null);
-  const [saved, setSaved] = useState(false);
+  
+  // ✅ FIX: Separated refs to prevent collision between card observer and paragraph clamping
+  const cardRef = useRef<HTMLDivElement>(null);
+  const paragraphRef = useRef<HTMLParagraphElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [saved, setSaved] = useState(false);
 
   const isOwnPost = currentUserId === post.userId;
   const engagementMetrics: EngagementMetrics = { views: post.views || 0, likes: post.likes || 0, comments: post.comments || 0, shares: post.shares || 0 };
   const featuredLevel = getFeaturedLevel(engagementMetrics, post.isFeatured || false);
   const trending = isTrending(engagementMetrics, post.createdAt);
 
+  // ✅ FIX: Paragraph clamping logic using correct ref
   useEffect(() => {
-    const el = contentRef.current;
+    const el = paragraphRef.current;
     if (el && !expanded) {
       setNeedsClamp(el.scrollHeight > el.clientHeight + 2);
     }
@@ -809,37 +809,57 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   useEffect(() => { setSaved(getSavedPosts().includes(post.id)); }, [post.id]);
 
+  // ✅ FIX: Reliable IntersectionObserver for View Tracking (Replaced fragile 3s timer)
   useEffect(() => {
-    if (!post.id || hasTrackedView) return;
+    if (hasTrackedView) return;
+
     const viewKey = `spotlight_viewed_${post.id}`;
     const lastViewed = typeof window !== 'undefined' ? localStorage.getItem(viewKey) : null;
     const now = Date.now();
     const twentyFourHours = 24 * 60 * 60 * 1000;
 
+    // Prevent recounting within 24 hours
     if (lastViewed && (now - parseInt(lastViewed)) < twentyFourHours) {
       setHasTrackedView(true);
       return;
     }
 
-    viewTimerRef.current = setTimeout(async () => {
-      try {
-        if (currentUserId) {
-          const viewDocRef = doc(db, "spotlights", post.id, "views", currentUserId);
-          const viewSnap = await getDoc(viewDocRef);
-          if (!viewSnap.exists()) {
-            // ✅ FIX: setDoc is now properly imported and will work here
-            await setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() });
-            await updateDoc(doc(db, "spotlights", post.id), { views: increment(1) });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasTrackedView(true);
+          
+          // 1. Increment main view count immediately
+          updateDoc(doc(db, "spotlights", post.id), { views: increment(1) }).catch(console.error);
+          
+          // 2. Save to localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(viewKey, now.toString());
           }
-        } else {
-          await updateDoc(doc(db, "spotlights", post.id), { views: increment(1) });
-        }
-        if (typeof window !== 'undefined') localStorage.setItem(viewKey, now.toString());
-        setHasTrackedView(true);
-      } catch (error) { console.error("View tracking error:", error); }
-    }, 3000);
 
-    return () => { if (viewTimerRef.current) clearTimeout(viewTimerRef.current); };
+          // 3. Record detailed user view if logged in
+          if (currentUserId) {
+            const viewDocRef = doc(db, "spotlights", post.id, "views", currentUserId);
+            getDoc(viewDocRef).then((snap) => {
+              if (!snap.exists()) {
+                setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() }).catch(console.error);
+              }
+            });
+          }
+        }
+      },
+      { threshold: 0.5 } // Triggers when 50% of the post is visible on screen
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
   }, [post.id, currentUserId, hasTrackedView]);
 
   useEffect(() => {
@@ -992,7 +1012,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   return (
     <>
-      <motion.article ref={contentRef} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className={`bg-stone-900 border rounded-2xl overflow-hidden mb-4 shadow-xl shadow-black/20 relative ${getCardBorderClass()}`}>
+      <motion.article ref={cardRef} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className={`bg-stone-900 border rounded-2xl overflow-hidden mb-4 shadow-xl shadow-black/20 relative ${getCardBorderClass()}`}>
         <div className="flex items-center justify-between p-4 relative">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px]">
@@ -1050,7 +1070,8 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
         {post.content && (
           <div className="px-4 pb-3 relative">
-            <p ref={contentRef} className={`text-white/90 text-[15px] leading-relaxed whitespace-pre-wrap transition-all duration-300 ${expanded ? "" : "line-clamp-4"}`}>{post.content}</p>
+            {/* ✅ FIX: Using paragraphRef for accurate clamping */}
+            <p ref={paragraphRef} className={`text-white/90 text-[15px] leading-relaxed whitespace-pre-wrap transition-all duration-300 ${expanded ? "" : "line-clamp-4"}`}>{post.content}</p>
             {(needsClamp || expanded) && (
               <button onClick={() => setExpanded(!expanded)} className="mt-2 flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-bold uppercase tracking-wider transition-colors">
                 {expanded ? <>कम दिखाएं <ChevronUp className="w-3.5 h-3.5" /></> : <>और पढ़ें <ChevronDown className="w-3.5 h-3.5" /></>}
