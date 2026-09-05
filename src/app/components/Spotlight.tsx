@@ -770,41 +770,44 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   useEffect(() => { setSaved(getSavedPosts().includes(post.id)); }, [post.id]);
 
+  // 🔥 FIXED VIEW TRACKING: Removed localStorage block that was blocking other users on the same browser
   useEffect(() => {
-    if (hasTrackedView) return;
-    const viewKey = `spotlight_viewed_${post.id}`;
-    const lastViewed = typeof window !== 'undefined' ? localStorage.getItem(viewKey) : null;
-    const now = Date.now();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
-    if (lastViewed && (now - parseInt(lastViewed)) < twentyFourHours) {
-      setHasTrackedView(true);
-      return;
-    }
+    if (hasTrackedView || !cardRef.current) return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
+      async ([entry]) => {
+        if (entry.isIntersecting && !hasTrackedView) {
+          console.log("👁️ View Triggered for Post:", post.id, "by User:", currentUserId || "Guest");
           setHasTrackedView(true);
-          updateDoc(doc(db, "spotlights", post.id), { views: increment(1) }).catch(console.error);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(viewKey, now.toString());
-          }
-          if (currentUserId) {
-            const viewDocRef = doc(db, "spotlights", post.id, "views", currentUserId);
-            getDoc(viewDocRef).then((snap) => {
-              if (!snap.exists()) {
-                setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() }).catch(console.error);
-              }
+          
+          try {
+            // 1. Always increment the main view count
+            await updateDoc(doc(db, "spotlights", post.id), { 
+              views: increment(1) 
             });
+            console.log("✅ SUCCESS: Main view count incremented!");
+            
+            // 2. If logged in, record detailed view
+            if (currentUserId) {
+              const viewDocRef = doc(db, "spotlights", post.id, "views", currentUserId);
+              const viewSnap = await getDoc(viewDocRef);
+              if (!viewSnap.exists()) {
+                await setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() });
+                console.log("✅ SUCCESS: User view sub-document created!");
+              }
+            }
+          } catch (error: any) {
+            console.error("❌ CRITICAL VIEW UPDATE ERROR:", error.code, error.message);
           }
+          
+          observer.disconnect();
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.3 }
     );
 
-    if (cardRef.current) observer.observe(cardRef.current);
-    return () => { if (cardRef.current) observer.unobserve(cardRef.current); };
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
   }, [post.id, currentUserId, hasTrackedView]);
 
   useEffect(() => {
@@ -846,7 +849,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       }
       setLiked(!liked);
     } catch (error: any) { 
-      console.error("Like Error Details:", error.message); // यह कंसोल में "Permission denied" दिखाएगा अगर रूल्स गलत हैं
+      console.error("Like Error Details:", error.message);
       setLiked(liked); setLikeCount(likeCount);
       showToast("इस कार्रवाई के लिए अनुमति नहीं है या नेटवर्क त्रुटि।", "error");
     }
@@ -859,27 +862,46 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
     setTimeout(() => setShowHeartAnim(false), 1000);
   };
 
+  // 🔥 FIXED FOLLOW LOGIC: Updates BOTH the array AND the count field
   const handleFollow = async () => {
     if (!auth.currentUser) { requireAuth("follow", postId); return; }
     if (post.userId === currentUserId) return;
+    
     setFollowLoading(true);
     try {
       const batch = writeBatch(db);
       const currentUserRef = doc(db, "users", currentUserId);
       const creatorRef = doc(db, "users", post.userId);
+      
       if (isFollowing) {
-        batch.update(currentUserRef, { following: arrayRemove(post.userId) });
-        batch.update(creatorRef, { followers: increment(-1) });
+        batch.update(currentUserRef, { 
+          following: arrayRemove(post.userId),
+          followingCount: increment(-1)
+        });
+        batch.update(creatorRef, { 
+          followers: arrayRemove(currentUserId),
+          followersCount: increment(-1)
+        });
       } else {
-        batch.update(currentUserRef, { following: arrayUnion(post.userId) });
-        batch.update(creatorRef, { followers: increment(1) });
+        batch.update(currentUserRef, { 
+          following: arrayUnion(post.userId),
+          followingCount: increment(1)
+        });
+        batch.update(creatorRef, { 
+          followers: arrayUnion(currentUserId),
+          followersCount: increment(1)
+        });
         createNotification(post.userId, "follow", currentUserId, auth.currentUser.displayName || "User", auth.currentUser.photoURL || "").catch(console.warn);
       }
+      
       await batch.commit();
+      console.log("✅ Follow/Unfollow successfully updated in Firestore!");
     } catch (error: any) { 
-      console.error("Follow Error Details:", error.message);
+      console.error("❌ Follow Error Details:", error.message);
       showToast("फॉलो करने में त्रुटि हुई।", "error");
-    } finally { setFollowLoading(false); }
+    } finally { 
+      setFollowLoading(false); 
+    }
   };
 
   const handleAddComment = async () => {
