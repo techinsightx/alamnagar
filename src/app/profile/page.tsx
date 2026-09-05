@@ -3,14 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  User, Mail, Camera, Loader2, Save, ArrowLeft, Image as ImageIcon,
+  User, Mail, Camera, Loader2, Save, ArrowLeft, 
   Edit3, X, Heart, Eye, MessageSquare, Star, LogOut, Calendar,
   MapPin, Link as LinkIcon, CheckCircle, AlertCircle, Cloud, Users
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { 
   doc, updateDoc, setDoc, serverTimestamp, 
-  collection, query, where, onSnapshot 
+  collection, query, where, onSnapshot, Timestamp
 } from "firebase/firestore";
 import { updateProfile, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -49,8 +49,6 @@ interface UserPost {
   likes: number;
   comments: number;
   views: number;
-  shares: number;
-  hashtags: string[];
   createdAt: any;
 }
 
@@ -61,12 +59,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [stats, setStats] = useState<PostStats>({
-    totalPosts: 0,
-    totalLikes: 0,
-    totalComments: 0,
-    totalViews: 0
-  });
+  const [stats, setStats] = useState<PostStats>({ totalPosts: 0, totalLikes: 0, totalComments: 0, totalViews: 0 });
   const [userPosts, setUserPosts] = useState<UserPost[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   
@@ -77,7 +70,7 @@ export default function ProfilePage() {
   const [photoURL, setPhotoURL] = useState("");
   const [coverPhotoURL, setCoverPhotoURL] = useState("");
   
-  // ✅ Strictly initialized as numbers to prevent NaN
+  // ✅ STRICTLY INITIALIZED AS NUMBERS TO PREVENT "NaN"
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
   
@@ -105,7 +98,7 @@ export default function ProfilePage() {
         setPhotoURL(data.photoURL || currentUser.photoURL || "");
         setCoverPhotoURL(data.coverPhotoURL || "");
         
-        // ✅ STRICT TYPE CHECKING TO PREVENT "NaN"
+        // ✅ 100% SAFE FALLBACK LOGIC FOR FOLLOWERS
         const followersArray = Array.isArray(data.followers) ? data.followers : [];
         const followingArray = Array.isArray(data.following) ? data.following : [];
         
@@ -162,8 +155,6 @@ export default function ProfilePage() {
         likes: Number(d.data().likes) || 0,
         comments: Number(d.data().comments) || 0,
         views: Number(d.data().views) || 0,
-        shares: Number(d.data().shares) || 0,
-        hashtags: d.data().hashtags || [],
         createdAt: d.data().createdAt || null,
       }));
       
@@ -208,11 +199,7 @@ export default function ProfilePage() {
         { method: "POST", body: formData }
       );
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Upload failed");
-      }
-      
+      if (!response.ok) throw new Error("Upload failed");
       const data = await response.json();
       let optimizedUrl = data.secure_url;
       if (optimizedUrl.includes('/image/upload/')) {
@@ -252,11 +239,7 @@ export default function ProfilePage() {
         { method: "POST", body: formData }
       );
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Upload failed");
-      }
-      
+      if (!response.ok) throw new Error("Upload failed");
       const data = await response.json();
       let optimizedUrl = data.secure_url;
       if (optimizedUrl.includes('/image/upload/')) {
@@ -275,11 +258,9 @@ export default function ProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    
     setSaving(true);
     try {
       await updateProfile(auth.currentUser!, { displayName: name, photoURL: photoURL });
-      
       await updateDoc(doc(db, "users", user.uid), {
         displayName: name,
         photoURL: photoURL,
@@ -289,7 +270,6 @@ export default function ProfilePage() {
         website: website,
         updatedAt: serverTimestamp(),
       });
-      
       setUser({ ...user, displayName: name, photoURL, coverPhotoURL, bio, location, website });
       setEditing(false);
       setToast({ message: "प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई!", type: "success" });
@@ -402,7 +382,7 @@ export default function ProfilePage() {
               <img src={coverPhotoURL} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <ImageIcon className="w-16 h-16 text-white/30" />
+                <span className="text-white/30 text-xl font-bold">Cover Photo</span>
               </div>
             )}
             <div className="absolute inset-0 bg-black/10" />
