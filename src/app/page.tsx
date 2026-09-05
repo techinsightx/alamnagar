@@ -253,14 +253,14 @@ export default function HomePage() {
             <span className="text-sm font-semibold tracking-wide">मधेपुरा, मिथिलांचल, बिहार</span>
           </motion.div>
 
+          {/* ✅ FULL "आलमनगर" WITH TIRANGA SHIMMER */}
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-none"
+            className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-none tiranga-shimmer drop-shadow-2xl"
           >
-            <span className="text-white drop-shadow-2xl">आलम</span>
-            <span className="tiranga-shimmer drop-shadow-2xl">नगर</span>
+            आलमनगर
           </motion.h1>
 
           <motion.p 
@@ -678,10 +678,8 @@ export default function HomePage() {
             <div>
               <h4 className="text-white font-black mb-6 text-lg">संपर्क</h4>
               <ul className="space-y-4 text-base">
-                {/* ✅ PERFECTLY INTEGRATED CONTACT PAGE LINK */}
+                {/* ✅ ONLY CONTACT LINK, NO EMAIL */}
                 <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
-                {/* ✅ PERFECTLY INTEGRATED EMAIL */}
-                <li><a href="mailto:digitechinfo.india@gmail.com" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> digitechinfo.india@gmail.com</a></li>
               </ul>
             </div>
           </div>
