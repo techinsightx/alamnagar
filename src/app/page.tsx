@@ -655,15 +655,16 @@ export default function HomePage() {
                 <li><Link href="/gallery" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> गैलरी</Link></li>
                 <li><Link href="/community" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> समुदाय</Link></li>
                 <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
-                {/* ✅ NEW: Legal Page Link Added Here */}
                 <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-black mb-6 text-lg">संपर्क</h4>
               <ul className="space-y-4 text-base">
+                {/* ✅ UPDATED: Contact Page Link */}
                 <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
-                <li><a href="mailto:digitechinfo.india@gmail.com" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> support@alamnagar.in</a></li>
+                {/* ✅ UPDATED: Correct Email Display */}
+                <li><a href="mailto:digitechinfo.india@gmail.com" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> digitechinfo.india@gmail.com</a></li>
               </ul>
             </div>
           </div>
