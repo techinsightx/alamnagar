@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   User, Mail, Camera, Loader2, Save, ArrowLeft, Image as ImageIcon,
   Edit3, X, Heart, Eye, MessageSquare, Star, LogOut, Calendar,
-  MapPin, Link as LinkIcon, CheckCircle, AlertCircle, Cloud, Zap, CheckCircle2
+  MapPin, Link as LinkIcon, CheckCircle, AlertCircle, Cloud, Users
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { 
@@ -21,11 +21,14 @@ interface UserProfile {
   displayName: string;
   email: string;
   photoURL: string;
+  coverPhotoURL?: string;
   bio: string;
   location: string;
   website: string;
   createdAt: any;
   isVerified: boolean;
+  followersCount?: number;
+  followingCount?: number;
 }
 
 interface PostStats {
@@ -70,8 +73,12 @@ export default function ProfilePage() {
   const [location, setLocation] = useState("");
   const [website, setWebsite] = useState("");
   const [photoURL, setPhotoURL] = useState("");
+  const [coverPhotoURL, setCoverPhotoURL] = useState("");
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -92,18 +99,23 @@ export default function ProfilePage() {
         setLocation(data.location || "");
         setWebsite(data.website || "");
         setPhotoURL(data.photoURL || currentUser.photoURL || "");
+        setCoverPhotoURL(data.coverPhotoURL || "");
+        setFollowersCount(data.followersCount || 0);
+        setFollowingCount(data.followingCount || 0);
       } else {
-        // ✅ FIX: Use setDoc with merge: true to safely create the document
         const userData = {
           uid: currentUser.uid,
           displayName: currentUser.displayName || "User",
           email: currentUser.email,
           photoURL: currentUser.photoURL || "",
+          coverPhotoURL: "",
           bio: "आलमनगर समुदाय का हिस्सा",
           location: "",
           website: "",
           createdAt: serverTimestamp(),
           isVerified: false,
+          followersCount: 0,
+          followingCount: 0,
         };
         await setDoc(docRef, userData, { merge: true });
         setUser(userData as UserProfile);
@@ -112,6 +124,9 @@ export default function ProfilePage() {
         setLocation(userData.location);
         setWebsite(userData.website);
         setPhotoURL(userData.photoURL);
+        setCoverPhotoURL(userData.coverPhotoURL || "");
+        setFollowersCount(0);
+        setFollowingCount(0);
       }
       
       setLoading(false);
@@ -160,7 +175,7 @@ export default function ProfilePage() {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  // 🚀 WORLD-CLASS CLOUDINARY UPLOAD LOGIC
+  // 🚀 PROFILE PICTURE UPLOAD LOGIC
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -193,8 +208,6 @@ export default function ProfilePage() {
       }
       
       const data = await response.json();
-      
-      // 🚀 Auto-optimize profile picture for fast loading (w_640 is more than enough for avatars)
       let optimizedUrl = data.secure_url;
       if (optimizedUrl.includes('/image/upload/')) {
         optimizedUrl = optimizedUrl.replace('/image/upload/', '/image/upload/q_auto,f_auto,w_640/');
@@ -210,22 +223,69 @@ export default function ProfilePage() {
     }
   };
 
+  // 🚀 COVER PHOTO UPLOAD LOGIC
+  const handleCoverPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setToast({ message: "कृपया केवल छवि (Image) फ़ाइल चुनें।", type: "error" });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setToast({ message: "कवर फ़ोटो 5MB से कम होनी चाहिए।", type: "error" });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "alamnagar-uploads");
+      formData.append("folder", "alamnagar/profiles/covers");
+      
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: "POST", body: formData }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Upload failed");
+      }
+      
+      const data = await response.json();
+      let optimizedUrl = data.secure_url;
+      if (optimizedUrl.includes('/image/upload/')) {
+        optimizedUrl = optimizedUrl.replace('/image/upload/', '/image/upload/q_auto,f_auto,w_1200/');
+      }
+      
+      setCoverPhotoURL(optimizedUrl);
+      setToast({ message: "कवर फ़ोटो सफलतापूर्वक अपडेट हो गई!", type: "success" });
+    } catch (error: any) {
+      console.error("Cover photo upload error:", error);
+      setToast({ message: error.message || "छवि अपलोड करने में त्रुटि हुई।", type: "error" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     
     setSaving(true);
     try {
-      // Update Firebase Auth
       await updateProfile(auth.currentUser!, { 
         displayName: name, 
         photoURL: photoURL 
       });
       
-      // Update Firestore
       await updateDoc(doc(db, "users", user.uid), {
         displayName: name,
         photoURL: photoURL,
+        coverPhotoURL: coverPhotoURL,
         bio: bio,
         location: location,
         website: website,
@@ -236,6 +296,7 @@ export default function ProfilePage() {
         ...user,
         displayName: name,
         photoURL: photoURL,
+        coverPhotoURL: coverPhotoURL,
         bio: bio,
         location: location,
         website: website,
@@ -285,7 +346,6 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-stone-50 pb-20 relative">
-      {/* 🍞 CUSTOM TOAST NOTIFICATION */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -304,7 +364,6 @@ export default function ProfilePage() {
         )}
       </AnimatePresence>
 
-      {/* 🎬 CINEMATIC UPLOAD OVERLAY */}
       <AnimatePresence>
         {uploading && (
           <motion.div 
@@ -332,7 +391,7 @@ export default function ProfilePage() {
                 </div>
               </motion.div>
               <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-xl font-bold text-white mb-2">
-                प्रोफ़ाइल छवि अपलोड हो रही है...
+                छवि अपलोड हो रही है...
               </motion.h2>
               <p className="text-stone-400 text-sm">कृपया प्रतीक्षा करें</p>
             </div>
@@ -350,12 +409,28 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl shadow-xl border border-stone-100 overflow-hidden mb-6"
         >
-          <div className="h-40 bg-gradient-to-r from-emerald-600 via-green-600 to-amber-500 relative">
+          {/* 🎨 COVER PHOTO SECTION */}
+          <div className="h-48 md:h-64 bg-gradient-to-r from-emerald-600 via-green-600 to-amber-500 relative overflow-hidden">
+            {coverPhotoURL && (
+              <img src={coverPhotoURL} alt="Cover" className="w-full h-full object-cover" />
+            )}
             <div className="absolute inset-0 bg-black/10" />
+            
+            {editing && (
+              <button 
+                onClick={() => coverFileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute top-4 right-4 p-3 bg-black/50 backdrop-blur-md text-white rounded-full hover:bg-black/70 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Camera className="w-5 h-5" /> <span className="text-sm font-semibold">कवर बदलें</span></>}
+              </button>
+            )}
+            <input ref={coverFileInputRef} type="file" accept="image/*" onChange={handleCoverPhotoUpload} className="hidden" />
           </div>
           
           <div className="px-8 pb-8 relative">
-            <div className="relative -mt-20 mb-6 flex justify-between items-end">
+            <div className="relative -mt-20 mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+              {/* Profile Picture */}
               <div className="relative group">
                 <div className="w-36 h-36 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-stone-100 flex items-center justify-center">
                   {photoURL ? (
@@ -376,22 +451,23 @@ export default function ProfilePage() {
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
               </div>
 
-              <div className="flex gap-3">
+              {/* Action Buttons */}
+              <div className="flex gap-3 w-full md:w-auto">
                 {editing ? (
                   <>
-                    <button onClick={() => setEditing(false)} className="px-6 py-2.5 bg-stone-100 text-stone-700 font-bold rounded-xl hover:bg-stone-200 transition-colors flex items-center gap-2">
+                    <button onClick={() => setEditing(false)} className="flex-1 md:flex-none px-6 py-2.5 bg-stone-100 text-stone-700 font-bold rounded-xl hover:bg-stone-200 transition-colors flex items-center justify-center gap-2">
                       <X className="w-4 h-4" /> रद्द करें
                     </button>
-                    <button onClick={handleSave} disabled={saving || uploading} className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg">
+                    <button onClick={handleSave} disabled={saving || uploading} className="flex-1 md:flex-none px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg">
                       {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> सेव हो रहा है...</> : <><Save className="w-4 h-4" /> सेव करें</>}
                     </button>
                   </>
                 ) : (
                   <>
-                    <button onClick={() => setEditing(true)} className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all flex items-center gap-2 shadow-lg">
+                    <button onClick={() => setEditing(true)} className="flex-1 md:flex-none px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all flex items-center justify-center gap-2 shadow-lg">
                       <Edit3 className="w-4 h-4" /> प्रोफ़ाइल संपादित करें
                     </button>
-                    <button onClick={handleLogout} className="px-6 py-2.5 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors flex items-center gap-2">
+                    <button onClick={handleLogout} className="flex-1 md:flex-none px-6 py-2.5 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2">
                       <LogOut className="w-4 h-4" /> लॉगआउट
                     </button>
                   </>
@@ -414,13 +490,28 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <h1 className="text-3xl font-extrabold text-stone-900">{name}</h1>
                       {user.isVerified && (
                         <div className="p-1 bg-emerald-500 rounded-full"><CheckCircle className="w-5 h-5 text-white" /></div>
                       )}
                     </div>
-                    <p className="text-stone-500 flex items-center gap-2"><Mail className="w-4 h-4" /> {user.email}</p>
+                    <p className="text-stone-500 flex items-center gap-2 mb-4"><Mail className="w-4 h-4" /> {user.email}</p>
+                    
+                    {/* 🔥 FOLLOWERS & FOLLOWING COUNT */}
+                    <div className="flex items-center gap-6 text-stone-700">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-5 h-5 text-emerald-600" />
+                        <span className="text-xl font-extrabold text-stone-900">{followersCount}</span>
+                        <span className="text-sm font-medium">फ़ॉलोअर्स</span>
+                      </div>
+                      <div className="w-px h-6 bg-stone-300" />
+                      <div className="flex items-center gap-2">
+                        <Users className="w-5 h-5 text-amber-600" />
+                        <span className="text-xl font-extrabold text-stone-900">{followingCount}</span>
+                        <span className="text-sm font-medium">फ़ॉलोइंग</span>
+                      </div>
+                    </div>
                   </>
                 )}
               </div>
@@ -466,6 +557,7 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
+        {/* Stats Grid */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }}
@@ -502,6 +594,7 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
+        {/* User Posts List */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }}
