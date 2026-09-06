@@ -1,17 +1,21 @@
 "use client";
 
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
 import { 
   MapPin, BookOpen, Users, ArrowRight, Camera, Phone, 
   ShoppingBag, Sparkles, Landmark, TreePine, Heart, 
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
-  Flame, Award, TrendingUp, LogIn, Lock
+  Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
+  CheckCircle, X // ✅ FIX: Added missing icons here
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
-import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { 
+  collection, query, orderBy, limit, onSnapshot, 
+  addDoc, deleteDoc, doc, serverTimestamp 
+} from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 // 📊 Recharts Imports
@@ -73,7 +77,7 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 HERO BACKGROUND CHART (4-LINE SYNCHRONIZED WORLD-CLASS)
+// 🌈 HERO BACKGROUND CHART
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
@@ -83,7 +87,6 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
           <defs>
-            {/* Glowing fills for each line to create depth */}
             <linearGradient id="glowViews" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/>
               <stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/>
@@ -102,57 +105,10 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
             </linearGradient>
           </defs>
           
-          {/* 1. Views (Blue) - Thickest, most prominent */}
-          <Area 
-            type="monotone" 
-            dataKey="Views" 
-            stroke="#3b82f6" 
-            strokeWidth={14} 
-            fillOpacity={1} 
-            fill="url(#glowViews)" 
-            isAnimationActive={true} 
-            animationDuration={6000} 
-            animationEasing="ease-in-out"
-          />
-          
-          {/* 2. Likes (Rose) */}
-          <Area 
-            type="monotone" 
-            dataKey="Likes" 
-            stroke="#f43f5e" 
-            strokeWidth={10} 
-            fillOpacity={1} 
-            fill="url(#glowLikes)" 
-            isAnimationActive={true} 
-            animationDuration={7500} 
-            animationEasing="ease-in-out"
-          />
-          
-          {/* 3. Comments (Amber) */}
-          <Area 
-            type="monotone" 
-            dataKey="Comments" 
-            stroke="#f59e0b" 
-            strokeWidth={7} 
-            fillOpacity={1} 
-            fill="url(#glowComments)" 
-            isAnimationActive={true} 
-            animationDuration={9000} 
-            animationEasing="ease-in-out"
-          />
-          
-          {/* 4. Shares (Emerald) - Thinnest, subtle background layer */}
-          <Area 
-            type="monotone" 
-            dataKey="Shares" 
-            stroke="#10b981" 
-            strokeWidth={4} 
-            fillOpacity={1} 
-            fill="url(#glowShares)" 
-            isAnimationActive={true} 
-            animationDuration={10500} 
-            animationEasing="ease-in-out"
-          />
+          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={14} fillOpacity={1} fill="url(#glowViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={10} fillOpacity={1} fill="url(#glowLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={7} fillOpacity={1} fill="url(#glowComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#glowShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -160,7 +116,7 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📊 CUSTOM CHART TOOLTIP (Premium Glassmorphism)
+// 📊 CUSTOM CHART TOOLTIP
 // ═══════════════════════════════════════════════════════════
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -187,7 +143,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📈 COMMUNITY PULSE CHART COMPONENT (100% UNTOUCHED)
+// 📈 COMMUNITY PULSE CHART COMPONENT
 // ═══════════════════════════════════════════════════════════
 const CommunityPulseChart = ({ data }: { data: any[] }) => {
   return (
@@ -235,21 +191,8 @@ const CommunityPulseChart = ({ data }: { data: any[] }) => {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
-            <XAxis 
-              dataKey="day" 
-              stroke="#a8a29e" 
-              fontSize={12} 
-              tickLine={false} 
-              axisLine={false} 
-              tick={{ fill: '#78716c', fontWeight: 600 }}
-            />
-            <YAxis 
-              stroke="#a8a29e" 
-              fontSize={12} 
-              tickLine={false} 
-              axisLine={false} 
-              tick={{ fill: '#78716c', fontWeight: 600 }}
-            />
+            <XAxis dataKey="day" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#78716c', fontWeight: 600 }} />
+            <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#78716c', fontWeight: 600 }} />
             <Tooltip content={<CustomTooltip />} />
             <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorViews)" animationDuration={1500} />
             <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorLikes)" animationDuration={1500} />
@@ -305,15 +248,10 @@ const LiveActivityTicker = () => {
           userName: data.userName || "आलमनगर वासी",
           userPhoto: data.userPhoto,
           title: data.title || "एक नई तस्वीर",
-          metrics: {
-            likes: data.likes || 0,
-            comments: data.comments || 0,
-            shares: data.shares || 0
-          },
+          metrics: { likes: data.likes || 0, comments: data.comments || 0, shares: data.shares || 0 },
           timestamp: data.createdAt?.toDate?.()?.getTime() || Date.now()
         };
       });
-      
       setItems(prev => {
         const users = prev.filter(i => i.type === 'join');
         return [...newItems, ...users].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
@@ -323,31 +261,20 @@ const LiveActivityTicker = () => {
 
     const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(5));
     const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
-      const newUsers: TickerItem[] = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          type: 'join',
-          userName: data.displayName || "नया सदस्य",
-          userPhoto: data.photoURL,
-          timestamp: data.createdAt?.toDate?.()?.getTime() || Date.now()
-        };
-      });
-
+      const newUsers: TickerItem[] = snapshot.docs.map(doc => ({
+        id: doc.id, type: 'join', userName: doc.data().displayName || "नया सदस्य",
+        userPhoto: doc.data().photoURL, timestamp: doc.data().createdAt?.toDate?.()?.getTime() || Date.now()
+      }));
       setItems(prev => {
         const posts = prev.filter(i => i.type === 'post');
         return [...posts, ...newUsers].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
       });
     });
 
-    return () => {
-      unsubscribePosts();
-      unsubscribeUsers();
-    };
+    return () => { unsubscribePosts(); unsubscribeUsers(); };
   }, []);
 
   if (isLoading || items.length === 0) return null;
-
   const marqueeItems = [...items, ...items];
 
   return (
@@ -361,14 +288,8 @@ const LiveActivityTicker = () => {
           <span className="text-xs font-black text-red-400 uppercase tracking-widest">LIVE</span>
         </div>
       </div>
-
       <div className="absolute right-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-l from-stone-900 to-transparent" />
-
-      <motion.div 
-        className="flex gap-8 whitespace-nowrap"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-      >
+      <motion.div className="flex gap-8 whitespace-nowrap" animate={{ x: ["0%", "-50%"] }} transition={{ duration: 40, repeat: Infinity, ease: "linear" }}>
         {marqueeItems.map((item, index) => (
           <div key={`${item.id}-${index}`} className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
             {item.type === 'post' ? (
@@ -399,20 +320,37 @@ const LiveActivityTicker = () => {
   );
 };
 
+// ═══════════════════════════════════════════════════════════
+// 📝 TESTIMONIAL INTERFACE
+// ═══════════════════════════════════════════════════════════
+interface Testimonial {
+  id: string;
+  userId: string;
+  userName: string;
+  userPhoto: string;
+  quote: string;
+  location: string;
+  role: string;
+  createdAt: any;
+}
+
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [liveStats, setLiveStats] = useState({
-    totalUsers: 0,
-    totalPosts: 0,
-    totalViews: 0,
-    totalLikes: 0,
-    totalComments: 0,
-    totalShares: 0
-  });
+  const [liveStats, setLiveStats] = useState({ totalUsers: 0, totalPosts: 0, totalViews: 0, totalLikes: 0, totalComments: 0, totalShares: 0 });
   const [chartData, setChartData] = useState<any[]>([]);
+  
+  // Newsletter State
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success">("idle");
+
+  // Testimonials State
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [newReviewText, setNewReviewText] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -430,110 +368,122 @@ export default function HomePage() {
     const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(200));
     const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
       let totalViews = 0, totalLikes = 0, totalComments = 0, totalShares = 0;
-      
       const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
+        const d = new Date(); d.setDate(d.getDate() - (6 - i));
         return d.toISOString().split('T')[0];
       });
-
       const dailyStats: Record<string, { Views: number; Likes: number; Comments: number; Shares: number }> = {};
-      last7Days.forEach(day => {
-        dailyStats[day] = { Views: 0, Likes: 0, Comments: 0, Shares: 0 };
-      });
+      last7Days.forEach(day => { dailyStats[day] = { Views: 0, Likes: 0, Comments: 0, Shares: 0 }; });
 
       snapshot.docs.forEach(doc => {
         const data = doc.data();
-        totalViews += data.views || 0;
-        totalLikes += data.likes || 0;
-        totalComments += data.comments || 0;
-        totalShares += data.shares || 0;
-
+        totalViews += data.views || 0; totalLikes += data.likes || 0;
+        totalComments += data.comments || 0; totalShares += data.shares || 0;
         if (data.createdAt?.toDate) {
           const dateStr = data.createdAt.toDate().toISOString().split('T')[0];
           if (dailyStats[dateStr]) {
-            dailyStats[dateStr].Views += data.views || 0;
-            dailyStats[dateStr].Likes += data.likes || 0;
-            dailyStats[dateStr].Comments += data.comments || 0;
-            dailyStats[dateStr].Shares += data.shares || 0;
+            dailyStats[dateStr].Views += data.views || 0; dailyStats[dateStr].Likes += data.likes || 0;
+            dailyStats[dateStr].Comments += data.comments || 0; dailyStats[dateStr].Shares += data.shares || 0;
           }
         }
       });
 
-      const formattedChartData = last7Days.map(day => {
-        const date = new Date(day);
-        return {
-          day: date.toLocaleDateString('hi-IN', { weekday: 'short' }),
-          Views: dailyStats[day].Views,
-          Likes: dailyStats[day].Likes,
-          Comments: dailyStats[day].Comments,
-          Shares: dailyStats[day].Shares,
-        };
-      });
-
-      setChartData(formattedChartData);
-      setLiveStats(prev => ({
-        ...prev,
-        totalPosts: snapshot.size,
-        totalViews,
-        totalLikes,
-        totalComments,
-        totalShares
-      }));
+      setChartData(last7Days.map(day => ({
+        day: new Date(day).toLocaleDateString('hi-IN', { weekday: 'short' }),
+        Views: dailyStats[day].Views, Likes: dailyStats[day].Likes,
+        Comments: dailyStats[day].Comments, Shares: dailyStats[day].Shares,
+      })));
+      setLiveStats(prev => ({ ...prev, totalPosts: snapshot.size, totalViews, totalLikes, totalComments, totalShares }));
     });
 
-    return () => {
-      unsubUsers();
-      unsubPosts();
-    };
+    // Real-time Testimonials Listener
+    const testimonialsQuery = query(collection(db, "testimonials"), orderBy("createdAt", "desc"), limit(6));
+    const unsubTestimonials = onSnapshot(testimonialsQuery, (snapshot) => {
+      const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
+      setTestimonials(reviews);
+      setLoadingTestimonials(false);
+    });
+
+    return () => { unsubUsers(); unsubPosts(); unsubTestimonials(); };
   }, []);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus("loading");
+    try {
+      await addDoc(collection(db, "newsletter"), {
+        email: newsletterEmail,
+        subscribedAt: serverTimestamp(),
+      });
+      setNewsletterStatus("success");
+      setNewsletterEmail("");
+      setTimeout(() => setNewsletterStatus("idle"), 4000);
+    } catch (error) {
+      console.error("Newsletter error:", error);
+      setNewsletterStatus("idle");
+    }
+  };
+
+  const handleAddReview = async () => {
+    if (!currentUser || !newReviewText.trim()) return;
+    try {
+      await addDoc(collection(db, "testimonials"), {
+        userId: currentUser.uid,
+        userName: currentUser.displayName || "आलमनगर वासी",
+        userPhoto: currentUser.photoURL || "",
+        quote: newReviewText.trim(),
+        location: "आलमनगर, बिहार",
+        role: "सदस्य",
+        createdAt: serverTimestamp(),
+      });
+      setNewReviewText("");
+      setShowReviewModal(false);
+    } catch (error) {
+      console.error("Review error:", error);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!currentUser) return;
+    if (window.confirm("क्या आप वाकई अपनी यह समीक्षा हटाना चाहते हैं?")) {
+      try {
+        await deleteDoc(doc(db, "testimonials", reviewId));
+      } catch (error) {
+        console.error("Delete review error:", error);
+      }
+    }
+  };
 
   const isAdmin = currentUser && ADMIN_UIDS.includes(currentUser.uid);
 
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
-      
       <style>{`
         .tiranga-shimmer {
           background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 25%, #138808 50%, #FFFFFF 75%, #FF9933 100%);
           background-size: 200% auto;
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
+          -webkit-background-clip: text; background-clip: text; color: transparent;
           animation: shimmer 4s linear infinite;
         }
         .golden-shimmer {
           background: linear-gradient(90deg, #FCD34D 0%, #FFFFFF 40%, #F59E0B 60%, #FCD34D 100%);
           background-size: 200% auto;
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
+          -webkit-background-clip: text; background-clip: text; color: transparent;
           animation: shimmer 3s linear infinite;
         }
-        @keyframes shimmer {
-          0% { background-position: 0% center; }
-          100% { background-position: -200% center; }
-        }
+        @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: -200% center; } }
       `}</style>
 
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-      {/* ===== 1. CINEMATIC HERO SECTION WITH 4-LINE RAINBOW CHART ===== */}
+      {/* ===== 1. CINEMATIC HERO SECTION ===== */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-950 text-white px-6">
-        
-        {/* 🌈 REAL-TIME 4-LINE SYNCHRONIZED CHART AS BACKGROUND */}
         <HeroBackgroundChart data={chartData} />
-        
-        {/* ✅ FIX: Rich, deep overlay that makes the 4 neon lines glow beautifully while keeping text readable */}
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-stone-950/85 via-emerald-950/75 to-stone-950/85" />
 
         {isAdmin && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="absolute top-24 right-6 z-20"
-          >
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-24 right-6 z-20">
             <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-5 py-2.5 hover:bg-red-500/30 transition-all group shadow-lg">
               <Shield className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
               <span className="text-sm font-bold text-red-300">Admin Panel</span>
@@ -561,11 +511,9 @@ export default function HomePage() {
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl pt-2">
             आलमनगर
           </motion.h1>
-
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md leading-relaxed py-1">
             "जड़ों से जुड़ा, मिथिला की धरती का गौरव"
           </motion.p>
-          
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">
             हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।
           </motion.p>
@@ -614,7 +562,7 @@ export default function HomePage() {
 
       <LiveActivityTicker />
 
-      {/* ===== 2. QUICK STATS & REAL-TIME CHART (UNTouched) ===== */}
+      {/* ===== 2. QUICK STATS & REAL-TIME CHART ===== */}
       <section className="py-20 px-6 bg-stone-50 relative z-20">
         <div className="max-w-6xl mx-auto space-y-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
@@ -643,12 +591,11 @@ export default function HomePage() {
               </motion.div>
             ))}
           </motion.div>
-
           <CommunityPulseChart data={chartData} />
         </div>
       </section>
 
-      {/* ===== 3. ABOUT PREVIEW (UNTouched) ===== */}
+      {/* ===== 3. ABOUT PREVIEW ===== */}
       <section className="py-24 px-6 bg-white relative overflow-hidden">
         <MadhubaniPattern />
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
@@ -693,7 +640,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 4. EXPLORE SECTIONS (UNTouched) ===== */}
+      {/* ===== 4. EXPLORE SECTIONS ===== */}
       <section className="py-24 px-6 bg-stone-100">
         <div className="max-w-6xl mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
@@ -738,7 +685,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 5. MARKETPLACE TEASER (UNTouched) ===== */}
+      {/* ===== 5. MARKETPLACE TEASER ===== */}
       <section className="py-24 px-6 bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         <div className="relative z-10 max-w-6xl mx-auto">
@@ -785,39 +732,78 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 6. TESTIMONIALS (UNTouched) ===== */}
+      {/* ===== 6. REAL-TIME TESTIMONIALS (DYNAMIC) ===== */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
-            <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">कहानियाँ</span>
-            <h2 className="text-4xl md:text-6xl font-black text-stone-900">आलमनगर की आवाज़ें</h2>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div className="text-center md:text-left">
+              <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">कहानियाँ</span>
+              <h2 className="text-4xl md:text-6xl font-black text-stone-900">आलमनगर की आवाज़ें</h2>
+            </div>
+            {currentUser && (
+              <motion.button
+                variants={fadeInUp}
+                onClick={() => setShowReviewModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              >
+                <MessageCircle className="w-5 h-5" />
+                अपनी राय दें
+              </motion.button>
+            )}
           </motion.div>
 
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-8">
-            {[
-              { quote: "आलमनगर की मिट्टी में वो खुशबू है जो दूर रहने वालों को भी अपनी ओर खींचती है। यह प्लेटफॉर्म उस खुशबू को डिजिटल रूप दे रहा है।", author: "रमेश कुमार", location: "दिल्ली, भारत", role: "प्रवासी" },
-              { quote: "गाँव की यादें हमेशा दिल के करीब रहती हैं। यहाँ अपनी पुरानी तस्वीरें देखकर बचपन की यादें ताज़ा हो गईं।", author: "सुनीता देवी", location: "मुंबई, भारत", role: "शिक्षिका" },
-              { quote: "मिथिला की संस्कृति और आलमनगर का प्यार - यह हमारी पहचान है। विदेश में बैठे हमें अपने गाँव से जोड़े रखने के लिए धन्यवाद।", author: "अमित सिंह", location: "अमेरिका", role: "सॉफ्टवेयर इंजीनियर" },
-            ].map((t, i) => (
-              <motion.div key={i} variants={fadeInUp} whileHover={{ y: -8 }} className="bg-stone-50 rounded-[2rem] p-10 border border-stone-100 hover:shadow-2xl hover:border-emerald-200 transition-all duration-300 relative">
-                <Quote className="w-12 h-12 text-amber-400 mb-6 opacity-30 absolute top-8 right-8" />
-                <p className="text-stone-700 leading-relaxed mb-8 text-lg italic relative z-10">"{t.quote}"</p>
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg">
-                    {t.author[0]}
+          {loadingTestimonials ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-emerald-600 animate-spin" /></div>
+          ) : testimonials.length === 0 ? (
+            <div className="text-center py-12 bg-stone-50 rounded-3xl border border-stone-200">
+              <Quote className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+              <p className="text-stone-500 font-medium">अभी तक कोई समीक्षा नहीं है। पहली राय देने वाले बनें!</p>
+            </div>
+          ) : (
+            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonials.map((t, i) => (
+                <motion.div 
+                  key={t.id} 
+                  variants={fadeInUp} 
+                  whileHover={{ y: -8 }} 
+                  className="bg-stone-50 rounded-[2rem] p-10 border border-stone-100 hover:shadow-2xl hover:border-emerald-200 transition-all duration-300 relative group"
+                >
+                  {/* Delete Button (Only for Owner) */}
+                  {currentUser?.uid === t.userId && (
+                    <button 
+                      onClick={() => handleDeleteReview(t.id)}
+                      className="absolute top-6 right-6 p-2 bg-red-50 text-red-500 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-100 transition-all"
+                      title="अपनी समीक्षा हटाएं"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  
+                  <Quote className="w-12 h-12 text-amber-400 mb-6 opacity-30 absolute top-8 left-8" />
+                  <p className="text-stone-700 leading-relaxed mb-8 text-lg italic relative z-10 pt-4">"{t.quote}"</p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg p-[2px]">
+                      <div className="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
+                        {t.userPhoto ? (
+                          <img src={t.userPhoto} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{t.userName[0]}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-black text-stone-900 text-lg">{t.userName}</p>
+                      <p className="text-sm text-stone-500 font-medium">{t.location} • {t.role}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-black text-stone-900 text-lg">{t.author}</p>
-                    <p className="text-sm text-stone-500 font-medium">{t.location} • {t.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
       </section>
 
-      {/* ===== 7. NEWSLETTER (UNTouched) ===== */}
+      {/* ===== 7. WORKING NEWSLETTER ===== */}
       <section className="py-24 px-6 bg-gradient-to-br from-emerald-950 to-green-950 text-white relative overflow-hidden">
         <MadhubaniPattern />
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
@@ -828,16 +814,43 @@ export default function HomePage() {
           <p className="text-lg text-white/70 mb-10 max-w-xl mx-auto">
             आलमनगर के कार्यक्रमों, समाचारों और समुदाय की कहानियों की सीधी जानकारी अपने ईमेल पर पाएं।
           </p>
-          <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto" onSubmit={(e) => e.preventDefault()}>
-            <input type="email" placeholder="अपना ईमेल दर्ज करें" className="flex-1 px-8 py-5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-4 focus:ring-amber-400/30 focus:border-amber-400 transition-all text-lg" />
-            <button type="submit" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-10 py-5 rounded-full transition-all duration-300 hover:scale-105 shadow-lg text-lg whitespace-nowrap">
-              सदस्यता लें
+          
+          <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto" onSubmit={handleNewsletterSubmit}>
+            <input 
+              type="email" 
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              placeholder="अपना ईमेल दर्ज करें" 
+              className="flex-1 px-8 py-5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-4 focus:ring-amber-400/30 focus:border-amber-400 transition-all text-lg disabled:opacity-50" 
+              disabled={newsletterStatus === "success"}
+              required
+            />
+            <button 
+              type="submit" 
+              disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-10 py-5 rounded-full transition-all duration-300 hover:scale-105 shadow-lg text-lg whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[180px]"
+            >
+              {newsletterStatus === "loading" ? <Loader2 className="w-5 h-5 animate-spin" /> : 
+               newsletterStatus === "success" ? "सफल!" : "सदस्यता लें"}
             </button>
           </form>
+          
+          <AnimatePresence>
+            {newsletterStatus === "success" && (
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0 }}
+                className="text-emerald-400 mt-6 font-bold flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-5 h-5" /> ✅ सफलतापूर्वक सदस्यता ले ली गई!
+              </motion.p>
+            )}
+          </AnimatePresence>
         </motion.div>
       </section>
 
-      {/* ===== 8. FOOTER (UNTouched) ===== */}
+      {/* ===== 8. FOOTER ===== */}
       <footer className="bg-stone-950 text-stone-400 py-20 px-6 border-t border-stone-900 relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
         <div className="max-w-6xl mx-auto">
@@ -886,6 +899,75 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* 📝 ADD REVIEW MODAL */}
+      <AnimatePresence>
+        {showReviewModal && currentUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setShowReviewModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-black text-stone-900">अपनी राय साझा करें</h3>
+                <button onClick={() => setShowReviewModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
+                  <X className="w-6 h-6 text-stone-500" />
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-3 mb-6 p-4 bg-stone-50 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px]">
+                  <div className="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
+                    {currentUser.photoURL ? (
+                      <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold text-stone-700">{currentUser.displayName?.[0] || "U"}</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="font-bold text-stone-900 text-sm">{currentUser.displayName || "आलमनगर वासी"}</p>
+                  <p className="text-xs text-stone-500">आपकी राय सार्वजनिक रूप से दिखाई जाएगी</p>
+                </div>
+              </div>
+
+              <textarea
+                value={newReviewText}
+                onChange={(e) => setNewReviewText(e.target.value)}
+                className="w-full p-4 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all resize-none mb-6"
+                rows={4}
+                placeholder="आलमनगर के बारे में आपका अनुभव कैसा रहा?..."
+                maxLength={300}
+              />
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setShowReviewModal(false)} 
+                  className="flex-1 py-3 rounded-xl border border-stone-200 font-bold text-stone-600 hover:bg-stone-50 transition-colors"
+                >
+                  रद्द करें
+                </button>
+                <button 
+                  onClick={handleAddReview} 
+                  disabled={!newReviewText.trim()}
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  सबमिट करें
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
