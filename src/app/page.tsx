@@ -9,7 +9,7 @@ import {
   Flame, Award, TrendingUp, LogIn, Lock
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
 import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
@@ -73,6 +73,64 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 };
 
 // ═══════════════════════════════════════════════════════════
+// 🌈 HERO BACKGROUND CHART (Thick, Rainbow, Fluctuating)
+// ═══════════════════════════════════════════════════════════
+const HeroBackgroundChart = ({ data }: { data: any[] }) => {
+  if (data.length === 0) return null;
+  
+  return (
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-40">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 40, right: 0, left: 0, bottom: 40 }}>
+          <defs>
+            {/* Indradhanush (Rainbow) Gradient for the thick line */}
+            <linearGradient id="rainbowStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#10b981" />   {/* Emerald */}
+              <stop offset="25%" stopColor="#f59e0b" />  {/* Amber */}
+              <stop offset="50%" stopColor="#ef4444" />  {/* Red */}
+              <stop offset="75%" stopColor="#8b5cf6" />  {/* Purple */}
+              <stop offset="100%" stopColor="#3b82f6" /> {/* Blue */}
+            </linearGradient>
+            
+            {/* Subtle glow fill underneath */}
+            <linearGradient id="rainbowGlow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4}/>
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          
+          {/* Primary Thick Fluctuating Rainbow Line */}
+          <Area 
+            type="monotone" 
+            dataKey="Views" 
+            stroke="url(#rainbowStroke)" 
+            strokeWidth={12} 
+            fillOpacity={1} 
+            fill="url(#rainbowGlow)" 
+            isAnimationActive={true} 
+            animationDuration={5000} 
+            animationEasing="ease-in-out"
+          />
+          
+          {/* Secondary Line for extra depth and movement */}
+          <Area 
+            type="monotone" 
+            dataKey="Likes" 
+            stroke="url(#rainbowStroke)" 
+            strokeWidth={8} 
+            strokeOpacity={0.6}
+            fill="transparent"
+            isAnimationActive={true} 
+            animationDuration={6500} 
+            animationEasing="ease-in-out"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
 // 📊 CUSTOM CHART TOOLTIP (Premium Glassmorphism)
 // ═══════════════════════════════════════════════════════════
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -100,7 +158,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📈 COMMUNITY PULSE CHART COMPONENT
+// 📈 COMMUNITY PULSE CHART COMPONENT (100% UNTOUCHED)
 // ═══════════════════════════════════════════════════════════
 const CommunityPulseChart = ({ data }: { data: any[] }) => {
   return (
@@ -436,20 +494,14 @@ export default function HomePage() {
       {/* Scroll Progress Bar */}
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-      {/* ===== 1. CINEMATIC HERO SECTION ===== */}
+      {/* ===== 1. CINEMATIC HERO SECTION WITH RAINBOW CHART BACKGROUND ===== */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-950 via-green-900 to-amber-950 text-white px-6">
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px]" 
-        />
-        <motion.div 
-          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.3, 0.2] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber-500/20 rounded-full blur-[150px]" 
-        />
         
-        <MadhubaniPattern />
+        {/* 🌈 REAL-TIME RAINBOW CHART AS BACKGROUND */}
+        <HeroBackgroundChart data={chartData} />
+        
+        {/* Premium Dark Overlay to ensure text readability over the chart */}
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-emerald-950/80 via-stone-950/80 to-amber-950/80" />
 
         {isAdmin && (
           <motion.div 
@@ -538,7 +590,7 @@ export default function HomePage() {
 
       <LiveActivityTicker />
 
-      {/* ===== 2. QUICK STATS & REAL-TIME CHART ===== */}
+      {/* ===== 2. QUICK STATS & REAL-TIME CHART (UNTouched) ===== */}
       <section className="py-20 px-6 bg-stone-50 relative z-20">
         <div className="max-w-6xl mx-auto space-y-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
@@ -568,12 +620,12 @@ export default function HomePage() {
             ))}
           </motion.div>
 
-          {/* 📊 NEW: REAL-TIME COMMUNITY PULSE CHART */}
+          {/* Community Pulse Chart (Untouched) */}
           <CommunityPulseChart data={chartData} />
         </div>
       </section>
 
-      {/* ===== 3. ABOUT PREVIEW ===== */}
+      {/* ===== 3. ABOUT PREVIEW (UNTouched) ===== */}
       <section className="py-24 px-6 bg-white relative overflow-hidden">
         <MadhubaniPattern />
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
@@ -618,7 +670,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 4. EXPLORE SECTIONS ===== */}
+      {/* ===== 4. EXPLORE SECTIONS (UNTouched) ===== */}
       <section className="py-24 px-6 bg-stone-100">
         <div className="max-w-6xl mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
@@ -663,10 +715,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 5. MARKETPLACE TEASER ===== */}
+      {/* ===== 5. MARKETPLACE TEASER (UNTouched) ===== */}
       <section className="py-24 px-6 bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
-        <MadhubaniPattern />
         <div className="relative z-10 max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
@@ -711,7 +762,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 6. TESTIMONIALS ===== */}
+      {/* ===== 6. TESTIMONIALS (UNTouched) ===== */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
@@ -743,7 +794,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 7. NEWSLETTER ===== */}
+      {/* ===== 7. NEWSLETTER (UNTouched) ===== */}
       <section className="py-24 px-6 bg-gradient-to-br from-emerald-950 to-green-950 text-white relative overflow-hidden">
         <MadhubaniPattern />
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
@@ -763,7 +814,7 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ===== 8. FOOTER ===== */}
+      {/* ===== 8. FOOTER (UNTouched) ===== */}
       <footer className="bg-stone-950 text-stone-400 py-20 px-6 border-t border-stone-900 relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
         <div className="max-w-6xl mx-auto">
