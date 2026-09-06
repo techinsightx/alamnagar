@@ -167,7 +167,6 @@ export default function GalleryPage() {
     
     const data = await response.json();
     let optimizedUrl = data.secure_url;
-    // 🚀 Createra-style auto-optimization
     if (optimizedUrl.includes('/image/upload/')) {
       optimizedUrl = optimizedUrl.replace('/image/upload/', '/image/upload/q_auto,f_auto,w_1200/');
     }
@@ -186,13 +185,11 @@ export default function GalleryPage() {
     setUploadMessage("छवि क्लाउड पर अपलोड हो रही है...");
 
     try {
-      // Stage 1: Upload to Cloudinary
       const imageUrl = await uploadToCloudinary(uploadFile);
       setProgress(60);
       setUploadStage(2);
       setUploadMessage("विरासत में सहेजा जा रहा है...");
 
-      // Stage 2: Save to Firestore
       await addDoc(collection(db, "gallery"), {
         url: imageUrl,
         title: uploadTitle.trim(),
@@ -254,7 +251,7 @@ export default function GalleryPage() {
       }
     } catch (error) {
       console.error("Like error:", error);
-      showToast("लाइक करने में त्रुटि हुई।", "error");
+      showToast("सराहना व्यक्त करने में त्रुटि हुई।", "error");
     }
   };
 
@@ -392,23 +389,39 @@ export default function GalleryPage() {
           })}
         </div>
 
-        {/* Masonry Grid */}
+        {/* ✅ FIXED: Descriptive Loading State & Premium Empty State */}
         {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
+          <div className="flex flex-col items-center justify-center py-24">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-12 h-12 rounded-full border-4 border-emerald-500/30 border-t-emerald-600 mb-4"
+            />
+            <p className="text-stone-500 font-medium animate-pulse">आलमनगर की यादें लोड हो रही हैं...</p>
           </div>
         ) : filteredImages.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-stone-200">
-            <ImageIcon className="w-16 h-16 text-stone-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-stone-900 mb-2">इस श्रेणी में अभी कोई तस्वीर नहीं है</h3>
-            <p className="text-stone-500 mb-6">पहली तस्वीर अपलोड करके विरासत की शुरुआत करें!</p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-20 bg-white rounded-3xl border border-stone-200 shadow-sm"
+          >
+            <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ImageIcon className="w-10 h-10 text-stone-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-stone-900 mb-3">अभी विरासत में कोई तस्वीर नहीं जुड़ी है</h3>
+            <p className="text-stone-500 mb-8 max-w-md mx-auto">
+              {activeCategory === "all" 
+                ? "सबसे पहली तस्वीर अपलोड करके आलमनगर की डिजिटल विरासत की शुरुआत आप करें!" 
+                : `इस श्रेणी में अभी कोई तस्वीर नहीं है। "${CATEGORIES.find(c => c.id === activeCategory)?.label}" की पहली याद साझा करें!`}
+            </p>
             <button
               onClick={() => user ? setShowUploadModal(true) : router.push("/auth")}
-              className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/20"
             >
+              <UploadCloud className="w-5 h-5" />
               तस्वीर अपलोड करें
             </button>
-          </div>
+          </motion.div>
         ) : (
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
             <AnimatePresence>
@@ -431,7 +444,6 @@ export default function GalleryPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
-                    {/* Hover Overlay Info */}
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                       <div className="flex items-center gap-2 mb-2">
                         <MapPin className="w-3 h-3 text-amber-400" />
@@ -504,7 +516,6 @@ export default function GalleryPage() {
               </div>
 
               <div className="p-6 space-y-6">
-                {/* Image Upload Area with Drag & Drop */}
                 <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -546,7 +557,6 @@ export default function GalleryPage() {
                   )}
                 </div>
 
-                {/* Form Fields */}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-stone-700 mb-2">शीर्षक *</label>
@@ -637,7 +647,6 @@ export default function GalleryPage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-stone-900 rounded-3xl overflow-hidden max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row shadow-2xl"
             >
-              {/* Image Side */}
               <div className="md:w-3/5 bg-black flex items-center justify-center p-4 md:p-8">
                 <img 
                   src={selectedImage.url} 
@@ -646,7 +655,6 @@ export default function GalleryPage() {
                 />
               </div>
 
-              {/* Details Side */}
               <div className="md:w-2/5 p-6 md:p-8 flex flex-col overflow-y-auto">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px]">
