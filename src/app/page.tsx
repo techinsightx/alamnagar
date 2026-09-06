@@ -7,7 +7,7 @@ import {
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
-  CheckCircle, X, ExternalLink, Globe
+  CheckCircle, X, Globe
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -333,6 +333,84 @@ interface Testimonial {
   role: string;
   createdAt: any;
 }
+
+// ═══════════════════════════════════════════════════════════
+// 🚀 CLEAN OG METADATA BANNER (WhatsApp/Telegram Style)
+// ═══════════════════════════════════════════════════════════
+const CreateraOGBanner = () => {
+  const [ogData, setOgData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("https://api.microlink.io/?url=https://createra.in")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          setOgData(data.data);
+        }
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="w-full mb-12 rounded-2xl bg-stone-100 border border-stone-200 h-40 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+      </div>
+    );
+  }
+
+  const title = ogData?.title || "Createra";
+  const description = ogData?.description || "Create, publish, and share your thoughts with the world.";
+  const imageUrl = ogData?.image?.url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop";
+  const domain = ogData?.publisher || "createra.in";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="w-full mb-12"
+    >
+      <Link 
+        href="https://createra.in" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="group block w-full overflow-hidden rounded-2xl bg-white border border-stone-200 shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all duration-300"
+      >
+        <div className="flex flex-col md:flex-row w-full">
+          {/* Left: Image (Fixed height, responsive width) */}
+          <div className="w-full md:w-1/3 h-48 md:h-40 bg-stone-100 relative overflow-hidden flex-shrink-0">
+            <img 
+              src={imageUrl}
+              alt="Preview"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+
+          {/* Right: Pure Metadata Text */}
+          <div className="flex-1 p-4 md:p-5 flex flex-col justify-center min-w-0">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Globe className="w-3.5 h-3.5 text-stone-400" />
+              <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide truncate">
+                {domain}
+              </span>
+            </div>
+
+            <h3 className="text-base md:text-lg font-bold text-stone-900 line-clamp-1 mb-1.5 group-hover:text-emerald-600 transition-colors">
+              {title}
+            </h3>
+
+            <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
+              {description}
+            </p>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+};
 
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
@@ -846,100 +924,16 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ===== 8. FOOTER WITH ULTRA-PREMIUM LIVE OG METADATA BANNER ===== */}
-      <footer className="bg-stone-950 text-stone-400 py-20 px-6 border-t border-stone-900 relative">
+      {/* ===== 8. FOOTER WITH CLEAN OG METADATA BANNER ===== */}
+      <footer className="bg-stone-950 text-stone-400 py-16 px-6 border-t border-stone-900 relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
         <div className="max-w-6xl mx-auto">
           
-          {/* 🚀 LIVE OG METADATA BANNER (Social Media Share Preview Style) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <Link 
-              href="https://createra.in" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="group block overflow-hidden rounded-3xl bg-white shadow-2xl hover:shadow-emerald-500/20 transition-all duration-500 border border-stone-200 hover:border-emerald-500/50"
-            >
-              {/* OG Image Container (1200x630 Aspect Ratio) */}
-              <div className="relative aspect-[1200/630] overflow-hidden bg-stone-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=1200&auto=format&fit=crop" 
-                  alt="Createra Preview"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                
-                {/* Premium Overlay on Hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-                
-                {/* Domain Badge */}
-                <div className="absolute top-6 left-6 flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-lg border border-white/10">
-                  <Globe className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-xs font-bold text-white tracking-wide">createra.in</span>
-                </div>
-
-                {/* Visit CTA */}
-                <div className="absolute bottom-6 right-6">
-                  <motion.div
-                    animate={{ x: [0, 4, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white rounded-xl font-bold text-sm flex items-center gap-2 shadow-xl"
-                  >
-                    <span>Visit Platform</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* OG Metadata Text */}
-              <div className="p-6 md:p-8 bg-white">
-                <div className="flex items-start gap-5">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-2xl md:text-3xl font-black text-stone-900 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                      Createra — Share Your Story
-                    </h3>
-                    <p className="text-stone-600 text-base md:text-lg leading-relaxed line-clamp-2">
-                      Create, publish, and share your thoughts with the world. The most advanced blogging platform for creators.
-                    </p>
-                    
-                    {/* Live Stats Bar */}
-                    <div className="flex flex-wrap items-center gap-4 mt-6 pt-6 border-t border-stone-100">
-                      <div className="flex items-center gap-2 text-emerald-600">
-                        <span className="relative flex h-2.5 w-2.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                        </span>
-                        <span className="text-sm font-bold">Active Platform</span>
-                      </div>
-                      <div className="h-4 w-px bg-stone-300" />
-                      <div className="flex items-center gap-2 text-stone-500 text-sm font-medium">
-                        <Users className="w-4 h-4" />
-                        <span>10,000+ Writers</span>
-                      </div>
-                      <div className="h-4 w-px bg-stone-300" />
-                      <div className="flex items-center gap-2 text-stone-500 text-sm font-medium">
-                        <Star className="w-4 h-4" />
-                        <span>50,000+ Articles</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Brand Icon Badge */}
-                  <div className="hidden md:flex flex-shrink-0">
-                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                      <Sparkles className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
+          {/* ✅ CLEAN, THIN, FULL-WIDTH RECTANGULAR BANNER */}
+          <CreateraOGBanner />
 
           {/* Footer Content */}
-          <div className="grid md:grid-cols-4 gap-12 mb-16">
+          <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
               <h3 className="text-white text-4xl font-black mb-6 tracking-tight">
                 आलम<span className="text-amber-500">नगर</span>
@@ -977,7 +971,7 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-stone-900 pt-10 text-center">
+          <div className="border-t border-stone-900 pt-8 text-center">
             <p className="text-sm text-stone-500">
               © {new Date().getFullYear()} alamnagar.in — आलमनगर के लिए <Heart className="w-4 h-4 inline text-red-500 fill-red-500 mx-1" /> के साथ बनाया गया
             </p>
