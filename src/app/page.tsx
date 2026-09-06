@@ -73,13 +73,13 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 HERO BACKGROUND CHART (Thick, Rainbow, Fluctuating)
+// 🌈 HERO BACKGROUND CHART (Thick, Rainbow, Fluctuating & NOW MORE VISIBLE)
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-40">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-70">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 40, right: 0, left: 0, bottom: 40 }}>
           <defs>
@@ -94,7 +94,7 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
             
             {/* Subtle glow fill underneath */}
             <linearGradient id="rainbowGlow" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4}/>
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.5}/>
               <stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/>
             </linearGradient>
           </defs>
@@ -118,7 +118,7 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
             dataKey="Likes" 
             stroke="url(#rainbowStroke)" 
             strokeWidth={8} 
-            strokeOpacity={0.6}
+            strokeOpacity={0.7}
             fill="transparent"
             isAnimationActive={true} 
             animationDuration={6500} 
@@ -402,11 +402,10 @@ export default function HomePage() {
     const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
       let totalViews = 0, totalLikes = 0, totalComments = 0, totalShares = 0;
       
-      // 📊 Process data for the last 7 days chart
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
-        return d.toISOString().split('T')[0]; // YYYY-MM-DD
+        return d.toISOString().split('T')[0];
       });
 
       const dailyStats: Record<string, { Views: number; Likes: number; Comments: number; Shares: number }> = {};
@@ -421,7 +420,6 @@ export default function HomePage() {
         totalComments += data.comments || 0;
         totalShares += data.shares || 0;
 
-        // Aggregate by day
         if (data.createdAt?.toDate) {
           const dateStr = data.createdAt.toDate().toISOString().split('T')[0];
           if (dailyStats[dateStr]) {
@@ -433,11 +431,10 @@ export default function HomePage() {
         }
       });
 
-      // Format for Recharts
       const formattedChartData = last7Days.map(day => {
         const date = new Date(day);
         return {
-          day: date.toLocaleDateString('hi-IN', { weekday: 'short' }), // e.g., "सोम"
+          day: date.toLocaleDateString('hi-IN', { weekday: 'short' }),
           Views: dailyStats[day].Views,
           Likes: dailyStats[day].Likes,
           Comments: dailyStats[day].Comments,
@@ -467,7 +464,6 @@ export default function HomePage() {
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
       
-      {/* 🎨 CLEAN SHIMMER ANIMATIONS */}
       <style>{`
         .tiranga-shimmer {
           background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 25%, #138808 50%, #FFFFFF 75%, #FF9933 100%);
@@ -491,17 +487,16 @@ export default function HomePage() {
         }
       `}</style>
 
-      {/* Scroll Progress Bar */}
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-      {/* ===== 1. CINEMATIC HERO SECTION WITH RAINBOW CHART BACKGROUND ===== */}
+      {/* ===== 1. CINEMATIC HERO SECTION WITH VISIBLE RAINBOW CHART ===== */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-950 via-green-900 to-amber-950 text-white px-6">
         
-        {/* 🌈 REAL-TIME RAINBOW CHART AS BACKGROUND */}
+        {/* 🌈 REAL-TIME RAINBOW CHART AS BACKGROUND (Opacity increased to 70%) */}
         <HeroBackgroundChart data={chartData} />
         
-        {/* Premium Dark Overlay to ensure text readability over the chart */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-br from-emerald-950/80 via-stone-950/80 to-amber-950/80" />
+        {/* ✅ FIX: Premium Dark Overlay made MUCH MORE TRANSPARENT (30-40%) so rainbow colors pop! */}
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-emerald-950/40 via-stone-950/30 to-amber-950/40" />
 
         {isAdmin && (
           <motion.div 
@@ -620,7 +615,6 @@ export default function HomePage() {
             ))}
           </motion.div>
 
-          {/* Community Pulse Chart (Untouched) */}
           <CommunityPulseChart data={chartData} />
         </div>
       </section>
