@@ -73,55 +73,84 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 HERO BACKGROUND CHART (Thick, Rainbow, Fluctuating & NOW MORE VISIBLE)
+// 🌈 HERO BACKGROUND CHART (4-LINE SYNCHRONIZED WORLD-CLASS)
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-70">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-60">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 40, right: 0, left: 0, bottom: 40 }}>
+        <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
           <defs>
-            {/* Indradhanush (Rainbow) Gradient for the thick line */}
-            <linearGradient id="rainbowStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#10b981" />   {/* Emerald */}
-              <stop offset="25%" stopColor="#f59e0b" />  {/* Amber */}
-              <stop offset="50%" stopColor="#ef4444" />  {/* Red */}
-              <stop offset="75%" stopColor="#8b5cf6" />  {/* Purple */}
-              <stop offset="100%" stopColor="#3b82f6" /> {/* Blue */}
+            {/* Glowing fills for each line to create depth */}
+            <linearGradient id="glowViews" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/>
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/>
             </linearGradient>
-            
-            {/* Subtle glow fill underneath */}
-            <linearGradient id="rainbowGlow" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.5}/>
+            <linearGradient id="glowLikes" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/>
+              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="glowComments" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.2}/>
               <stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="glowShares" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity={0.1}/>
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
             </linearGradient>
           </defs>
           
-          {/* Primary Thick Fluctuating Rainbow Line */}
+          {/* 1. Views (Blue) - Thickest, most prominent */}
           <Area 
             type="monotone" 
             dataKey="Views" 
-            stroke="url(#rainbowStroke)" 
-            strokeWidth={12} 
+            stroke="#3b82f6" 
+            strokeWidth={14} 
             fillOpacity={1} 
-            fill="url(#rainbowGlow)" 
+            fill="url(#glowViews)" 
             isAnimationActive={true} 
-            animationDuration={5000} 
+            animationDuration={6000} 
             animationEasing="ease-in-out"
           />
           
-          {/* Secondary Line for extra depth and movement */}
+          {/* 2. Likes (Rose) */}
           <Area 
             type="monotone" 
             dataKey="Likes" 
-            stroke="url(#rainbowStroke)" 
-            strokeWidth={8} 
-            strokeOpacity={0.7}
-            fill="transparent"
+            stroke="#f43f5e" 
+            strokeWidth={10} 
+            fillOpacity={1} 
+            fill="url(#glowLikes)" 
             isAnimationActive={true} 
-            animationDuration={6500} 
+            animationDuration={7500} 
+            animationEasing="ease-in-out"
+          />
+          
+          {/* 3. Comments (Amber) */}
+          <Area 
+            type="monotone" 
+            dataKey="Comments" 
+            stroke="#f59e0b" 
+            strokeWidth={7} 
+            fillOpacity={1} 
+            fill="url(#glowComments)" 
+            isAnimationActive={true} 
+            animationDuration={9000} 
+            animationEasing="ease-in-out"
+          />
+          
+          {/* 4. Shares (Emerald) - Thinnest, subtle background layer */}
+          <Area 
+            type="monotone" 
+            dataKey="Shares" 
+            stroke="#10b981" 
+            strokeWidth={4} 
+            fillOpacity={1} 
+            fill="url(#glowShares)" 
+            isAnimationActive={true} 
+            animationDuration={10500} 
             animationEasing="ease-in-out"
           />
         </AreaChart>
@@ -489,14 +518,14 @@ export default function HomePage() {
 
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-      {/* ===== 1. CINEMATIC HERO SECTION WITH VISIBLE RAINBOW CHART ===== */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-950 via-green-900 to-amber-950 text-white px-6">
+      {/* ===== 1. CINEMATIC HERO SECTION WITH 4-LINE RAINBOW CHART ===== */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-950 text-white px-6">
         
-        {/* 🌈 REAL-TIME RAINBOW CHART AS BACKGROUND (Opacity increased to 70%) */}
+        {/* 🌈 REAL-TIME 4-LINE SYNCHRONIZED CHART AS BACKGROUND */}
         <HeroBackgroundChart data={chartData} />
         
-        {/* ✅ FIX: Premium Dark Overlay made MUCH MORE TRANSPARENT (30-40%) so rainbow colors pop! */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-br from-emerald-950/40 via-stone-950/30 to-amber-950/40" />
+        {/* ✅ FIX: Rich, deep overlay that makes the 4 neon lines glow beautifully while keeping text readable */}
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-stone-950/85 via-emerald-950/75 to-stone-950/85" />
 
         {isAdmin && (
           <motion.div 
