@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Menu, X, Home, Users, Image, ShoppingBag, Phone, 
-  Star, User, LogOut, Loader2, Sparkles
+  Star, User, LogOut, Loader2, Globe
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -85,20 +85,34 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             
-            {/* 🌟 Logo Section */}
+            {/* 🌟 Animated Globe Logo Section */}
             <Link href="/" className="flex items-center gap-3 group">
               <motion.div 
-                whileHover={{ scale: 1.05, rotate: 2 }}
-                className="relative w-11 h-11 bg-gradient-to-br from-emerald-600 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all"
+                className="relative w-11 h-11 bg-gradient-to-br from-emerald-500 via-amber-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-amber-500/30 transition-all overflow-hidden"
+                whileHover={{ scale: 1.05 }}
               >
-                <span className="text-white font-extrabold text-xl">आ</span>
-                <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-amber-400 fill-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Continuously Rotating Globe Icon */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                  className="w-7 h-7 text-white drop-shadow-md relative z-10"
+                >
+                  <Globe className="w-full h-full" strokeWidth={2.5} />
+                </motion.div>
+                
+                {/* Live Colorful Pulse/Glow Effect */}
+                <motion.div 
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.5, 0.2] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute inset-0 bg-white/40 rounded-xl blur-md"
+                />
               </motion.div>
+              
               <div>
-                <h1 className="text-xl font-extrabold text-stone-900 tracking-tight">
+                <h1 className="text-xl font-extrabold text-stone-900 tracking-tight leading-none">
                   आलम<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-amber-600">नगर</span>
                 </h1>
-                <p className="text-[10px] text-stone-500 font-semibold tracking-wide uppercase">हमारा गाँव, हमारी पहचान</p>
+                <p className="text-[10px] text-stone-500 font-semibold tracking-wider uppercase mt-0.5">हमारा गाँव, हमारी पहचान</p>
               </div>
             </Link>
 
