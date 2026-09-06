@@ -7,7 +7,7 @@ import {
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
-  CheckCircle, X // ✅ FIX: Added missing icons here
+  CheckCircle, X, ExternalLink
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -854,6 +854,53 @@ export default function HomePage() {
       <footer className="bg-stone-950 text-stone-400 py-20 px-6 border-t border-stone-900 relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
         <div className="max-w-6xl mx-auto">
+          
+          {/* 🎯 CREATERA PROMOTION BANNER */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-16"
+          >
+            <Link 
+              href="https://createra.in" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group block relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-900 via-emerald-950 to-stone-900 border border-stone-800 hover:border-emerald-500/50 transition-all duration-500"
+            >
+              {/* Animated Background Glow */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
+              </div>
+
+              <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-6">
+                  {/* Createra Logo/Icon */}
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-2xl md:text-3xl font-black text-white">Createra</h3>
+                      <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-xs font-bold text-emerald-400 uppercase">Powered By</span>
+                    </div>
+                    <p className="text-stone-400 text-sm md:text-base max-w-md">
+                      अपने विचारों को दुनिया के सामने लाएं। Createra पर अपना ब्लॉग बनाएं और अपनी कहानी साझा करें।
+                    </p>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-6 py-4 group-hover:bg-white/10 group-hover:border-emerald-500/30 transition-all duration-300">
+                  <span className="text-white font-bold text-sm md:text-base">अभी शुरू करें</span>
+                  <ExternalLink className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+
           <div className="grid md:grid-cols-4 gap-12 mb-16">
             <div className="md:col-span-2">
               <h3 className="text-white text-4xl font-black mb-6 tracking-tight">
