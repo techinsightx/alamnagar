@@ -232,18 +232,53 @@ const EngagementScore = ({ metrics }: { metrics: EngagementMetrics }) => {
   );
 };
 
+// ═══════════════════════════════════════════════════════════
+// 🔥 FIXED NOTIFICATIONS DRAWER (No Index Required + Premium Desi Vibe)
+// ═══════════════════════════════════════════════════════════
 const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boolean; onClose: () => void; currentUserId: string }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isOpen || !currentUserId) return;
-    setLoading(true);
-    const q = query(collection(db, "notifications"), where("toUserId", "==", currentUserId), orderBy("createdAt", "desc"), limit(50));
-    const unsub = onSnapshot(q, (snapshot) => {
-      setNotifications(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    if (!isOpen || !currentUserId) {
+      setNotifications([]);
       setLoading(false);
-    });
+      return;
+    }
+    
+    setLoading(true);
+    
+    // 🔥 FIX: Fetch all notifications ordered by date (no where clause = no index needed!)
+    const q = query(
+      collection(db, "notifications"), 
+      orderBy("createdAt", "desc"),
+      limit(100) // Limit to latest 100 for performance
+    );
+    
+    const unsub = onSnapshot(
+      q, 
+      (snapshot) => {
+        // 🔥 Client-side filtering for the current user
+        const allNotifs = snapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        }));
+        
+        const userNotifs = allNotifs.filter(
+          (n: any) => n.toUserId === currentUserId
+        );
+        
+        setNotifications(userNotifs);
+        setLoading(false);
+      },
+      (error) => {
+        // 🔥 CRITICAL: Error handler prevents infinite spinner
+        console.error("🔥 Notifications fetch error:", error);
+        setLoading(false);
+        setNotifications([]);
+      }
+    );
+    
     return () => unsub();
   }, [isOpen, currentUserId]);
 
@@ -251,36 +286,108 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
 
   return (
     <AnimatePresence>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end" onClick={onClose}>
-        <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="w-full max-w-md bg-stone-900 h-full border-l border-stone-700 flex flex-col" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between p-4 border-b border-stone-700">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2"><Bell className="w-5 h-5 text-emerald-500" /> सूचनाएँ</h3>
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5 text-white/70" /></button>
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }} 
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end" 
+        onClick={onClose}
+      >
+        <motion.div 
+          initial={{ x: "100%" }} 
+          animate={{ x: 0 }} 
+          exit={{ x: "100%" }} 
+          transition={{ type: "spring", damping: 30, stiffness: 300 }} 
+          className="w-full max-w-md bg-stone-900 h-full border-l border-stone-700 flex flex-col" 
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 border-b border-stone-700 bg-stone-900/50 backdrop-blur-md sticky top-0 z-10">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Bell className="w-5 h-5 text-amber-500" /> 
+              सूचनाएँ
+            </h3>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <X className="w-5 h-5 text-white/70" />
+            </button>
           </div>
+          
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {loading ? (
-              <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-emerald-500 animate-spin" /></div>
+              <div className="flex flex-col items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 text-amber-500 animate-spin mb-3" />
+                <p className="text-sm text-white/50 font-medium">सूचनाएँ लोड हो रही हैं...</p>
+              </div>
             ) : notifications.length === 0 ? (
-              <div className="text-center py-12 text-white/40">
-                <Bell className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p className="text-sm">अभी कोई सूचना नहीं है</p>
+              <div className="text-center py-16 px-4">
+                <div className="w-16 h-16 mx-auto mb-4 bg-stone-800 rounded-full flex items-center justify-center">
+                  <Bell className="w-8 h-8 text-stone-500" />
+                </div>
+                <p className="text-white/80 text-sm font-semibold mb-1">अभी कोई सूचना नहीं है</p>
+                <p className="text-white/40 text-xs">जब कोई आपकी पोस्ट को लाइक या कमेंट करेगा, यहाँ दिखेगा</p>
               </div>
             ) : (
               notifications.map((notif: any) => (
-                <div key={notif.id} className="flex gap-3 p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
+                <motion.div 
+                  key={notif.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex gap-3 p-3 bg-stone-800/50 rounded-xl border border-white/5 hover:bg-stone-800 transition-all group"
+                >
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px] flex-shrink-0">
                     <div className="w-full h-full rounded-full bg-stone-900 overflow-hidden flex items-center justify-center">
-                      {notif.fromUserPhoto ? <img src={notif.fromUserPhoto} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-white">{notif.fromUserName?.[0] || "U"}</span>}
+                      {notif.fromUserPhoto ? (
+                        <img src={notif.fromUserPhoto} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        <span className="text-sm font-bold text-white">
+                          {notif.fromUserName?.[0] || "U"}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white/90"><span className="font-semibold text-white">{notif.fromUserName || "User"}</span> <span className="text-white/60">{notif.type === 'like' ? 'ने आपके पोस्ट को लाइक किया' : notif.type === 'comment' ? 'ने कमेंट किया' : 'ने आपको फॉलो किया'}</span></p>
-                    <p className="text-[10px] text-white/40 mt-1">{notif.createdAt?.toDate ? new Date(notif.createdAt.toDate()).toLocaleDateString('hi-IN') : "हाल ही में"}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white/90 leading-relaxed">
+                      <span className="font-semibold text-amber-400">
+                        {notif.fromUserName || "User"}
+                      </span>{" "}
+                      <span className="text-white/60">
+                        {notif.type === 'like' 
+                          ? 'ने आपके पोस्ट को लाइक किया ❤️' 
+                          : notif.type === 'comment' 
+                          ? 'ने कमेंट किया 💬' 
+                          : notif.type === 'follow'
+                          ? 'ने आपको फॉलो किया 👥'
+                          : 'ने कुछ किया'}
+                      </span>
+                    </p>
+                    {notif.postTitle && (
+                      <p className="text-xs text-white/40 mt-1 truncate flex items-center gap-1">
+                        <span className="text-amber-500/50">📝</span> "{notif.postTitle}"
+                      </p>
+                    )}
+                    <p className="text-[10px] text-white/40 mt-1.5 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {notif.createdAt?.toDate 
+                        ? new Date(notif.createdAt.toDate()).toLocaleString('hi-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })
+                        : "हाल ही में"}
+                    </p>
                   </div>
-                </div>
+                </motion.div>
               ))
             )}
           </div>
+          
+          {notifications.length > 0 && (
+            <div className="p-3 border-t border-stone-700 text-center bg-stone-900/50 backdrop-blur-md sticky bottom-0">
+              <p className="text-xs text-white/40 font-medium">
+                कुल {notifications.length} सूचनाएँ
+              </p>
+            </div>
+          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>
