@@ -7,7 +7,7 @@ import {
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
-  CheckCircle, X, ExternalLink
+  CheckCircle, X, ExternalLink, Globe, Rocket, Crown, Gem
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -30,7 +30,7 @@ const ADMIN_UIDS = [
   "5fPCK8mGRTaAvIBTzUn7MEMQ2id2",
 ];
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // ANIMATION VARIANTS
 // ═══════════════════════════════════════════════════════════
 const fadeInUp = {
@@ -44,7 +44,7 @@ const staggerContainer = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌟 ANIMATED NUMBER COMPONENT
+//  ANIMATED NUMBER COMPONENT
 // ═══════════════════════════════════════════════════════════
 const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string }) => {
   const [count, setCount] = useState(0);
@@ -77,7 +77,7 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 HERO BACKGROUND CHART
+//  HERO BACKGROUND CHART
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
@@ -221,7 +221,7 @@ const MadhubaniPattern = () => (
 );
 
 // ═══════════════════════════════════════════════════════════
-// 🚀 LIVE ACTIVITY TICKER COMPONENT
+//  LIVE ACTIVITY TICKER COMPONENT
 // ═══════════════════════════════════════════════════════════
 interface TickerItem {
   id: string;
@@ -309,7 +309,7 @@ const LiveActivityTicker = () => {
               <>
                 <UserPlus className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm text-stone-300">
-                  <span className="font-bold text-emerald-400">{item.userName}</span> आलमनगर परिवार से जुड़े! 🎉
+                  <span className="font-bold text-emerald-400">{item.userName}</span> आलमनगर परिवार से जुड़े! 
                 </span>
               </>
             )}
@@ -396,7 +396,6 @@ export default function HomePage() {
       setLiveStats(prev => ({ ...prev, totalPosts: snapshot.size, totalViews, totalLikes, totalComments, totalShares }));
     });
 
-    // Real-time Testimonials Listener
     const testimonialsQuery = query(collection(db, "testimonials"), orderBy("createdAt", "desc"), limit(6));
     const unsubTestimonials = onSnapshot(testimonialsQuery, (snapshot) => {
       const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
@@ -732,7 +731,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 6. REAL-TIME TESTIMONIALS (DYNAMIC) ===== */}
+      {/* ===== 6. REAL-TIME TESTIMONIALS ===== */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
@@ -768,7 +767,6 @@ export default function HomePage() {
                   whileHover={{ y: -8 }} 
                   className="bg-stone-50 rounded-[2rem] p-10 border border-stone-100 hover:shadow-2xl hover:border-emerald-200 transition-all duration-300 relative group"
                 >
-                  {/* Delete Button (Only for Owner) */}
                   {currentUser?.uid === t.userId && (
                     <button 
                       onClick={() => handleDeleteReview(t.id)}
@@ -850,14 +848,14 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ===== 8. FOOTER ===== */}
+      {/* ===== 8. FOOTER WITH ULTRA-PREMIUM CREATERA BANNER ===== */}
       <footer className="bg-stone-950 text-stone-400 py-20 px-6 border-t border-stone-900 relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
         <div className="max-w-6xl mx-auto">
           
-          {/* 🎯 CREATERA PROMOTION BANNER */}
+          {/* 🚀 ULTRA-PREMIUM CREATERA BANNER */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mb-16"
@@ -866,41 +864,200 @@ export default function HomePage() {
               href="https://createra.in" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group block relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-900 via-emerald-950 to-stone-900 border border-stone-800 hover:border-emerald-500/50 transition-all duration-500"
+              className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-stone-950 via-emerald-950 to-stone-950 border border-stone-800 hover:border-emerald-500/50 transition-all duration-700 shadow-2xl hover:shadow-emerald-500/20"
             >
-              {/* Animated Background Glow */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
+              {/* Animated Mesh Gradient Background */}
+              <div className="absolute inset-0">
+                <motion.div 
+                  animate={{ 
+                    background: [
+                      "radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)",
+                      "radial-gradient(circle at 80% 50%, rgba(245, 158, 11, 0.15) 0%, transparent 50%)",
+                      "radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)"
+                    ]
+                  }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute inset-0"
+                />
+                <motion.div 
+                  animate={{ 
+                    background: [
+                      "radial-gradient(circle at 80% 50%, rgba(245, 158, 11, 0.1) 0%, transparent 50%)",
+                      "radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)",
+                      "radial-gradient(circle at 80% 50%, rgba(245, 158, 11, 0.1) 0%, transparent 50%)"
+                    ]
+                  }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+                  className="absolute inset-0"
+                />
               </div>
 
-              <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-6">
-                  {/* Createra Logo/Icon */}
-                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                  </div>
+              {/* Floating Particles */}
+              <div className="absolute inset-0 overflow-hidden">
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-1 h-1 bg-emerald-400/30 rounded-full"
+                    style={{
+                      left: `${Math.random() * 100}%`,
+                      top: `${Math.random() * 100}%`,
+                    }}
+                    animate={{
+                      y: [0, -30, 0],
+                      opacity: [0, 1, 0],
+                    }}
+                    transition={{
+                      duration: Math.random() * 3 + 2,
+                      repeat: Infinity,
+                      delay: Math.random() * 2,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="relative z-10 p-8 md:p-12">
+                <div className="flex flex-col lg:flex-row items-center gap-8">
                   
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-2xl md:text-3xl font-black text-white">Createra</h3>
-                      <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-xs font-bold text-emerald-400 uppercase">Powered By</span>
+                  {/* Premium Logo Section */}
+                  <motion.div 
+                    whileHover={{ scale: 1.05, rotate: 2 }}
+                    className="relative flex-shrink-0"
+                  >
+                    {/* Glow Effect */}
+                    <motion.div 
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-3xl blur-2xl"
+                    />
+                    
+                    {/* Logo Container */}
+                    <div className="relative w-24 h-24 md:w-28 md:h-28 bg-gradient-to-br from-emerald-500 via-amber-500 to-emerald-600 rounded-3xl flex items-center justify-center shadow-2xl">
+                      <img 
+                        src="https://createra.in/logo.png"
+                        alt="Createra"
+                        className="w-20 h-20 md:w-24 md:h-24 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <Sparkles className="w-20 h-20 md:w-24 md:h-24 text-white hidden" />
                     </div>
-                    <p className="text-stone-400 text-sm md:text-base max-w-md">
-                      अपने विचारों को दुनिया के सामने लाएं। Createra पर अपना ब्लॉग बनाएं और अपनी कहानी साझा करें।
-                    </p>
+
+                    {/* Live Badge */}
+                    <motion.div 
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute -top-2 -right-2 px-3 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full shadow-lg"
+                    >
+                      <span className="text-xs font-black text-white">LIVE</span>
+                    </motion.div>
+                  </motion.div>
+
+                  {/* Content Section */}
+                  <div className="flex-1 text-center lg:text-left">
+                    <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                      <h3 className="text-4xl md:text-5xl font-black text-white tracking-tight">
+                        Createra
+                      </h3>
+                      <motion.span
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Crown className="w-8 h-8 text-amber-400" />
+                      </motion.span>
+                    </div>
+                    
+                    {/* Flashing Metadata */}
+                    <div className="space-y-3 mb-6">
+                      <motion.p 
+                        animate={{ opacity: [0.6, 1, 0.6] }}
+                        transition={{ duration: 3, repeat: Infinity }}
+                        className="text-emerald-400 font-bold text-lg md:text-xl"
+                      >
+                        ✨ अपना ब्लॉग बनाएं • अपनी कहानी साझा करें
+                      </motion.p>
+                      <p className="text-stone-400 text-base md:text-lg max-w-2xl mx-auto lg:mx-0">
+                        दुनिया के सबसे advanced blogging platform पर अपने विचारों को उड़ान दें। 
+                        Createra पर आज ही शुरू करें और अपनी आवाज़ को दुनिया तक पहुँचाएं!
+                      </p>
+                    </div>
+
+                    {/* Live Stats */}
+                    <div className="flex flex-wrap justify-center lg:justify-start gap-6">
+                      <div className="flex items-center gap-2">
+                        <motion.div 
+                          animate={{ scale: [1, 1.3, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="w-2 h-2 bg-emerald-500 rounded-full"
+                        />
+                        <span className="text-white font-bold">10,000+ Bloggers</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <motion.div 
+                          animate={{ scale: [1, 1.3, 1] }}
+                          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                          className="w-2 h-2 bg-amber-500 rounded-full"
+                        />
+                        <span className="text-white font-bold">50,000+ Articles</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <motion.div 
+                          animate={{ scale: [1, 1.3, 1] }}
+                          transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                          className="w-2 h-2 bg-blue-500 rounded-full"
+                        />
+                        <span className="text-white font-bold">1M+ Readers</span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Premium CTA Button */}
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative flex-shrink-0"
+                  >
+                    {/* Button Glow */}
+                    <motion.div 
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-amber-500 rounded-2xl blur-xl"
+                    />
+                    
+                    <div className="relative bg-gradient-to-r from-emerald-600 to-amber-600 text-white px-8 py-5 rounded-2xl font-black text-lg flex items-center gap-3 shadow-2xl group-hover:shadow-emerald-500/50 transition-shadow">
+                      <Rocket className="w-6 h-6" />
+                      <span>अभी शुरू करें</span>
+                      <motion.span
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        <ArrowRight className="w-6 h-6" />
+                      </motion.span>
+                    </div>
+                  </motion.div>
                 </div>
 
-                {/* CTA Button */}
-                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-6 py-4 group-hover:bg-white/10 group-hover:border-emerald-500/30 transition-all duration-300">
-                  <span className="text-white font-bold text-sm md:text-base">अभी शुरू करें</span>
-                  <ExternalLink className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                {/* Bottom Bar */}
+                <div className="mt-8 pt-8 border-t border-white/10 flex flex-wrap justify-center lg:justify-between gap-4 text-sm">
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <Gem className="w-4 h-4" />
+                    <span className="font-bold">Premium Platform</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-amber-400">
+                    <Globe className="w-4 h-4" />
+                    <span className="font-bold">Global Reach</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/60">
+                    <span className="font-medium">Powered by</span>
+                    <span className="font-bold text-white">Alamnagar Digital</span>
+                  </div>
                 </div>
               </div>
             </Link>
           </motion.div>
 
+          {/* Footer Content */}
           <div className="grid md:grid-cols-4 gap-12 mb-16">
             <div className="md:col-span-2">
               <h3 className="text-white text-4xl font-black mb-6 tracking-tight">
