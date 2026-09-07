@@ -4,12 +4,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Mail, Send, ArrowLeft, CheckCircle, Loader2, User, AlertCircle, 
-  ShieldCheck, MapPin, Navigation, Clock
+  ShieldCheck, Navigation
 } from "lucide-react";
 import Link from "next/link";
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mrpgldpq";
-const CONTACT_EMAIL = "digitechinfo.india@gmail.com";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -184,15 +183,15 @@ export default function ContactPage() {
             )}
           </motion.div>
 
-          {/* Right: Map & Info (2 columns) */}
+          {/* Right: Premium Map (2 columns) */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="lg:col-span-2 space-y-6"
+            className="lg:col-span-2"
           >
-            {/* Premium Labeled Map (Best for Local Markets) */}
-            <div className="relative h-[400px] rounded-3xl overflow-hidden shadow-xl border-4 border-white group">
+            {/* Clean Map Container */}
+            <div className="relative h-[500px] lg:h-full min-h-[500px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white group">
               <iframe 
                 src="https://maps.google.com/maps?q=Alamnagar+Hariballabh+Chowk+Madhepura+Bihar+852210&t=m&z=16&ie=UTF8&iwloc=&output=embed"
                 width="100%" 
@@ -205,71 +204,22 @@ export default function ContactPage() {
                 className="group-hover:filter-none transition-all duration-700 ease-in-out"
               />
               
-              {/* Location Badge */}
-              <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-stone-100">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                    <MapPin className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-stone-900">आलमनगर हरिबल्लभ चौक</h4>
-                    <p className="text-xs text-stone-500 mt-1">मुख्य बाज़ार, मधेपुरा, बिहार</p>
-                    <p className="text-xs font-bold text-emerald-600 mt-1">Pin: 852210 / 852219</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Info Cards */}
-            <div className="grid grid-cols-1 gap-4">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow"
-              >
-                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-6 h-6 text-amber-600" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-stone-900 text-sm">कार्यालय समय</h4>
-                  <p className="text-xs text-stone-500 mt-1">सोमवार - शनिवार: 9:00 AM - 6:00 PM</p>
-                </div>
-              </motion.div>
-
-              <motion.div 
+              {/* Symbolic Floating Directions Button */}
+              <motion.a 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow"
+                href="https://maps.google.com/?q=Alamnagar+Hariballabh+Chowk+Madhepura+Bihar+852210"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-6 right-6 flex items-center gap-2 px-5 py-3 bg-white/95 backdrop-blur-md text-stone-900 font-bold rounded-2xl shadow-xl border border-stone-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-300 group/btn"
               >
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-6 h-6 text-emerald-600" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-stone-900 text-sm">ईमेल करें</h4>
-                  <a href={`mailto:${CONTACT_EMAIL}`} className="text-xs text-emerald-600 hover:text-emerald-700 font-medium mt-1 block break-all">
-                    {CONTACT_EMAIL}
-                  </a>
-                </div>
-              </motion.div>
+                <Navigation className="w-5 h-5 text-emerald-600 group-hover/btn:text-white transition-colors" />
+                <span className="text-sm">दिशा प्राप्त करें</span>
+              </motion.a>
             </div>
-
-            {/* Directions Button */}
-            <motion.a 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              href="https://maps.google.com/?q=Alamnagar+Hariballabh+Chowk+Madhepura+Bihar+852210"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-stone-900 text-white font-bold rounded-2xl hover:bg-stone-800 transition-all shadow-lg hover:shadow-xl"
-            >
-              <Navigation className="w-5 h-5" />
-              <span>Google Maps पर दिशा प्राप्त करें</span>
-              <ArrowLeft className="w-4 h-4 rotate-180" />
-            </motion.a>
           </motion.div>
+
         </div>
       </div>
     </main>
