@@ -4,6 +4,9 @@ import Script from "next/script";
 // import { SpeedInsights } from "@vercel/speed-insights/next"; // Uncomment if deploying on Vercel
 import "./globals.css";
 
+// ✅ PWA Provider Import (Ensure you created components/PWAProvider.tsx)
+import PWAProvider from "./components/PWAProvider";
+
 // ==================== FONTS (Hindi + English) ====================
 const inter = Inter({ 
   subsets: ["latin"],
@@ -65,6 +68,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
   },
+  // ⚠️ TODO: Add your Google Search Console verification code here
   verification: {
     google: 'YOUR_GOOGLE_VERIFICATION_CODE_HERE',
   },
@@ -101,20 +105,24 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent", 
     title: "Alamnagar" 
   },
+  // ✅ Perfect PWA & Favicon Icon Mapping
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
-      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-    shortcut: ["/favicon.ico"],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
     other: [
-      { rel: "android-chrome-192x192", url: "/android-chrome-192x192.png" },
-      { rel: "android-chrome-512x512", url: "/android-chrome-512x512.png" },
+      { rel: "mask-icon", url: "/icon-maskable-192x192.png", sizes: "192x192", type: "image/png" },
+      { rel: "mask-icon", url: "/icon-maskable-512x512.png", sizes: "512x512", type: "image/png" },
     ],
   },
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.json", // Next.js automatically serves app/manifest.ts as /manifest.json
   other: {
     'author': `${FOUNDER_NAME} (Founder of Createra.in & Alamnagar.in)`,
     'copyright': `© ${new Date().getFullYear()} Alamnagar.in. All rights reserved.`,
@@ -137,8 +145,8 @@ export const viewport: Viewport = {
   userScalable: true,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafaf9" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" },
+    { media: "(prefers-color-scheme: light)", color: "#fafaf9" }, // stone-50
+    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" }, // stone-950
   ],
   colorScheme: "dark light",
 };
@@ -183,7 +191,7 @@ const organizationSchema = {
   "name": "Alamnagar Digital",
   "alternateName": "Alamnagar.in",
   "url": SITE_URL,
-  "logo": `${SITE_URL}/android-chrome-512x512.png`,
+  "logo": `${SITE_URL}/icon-512x512.png`,
   "description": "Alamnagar.in is the official digital platform of Alamnagar, Madhepura, Bihar, founded by Mukesh Kumar Malakar (Founder of Createra.in) to preserve Mithila culture and foster local digital empowerment.",
   "foundingDate": "2024",
   "founder": { "@id": `${SITE_URL}#founder` }, // 🔥 Links directly to the Person Schema
@@ -306,8 +314,6 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)" />
-        <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)" />
         
         {/* 🔥 Inject all JSON-LD schemas for Rich Snippets & Knowledge Graph */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
@@ -317,6 +323,9 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       </head>
       <body className={`antialiased bg-stone-50 text-stone-900 selection:bg-amber-200 selection:text-amber-900 font-sans`}>
+        {/* ✅ PWA Service Worker Registration */}
+        <PWAProvider />
+        
         <noscript>
           <iframe 
             src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`} 
@@ -329,10 +338,12 @@ export default function RootLayout({
 
         {children}
         
+        {/* ✅ Google Tag Manager (Lazy Loaded for Performance) */}
         <Script id="google-tag-manager" strategy="lazyOnload">
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');`}
         </Script>
 
+        {/* ✅ Google Analytics (Lazy Loaded for Performance) */}
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="lazyOnload" />
         <Script id="google-analytics" strategy="lazyOnload">
           {`
@@ -350,6 +361,8 @@ export default function RootLayout({
           `}
         </Script>
         
+        {/* ✅ Vercel Speed Insights (Optional: Uncomment if deploying on Vercel) */}
+        {/* <SpeedInsights /> */}
       </body>
     </html>
   );
