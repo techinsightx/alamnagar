@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
 import { 
   collection, query, orderBy, limit, onSnapshot, 
-  addDoc, deleteDoc, doc, serverTimestamp 
+  addDoc, deleteDoc, doc, serverTimestamp, setDoc // ✅ setDoc added for update/create
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -335,7 +335,7 @@ interface Testimonial {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🚀 CLEAN OG METADATA BANNER (WhatsApp/Telegram Style)
+// 🚀 CLEAN OG METADATA BANNER
 // ═══════════════════════════════════════════════════════════
 const CreateraOGBanner = () => {
   const [ogData, setOgData] = useState<any>(null);
@@ -380,7 +380,6 @@ const CreateraOGBanner = () => {
         className="group block w-full overflow-hidden rounded-2xl bg-white border border-stone-200 shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all duration-300"
       >
         <div className="flex flex-col md:flex-row w-full">
-          {/* Left: Image (Fixed height, responsive width) */}
           <div className="w-full md:w-1/3 h-48 md:h-40 bg-stone-100 relative overflow-hidden flex-shrink-0">
             <img 
               src={imageUrl}
@@ -389,7 +388,6 @@ const CreateraOGBanner = () => {
             />
           </div>
 
-          {/* Right: Pure Metadata Text */}
           <div className="flex-1 p-4 md:p-5 flex flex-col justify-center min-w-0">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Globe className="w-3.5 h-3.5 text-stone-400" />
@@ -472,7 +470,7 @@ export default function HomePage() {
       setLiveStats(prev => ({ ...prev, totalPosts: snapshot.size, totalViews, totalLikes, totalComments, totalShares }));
     });
 
-    const testimonialsQuery = query(collection(db, "testimonials"), orderBy("createdAt", "desc"), limit(6));
+    const testimonialsQuery = query(collection(db, "testimonials"), orderBy("createdAt", "desc"), limit(50));
     const unsubTestimonials = onSnapshot(testimonialsQuery, (snapshot) => {
       const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
       setTestimonials(reviews);
@@ -500,18 +498,22 @@ export default function HomePage() {
     }
   };
 
+  // ✅ UPDATED: Create OR Update Review (1 per user)
   const handleAddReview = async () => {
     if (!currentUser || !newReviewText.trim()) return;
     try {
-      await addDoc(collection(db, "testimonials"), {
+      // setDoc with merge: true ensures it updates if exists, creates if it doesn't
+      await setDoc(doc(db, "testimonials", currentUser.uid), {
         userId: currentUser.uid,
         userName: currentUser.displayName || "आलमनगर वासी",
         userPhoto: currentUser.photoURL || "",
         quote: newReviewText.trim(),
         location: "आलमनगर, बिहार",
         role: "सदस्य",
-        createdAt: serverTimestamp(),
-      });
+        updatedAt: serverTimestamp(),
+        createdAt: userExistingReview ? userExistingReview.createdAt : serverTimestamp(),
+      }, { merge: true });
+      
       setNewReviewText("");
       setShowReviewModal(false);
     } catch (error) {
@@ -531,6 +533,9 @@ export default function HomePage() {
   };
 
   const isAdmin = currentUser && ADMIN_UIDS.includes(currentUser.uid);
+  
+  // ✅ Find if current user already has a review
+  const userExistingReview = testimonials.find(t => t.userId === currentUser?.uid);
 
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
@@ -807,7 +812,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 6. REAL-TIME TESTIMONIALS ===== */}
+      {/* ===== 6. REAL-TIME TESTIMONIALS (1 PER USER) ===== */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
@@ -818,11 +823,14 @@ export default function HomePage() {
             {currentUser && (
               <motion.button
                 variants={fadeInUp}
-                onClick={() => setShowReviewModal(true)}
+                onClick={() => {
+                  setNewReviewText(userExistingReview ? userExistingReview.quote : ""); // Pre-fill if updating
+                  setShowReviewModal(true);
+                }}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
               >
                 <MessageCircle className="w-5 h-5" />
-                अपनी राय दें
+                {userExistingReview ? "अपनी राय अपडेट करें" : "अपनी राय दें"}
               </motion.button>
             )}
           </motion.div>
@@ -929,10 +937,8 @@ export default function HomePage() {
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
         <div className="max-w-6xl mx-auto">
           
-          {/* ✅ CLEAN, THIN, FULL-WIDTH RECTANGULAR BANNER */}
           <CreateraOGBanner />
 
-          {/* Footer Content */}
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
               <h3 className="text-white text-4xl font-black mb-6 tracking-tight">
@@ -979,7 +985,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* 📝 ADD REVIEW MODAL */}
+      {/* 📝 ADD/UPDATE REVIEW MODAL */}
       <AnimatePresence>
         {showReviewModal && currentUser && (
           <motion.div
@@ -997,7 +1003,7 @@ export default function HomePage() {
               className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl"
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-black text-stone-900">अपनी राय साझा करें</h3>
+                <h3 className="text-2xl font-black text-stone-900">{userExistingReview ? "अपनी राय अपडेट करें" : "अपनी राय साझा करें"}</h3>
                 <button onClick={() => setShowReviewModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
                   <X className="w-6 h-6 text-stone-500" />
                 </button>
@@ -1015,7 +1021,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <p className="font-bold text-stone-900 text-sm">{currentUser.displayName || "आलमनगर वासी"}</p>
-                  <p className="text-xs text-stone-500">आपकी राय सार्वजनिक रूप से दिखाई जाएगी</p>
+                  <p className="text-xs text-stone-500">{userExistingReview ? "आपकी पुरानी राय को अपडेट कर दिया जाएगा" : "आपकी राय सार्वजनिक रूप से दिखाई जाएगी"}</p>
                 </div>
               </div>
 
@@ -1040,7 +1046,7 @@ export default function HomePage() {
                   disabled={!newReviewText.trim()}
                   className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 >
-                  सबमिट करें
+                  {userExistingReview ? "अपडेट करें" : "सबमिट करें"}
                 </button>
               </div>
             </motion.div>
