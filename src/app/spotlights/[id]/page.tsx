@@ -1,52 +1,98 @@
-// src/app/spotlights/[id]/page.tsx
-import { notFound } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { ArrowLeft, Heart, MessageCircle, Share2, Calendar, Eye } from 'lucide-react';
-import Link from 'next/link';
+"use client";
 
-// ✅ SEO Metadata
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  try {
-    const docRef = doc(db, 'spotlights', params.id);
-    const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      return {
-        title: `${data.title || 'Spotlight'} | Alamnagar`,
-        description: data.description || data.content?.substring(0, 150) || 'Read this spotlight post on Alamnagar.in',
-        openGraph: {
-          title: `${data.title || 'Spotlight'} | Alamnagar`,
-          description: data.description || data.content?.substring(0, 150) || 'Read this spotlight post on Alamnagar.in',
-          images: ['/og-cover.png'],
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { 
+  ArrowLeft, Heart, MessageCircle, Share2, Calendar, Eye, 
+  Loader2, Search, Home 
+} from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+
+export default function SpotlightPage() {
+  const params = useParams();
+  const id = params?.id as string;
+  
+  const [post, setPost] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!id) {
+      setError(true);
+      setLoading(false);
+      return;
+    }
+
+    const fetchPost = async () => {
+      try {
+        const docRef = doc(db, "spotlights", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setPost({ id: docSnap.id, ...docSnap.data() });
+        } else {
+          setError(true);
         }
-      };
-    }
-  } catch (error) {
-    console.error("Metadata fetch error:", error);
+      } catch (err) {
+        console.error("Error fetching post:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPost();
+  }, [id]);
+
+  // ✅ Beautiful Loading Skeleton
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-emerald-600 animate-spin mx-auto mb-4" />
+          <p className="text-stone-500 font-medium">स्पॉटलाइट लोड हो रही है...</p>
+        </div>
+      </main>
+    );
   }
-  return { title: 'Post Not Found | Alamnagar' };
-}
 
-export default async function SpotlightPage({ params }: { params: { id: string } }) {
-  let post: any = null;
-
-  try {
-    // Ensure params.id is valid
-    if (!params.id) notFound();
-
-    const docRef = doc(db, 'spotlights', params.id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      post = docSnap.data();
-    } else {
-      notFound(); // Ye automatically upar wala not-found.tsx dikhayega
-    }
-  } catch (error) {
-    console.error("Error fetching spotlight post:", error);
-    notFound();
+  // ✅ Beautiful Inline Not-Found UI (No ugly 404 page)
+  if (error || !post) {
+    return (
+      <main className="min-h-screen bg-stone-50 flex items-center justify-center px-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-lg"
+        >
+          <div className="inline-flex p-6 bg-amber-100 rounded-full mb-6">
+            <Search className="w-12 h-12 text-amber-600" />
+          </div>
+          <h1 className="text-6xl font-black text-stone-900 mb-4">404</h1>
+          <h2 className="text-2xl font-bold text-stone-800 mb-4">पोस्ट नहीं मिली</h2>
+          <p className="text-stone-600 mb-8 leading-relaxed">
+            हो सकता है यह स्पॉटलाइट पोस्ट हटा दी गई हो, या आपने गलत लिंक पर क्लिक किया हो।
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href="/" 
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all shadow-lg"
+            >
+              <Home className="w-5 h-5" /> होम पेज पर जाएं
+            </Link>
+            <Link 
+              href="/community" 
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-stone-200 text-stone-700 font-bold rounded-xl hover:bg-stone-50 transition-all"
+            >
+              सभी पोस्ट देखें
+            </Link>
+          </div>
+        </motion.div>
+      </main>
+    );
   }
 
   const createdAt = post.createdAt?.toDate 
@@ -74,9 +120,13 @@ export default async function SpotlightPage({ params }: { params: { id: string }
             </span>
           </div>
 
-          <h1 className="text-3xl md:text-5xl font-black leading-tight mb-8">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl md:text-5xl font-black leading-tight mb-8"
+          >
             {post.title || 'Untitled Post'}
-          </h1>
+          </motion.h1>
 
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 flex items-center justify-center font-bold text-white text-lg shadow-lg">
@@ -92,7 +142,12 @@ export default async function SpotlightPage({ params }: { params: { id: string }
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 -mt-10">
-        <div className="bg-white rounded-3xl shadow-2xl border border-stone-100 overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-3xl shadow-2xl border border-stone-100 overflow-hidden"
+        >
           
           {/* Media Section */}
           {post.imageUrl && (
@@ -149,7 +204,7 @@ export default async function SpotlightPage({ params }: { params: { id: string }
               <Share2 className="w-5 h-5" /> शेयर करें
             </button>
           </div>
-        </div>
+        </motion.div>
       </div>
     </main>
   );
