@@ -7,7 +7,7 @@ import {
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
-  CheckCircle, X, Globe, AlertTriangle // ✅ AlertTriangle added for error handling
+  CheckCircle, X, Globe, AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -109,6 +109,53 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
           <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={10} fillOpacity={1} fill="url(#glowLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
           <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={7} fillOpacity={1} fill="url(#glowComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
           <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#glowShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🌈 NEWSLETTER 4-LINE RAINBOW BACKGROUND CHART (NEW)
+// ═══════════════════════════════════════════════════════════
+const NewsletterBackgroundChart = () => {
+  // Generate smooth, continuous wave data for the background
+  const data = Array.from({ length: 30 }, (_, i) => {
+    return {
+      name: i,
+      Views: 50 + Math.sin(i * 0.4) * 30 + Math.random() * 5,
+      Likes: 70 + Math.cos(i * 0.3) * 25 + Math.random() * 5,
+      Comments: 40 + Math.sin(i * 0.5 + 1) * 20 + Math.random() * 5,
+      Shares: 60 + Math.cos(i * 0.6 + 2) * 15 + Math.random() * 5,
+    };
+  });
+
+  return (
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-25">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="nlViews" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/>
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="nlLikes" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/>
+              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.2}/>
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity={0.1}/>
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={10} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={8} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={6} fillOpacity={1} fill="url(#nlComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#nlShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -894,9 +941,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 7. WORKING NEWSLETTER (FULLY FIXED & EXPANDABLE) ===== */}
+      {/* ===== 7. WORKING NEWSLETTER (WITH 4-LINE RAINBOW CHART BACKGROUND) ===== */}
       <section className="py-24 px-6 bg-gradient-to-br from-emerald-950 to-green-950 text-white relative overflow-hidden">
         <MadhubaniPattern />
+        
+        {/* ✅ NEW: 4-Line Rainbow Recharts Background (Exactly like Hero) */}
+        <NewsletterBackgroundChart />
+
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
           <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
             <Mail className="w-10 h-10 text-amber-400" />
