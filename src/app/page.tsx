@@ -44,93 +44,6 @@ const staggerContainer = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🎨 ALAMNAGAR PREMIUM LOGO COMPONENT (Shared for Navbar & Footer)
-// ═══════════════════════════════════════════════════════════
-const AlamnagarLogo = ({ size = 48, variant = "dark" }: { size?: number; variant?: "dark" | "light" }) => {
-  const textColor = variant === "dark" ? "#1c1917" : "#ffffff";
-  const subTextColor = variant === "dark" ? "#78716c" : "#d6d3d1";
-  
-  return (
-    <div className="flex items-center gap-3">
-      <div 
-        className="relative flex items-center justify-center rounded-2xl shadow-lg"
-        style={{ 
-          width: size, 
-          height: size,
-          background: 'linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)',
-          padding: '2px'
-        }}
-      >
-        <div 
-          className="w-full h-full rounded-2xl flex items-center justify-center relative overflow-hidden"
-          style={{ backgroundColor: variant === "dark" ? "#1c1917" : "#292524" }}
-        >
-          {/* Decorative background pattern */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-orange-500/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-green-500/30 to-transparent" />
-          </div>
-          
-          {/* Stylized "आ" character */}
-          <svg viewBox="0 0 100 100" className="w-3/4 h-3/4 relative z-10">
-            <defs>
-              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FF9933" />
-                <stop offset="50%" stopColor="#FCD34D" />
-                <stop offset="100%" stopColor="#138808" />
-              </linearGradient>
-            </defs>
-            {/* Outer circle */}
-            <circle cx="50" cy="50" r="45" fill="none" stroke="url(#logoGrad)" strokeWidth="2" opacity="0.3" />
-            {/* Inner decorative ring */}
-            <circle cx="50" cy="50" r="38" fill="none" stroke="url(#logoGrad)" strokeWidth="1" opacity="0.2" strokeDasharray="4 4" />
-            {/* Stylized "आ" */}
-            <text 
-              x="50" 
-              y="62" 
-              textAnchor="middle" 
-              fontSize="42" 
-              fontWeight="900" 
-              fill="url(#logoGrad)"
-              fontFamily="serif"
-            >
-              आ
-            </text>
-            {/* Small decorative dots */}
-            <circle cx="50" cy="20" r="2" fill="#FF9933" />
-            <circle cx="50" cy="80" r="2" fill="#138808" />
-          </svg>
-        </div>
-      </div>
-      
-      <div className="flex flex-col leading-none">
-        <span 
-          className="font-black tracking-tight"
-          style={{ 
-            color: textColor, 
-            fontSize: size * 0.45,
-            lineHeight: 1
-          }}
-        >
-          आलम<span style={{ color: '#F59E0B' }}>नगर</span>
-        </span>
-        <span 
-          className="font-medium tracking-wider uppercase"
-          style={{ 
-            color: subTextColor, 
-            fontSize: size * 0.2,
-            marginTop: size * 0.08,
-            letterSpacing: '0.15em'
-          }}
-        >
-          मिथिला • बिहार
-        </span>
-      </div>
-    </div>
-  );
-};
-
-// ═══════════════════════════════════════════════════════════
 // 🌟 ANIMATED NUMBER COMPONENT
 // ═══════════════════════════════════════════════════════════
 const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string }) => {
@@ -492,6 +405,43 @@ const CreateraOGBanner = () => {
         </div>
       </Link>
     </motion.div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🌟 EXACT NAVBAR LOGO ADAPTED FOR FOOTER
+// ═══════════════════════════════════════════════════════════
+const FooterBrandLogo = () => {
+  return (
+    <Link href="/" className="flex items-center gap-3 group w-max">
+      <motion.div 
+        className="relative w-12 h-12 bg-gradient-to-br from-emerald-500 via-amber-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-amber-500/30 transition-all overflow-hidden"
+        whileHover={{ scale: 1.05 }}
+      >
+        {/* Continuously Rotating Globe Icon */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          className="w-7 h-7 text-white drop-shadow-md relative z-10"
+        >
+          <Globe className="w-full h-full" strokeWidth={2.5} />
+        </motion.div>
+        
+        {/* Live Colorful Pulse/Glow Effect */}
+        <motion.div 
+          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 bg-white/40 rounded-xl blur-md"
+        />
+      </motion.div>
+      
+      <div>
+        <h1 className="text-xl font-extrabold text-white tracking-tight leading-none">
+          आलम<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">नगर</span>
+        </h1>
+        <p className="text-[10px] text-stone-400 font-semibold tracking-wider uppercase mt-0.5">हमारा गाँव, हमारी पहचान</p>
+      </div>
+    </Link>
   );
 };
 
@@ -894,20 +844,20 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ===== 8. PREMIUM FOOTER WITH LOGO & REAL-TIME 4-PILLAR TOWER CHART ===== */}
+      {/* ===== 8. PREMIUM FOOTER WITH EXACT NAVBAR LOGO & REAL-TIME TOWER CHART ===== */}
       <footer className="bg-stone-950 text-stone-400 py-16 px-6 border-t border-stone-900 relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
         <div className="max-w-7xl mx-auto">
           
           <CreateraOGBanner />
 
-          {/* ✅ PREMIUM 3-COLUMN LAYOUT WITH LOGO */}
+          {/* ✅ PREMIUM 3-COLUMN LAYOUT */}
           <div className="grid md:grid-cols-12 gap-12 mb-12 mt-8">
             
-            {/* Column 1: Brand Logo & Description */}
+            {/* Column 1: Brand Logo (Exact Navbar Match) & Description */}
             <div className="md:col-span-4">
               <div className="mb-6">
-                <AlamnagarLogo size={64} variant="light" />
+                <FooterBrandLogo />
               </div>
               <p className="text-base mb-8 leading-relaxed text-stone-400">
                 मधेपुरा, बिहार, भारत का आधिकारिक डिजिटल प्लेटफॉर्म। हमारी विरासत, हमारा समुदाय, हमारा गौरव।
