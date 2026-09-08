@@ -10,7 +10,7 @@ import {
   CheckCircle, X, Globe, AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { db, auth } from "@/lib/firebase";
 import { 
   collection, query, orderBy, limit, onSnapshot, 
@@ -23,15 +23,13 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar 
 } from "recharts";
 
-// ✅ NAVBAR IMPORT ADDED HERE
+// ✅ NAVBAR IMPORT
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
 // 🔥 ADMIN UIDs
 // ═══════════════════════════════════════════════════════════
-const ADMIN_UIDS = [
-  "5fPCK8mGRTaAvIBTzUn7MEMQ2id2",
-];
+const ADMIN_UIDS = ["5fPCK8mGRTaAvIBTzUn7MEMQ2id2"];
 
 // ═══════════════════════════════════════════════════════════
 // ANIMATION VARIANTS
@@ -114,22 +112,10 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="nlViews" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/>
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="nlLikes" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/>
-              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.2}/>
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity={0.1}/>
-              <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
-            </linearGradient>
+            <linearGradient id="nlViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
+            <linearGradient id="nlLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+            <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.2}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+            <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
           </defs>
           <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={8} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
           <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={6} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
@@ -142,15 +128,15 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🏢 MARKETPLACE REAL-TIME TOWER CHART BACKGROUND (EXACTLY 4 TOWERS)
+// 🏢 MARKETPLACE REAL-TIME TOWER CHART BACKGROUND
 // ═══════════════════════════════════════════════════════════
 const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
-  const data = [
+  const data = useMemo(() => [
     { name: 'सदस्य', value: stats.totalUsers || 10, fill: 'url(#towerEmerald)' },
     { name: 'पोस्ट', value: stats.totalPosts || 10, fill: 'url(#towerAmber)' },
     { name: 'व्यूज़', value: stats.totalViews || 10, fill: 'url(#towerBlue)' },
     { name: 'लाइक', value: stats.totalLikes || 10, fill: 'url(#towerRose)' },
-  ];
+  ], [stats]);
 
   return (
     <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
@@ -603,7 +589,6 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ✅ NAVBAR INTEGRATED DIRECTLY HERE SO IT WORKS EVEN IF REMOVED FROM LAYOUT */}
       <Navbar />
       
       <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
@@ -616,7 +601,7 @@ export default function HomePage() {
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
         {/* ===== 1. CINEMATIC HERO SECTION ===== */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-950 text-white px-6">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-950 text-white px-4 md:px-8 lg:px-12">
           <HeroBackgroundChart data={chartData} />
           <div className="absolute inset-0 z-0 bg-gradient-to-br from-stone-950/85 via-emerald-950/75 to-stone-950/85" />
           {isAdmin && (
@@ -627,46 +612,100 @@ export default function HomePage() {
               </Link>
             </motion.div>
           )}
-          <div className="relative z-10 text-center max-w-5xl mx-auto pt-20">
+          
+          <div className="relative z-10 text-center w-full max-w-7xl mx-auto pt-20">
+            {/* 🌟 PREMIUM FEATURED WELCOME HERO FOR LOGGED-IN USERS */}
             {currentUser ? (
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="inline-flex items-center gap-3 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 rounded-full px-6 py-3 mb-6 shadow-lg">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px]">
-                  <div className="w-full h-full rounded-full bg-stone-900 overflow-hidden flex items-center justify-center">
-                    {currentUser.photoURL ? <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" /> : <span className="text-xs font-bold">{currentUser.displayName?.[0] || "U"}</span>}
+              <motion.div 
+                initial={{ opacity: 0, y: 20, scale: 0.95 }} 
+                animate={{ opacity: 1, y: 0, scale: 1 }} 
+                transition={{ duration: 0.7, ease: "easeOut" }} 
+                className="relative w-full max-w-3xl mx-auto mb-10 p-[1px] rounded-3xl bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500 shadow-2xl shadow-amber-500/20"
+              >
+                <div className="relative bg-stone-950/90 backdrop-blur-2xl rounded-[22px] p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 border border-white/5">
+                  <div className="relative shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-xl opacity-40 animate-pulse" />
+                    <div className="relative w-20 h-20 rounded-full bg-stone-900 p-[2px]">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-stone-950 flex items-center justify-center">
+                        {currentUser.photoURL ? (
+                          <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-amber-400">
+                            {currentUser.displayName?.[0] || "U"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-400 to-amber-500 text-stone-950 text-[10px] font-black px-3 py-1 rounded-full border-2 border-stone-950 shadow-lg flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-stone-950" />
+                      PREMIUM
+                    </div>
                   </div>
+                  
+                  <div className="flex-1 text-center sm:text-left">
+                    <h3 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">
+                      स्वागत है, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span>! 🙏
+                    </h3>
+                    <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
+                      आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका विशेष स्वागत है।
+                    </p>
+                  </div>
+
+                  <Link 
+                    href="/community" 
+                    className="shrink-0 group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-500 hover:to-amber-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-xl shadow-emerald-500/20 flex items-center gap-3 hover:scale-105"
+                  >
+                    <Zap className="w-5 h-5 fill-white group-hover:animate-pulse" />
+                    <span>चौपाल देखें</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
                 </div>
-                <span className="text-sm font-bold text-emerald-200">स्वागत है, <span className="text-amber-300">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span>! 🙏</span>
               </motion.div>
             ) : (
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-3 mb-8 shadow-lg hover:bg-white/20 transition-colors cursor-default">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }} 
+                animate={{ opacity: 1, scale: 1 }} 
+                transition={{ duration: 0.8 }} 
+                className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-3 mb-8 shadow-lg hover:bg-white/20 transition-colors cursor-default"
+              >
                 <MapPin className="w-5 h-5 text-amber-400" />
                 <span className="text-sm font-semibold tracking-wide">मधेपुरा, मिथिलांचल, बिहार</span>
               </motion.div>
             )}
+
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl pt-2">आलमनगर</motion.h1>
             <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md leading-relaxed py-1">"जड़ों से जुड़ा, मिथिला की धरती का गौरव"</motion.p>
             <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।</motion.p>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12 px-4">
+            
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12">
               <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Users className="w-4 h-4 text-emerald-400" /><span className="text-xs text-white/70">सदस्य</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span></div>
               <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Star className="w-4 h-4 text-amber-400" /><span className="text-xs text-white/70">पोस्ट</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span></div>
               <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Eye className="w-4 h-4 text-blue-400" /><span className="text-xs text-white/70">व्यूज़</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span></div>
               <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Heart className="w-4 h-4 text-red-400" /><span className="text-xs text-white/70">लाइक</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span></div>
             </motion.div>
+            
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }} className="flex flex-col sm:flex-row gap-5 justify-center mb-16">
               <Link href="/about" className="group bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] flex items-center justify-center gap-3 text-lg"><BookOpen className="w-5 h-5" /> हमारी विरासत देखें <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></Link>
               <Link href="/community" className="group bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><Users className="w-5 h-5" /> चौपाल में शामिल हों</Link>
               <Link href="/marketplace" className="group bg-emerald-600/80 hover:bg-emerald-500/80 backdrop-blur-md border border-emerald-400/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><ShoppingBag className="w-5 h-5" /> गाँव का हाट</Link>
             </motion.div>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"><span className="text-xs text-white/50 uppercase tracking-widest">स्क्रॉल करें</span><ChevronDown className="w-8 h-8 text-white/50" /></motion.div>
+            
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+              <span className="text-xs text-white/50 uppercase tracking-widest">स्क्रॉल करें</span>
+              <ChevronDown className="w-8 h-8 text-white/50" />
+            </motion.div>
           </div>
         </section>
 
         <LiveActivityTicker />
 
         {/* ===== 2. QUICK STATS & REAL-TIME CHART ===== */}
-        <section className="py-20 px-6 bg-stone-50 relative z-20">
-          <div className="max-w-6xl mx-auto space-y-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center"><span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">लाइव स्टैट्स</span><h2 className="text-3xl md:text-5xl font-black text-stone-900">आलमनगर आज</h2></motion.div>
+        <section className="py-20 px-4 md:px-8 lg:px-12 bg-stone-50 relative z-20">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
+              <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">लाइव स्टैट्स</span>
+              <h2 className="text-3xl md:text-5xl font-black text-stone-900">आलमनगर आज</h2>
+            </motion.div>
             <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[{ icon: Users, label: "जुड़े परिवार", value: liveStats.totalUsers, color: "bg-emerald-100 text-emerald-700" }, { icon: Star, label: "कुल पोस्ट", value: liveStats.totalPosts, color: "bg-amber-100 text-amber-700" }, { icon: Eye, label: "कुल व्यूज़", value: liveStats.totalViews, color: "bg-blue-100 text-blue-700" }, { icon: Heart, label: "कुल लाइक", value: liveStats.totalLikes, color: "bg-rose-100 text-rose-700" }].map((stat, i) => (
                 <motion.div key={stat.label} variants={fadeInUp} whileHover={{ y: -8, scale: 1.02 }} className="group bg-white rounded-3xl p-8 shadow-lg shadow-stone-200/50 border border-stone-100 transition-all duration-500 text-center relative overflow-hidden">
@@ -674,7 +713,10 @@ export default function HomePage() {
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${stat.color} group-hover:scale-110 transition-transform duration-300 shadow-sm`}><stat.icon className="w-8 h-8" /></div>
                   <div className="text-4xl font-black text-stone-900 mb-2"><AnimatedNumber value={stat.value} /></div>
                   <div className="text-sm font-bold text-stone-500 uppercase tracking-wider">{stat.label}</div>
-                  <div className="flex items-center justify-center gap-1.5 mt-3"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span><span className="text-[10px] text-emerald-600 font-semibold uppercase">Live</span></div>
+                  <div className="flex items-center justify-center gap-1.5 mt-3">
+                    <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
+                    <span className="text-[10px] text-emerald-600 font-semibold uppercase">Live</span>
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
@@ -683,9 +725,9 @@ export default function HomePage() {
         </section>
 
         {/* ===== 3. ABOUT PREVIEW ===== */}
-        <section className="py-24 px-6 bg-white relative overflow-hidden">
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-white relative overflow-hidden">
           <MadhubaniPattern />
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
+          <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
               <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 flex items-center gap-2"><span className="w-8 h-[2px] bg-emerald-600"></span> आलमनगर के बारे में</span>
               <h2 className="text-4xl md:text-6xl font-black mt-3 mb-8 text-stone-900 leading-[1.1]">एक गाँव, <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-amber-600 to-orange-600">हज़ारों कहानियाँ</span></h2>
@@ -698,8 +740,15 @@ export default function HomePage() {
                 <div className="aspect-[4/3] bg-gradient-to-br from-emerald-50 via-stone-50 to-amber-50 rounded-[2rem] flex items-center justify-center shadow-2xl border-4 border-white relative overflow-hidden">
                   <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/20 to-transparent" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"><div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30"><Play className="w-8 h-8 text-white fill-white ml-1" /></div></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-8 text-white"><p className="text-2xl font-bold mb-2">गाँव की तस्वीरें</p><p className="text-white/80 text-sm flex items-center gap-2"><Camera className="w-4 h-4" /> अपनी यादें गैलरी में अपलोड करें</p></div>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+                      <Play className="w-8 h-8 text-white fill-white ml-1" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                    <p className="text-2xl font-bold mb-2">गाँव की तस्वीरें</p>
+                    <p className="text-white/80 text-sm flex items-center gap-2"><Camera className="w-4 h-4" /> अपनी यादें गैलरी में अपलोड करें</p>
+                  </div>
                 </div>
               </Link>
               <motion.div animate={{ rotate: [6, -6, 6] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute -bottom-8 -right-8 w-40 h-40 bg-amber-200 rounded-[2rem] -z-10 opacity-60" />
@@ -709,9 +758,12 @@ export default function HomePage() {
         </section>
 
         {/* ===== 4. EXPLORE SECTIONS ===== */}
-        <section className="py-24 px-6 bg-stone-100">
-          <div className="max-w-6xl mx-auto">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16"><span className="text-amber-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">खोजें</span><h2 className="text-4xl md:text-6xl font-black text-stone-900">आलमनगर को जानें</h2></motion.div>
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-stone-100">
+          <div className="max-w-7xl mx-auto">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
+              <span className="text-amber-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">खोजें</span>
+              <h2 className="text-4xl md:text-6xl font-black text-stone-900">आलमनगर को जानें</h2>
+            </motion.div>
             <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-8">
               {[{ icon: Camera, title: "फोटो गैलरी", desc: "पुरानी यादें, नए रंग। गाँव की वो तस्वीरें जो दिल को छू लें और आँखों में नमी ला दें।", href: "/gallery", color: "bg-emerald-100 text-emerald-700", accent: "group-hover:bg-emerald-600 group-hover:text-white", active: true }, { icon: Users, title: "समुदाय (चौपाल)", desc: "चाहे गाँव में हों या विदेश में, आलमनगर के परिवार से जुड़े रहें। अपनी बात रखें।", href: "/community", color: "bg-amber-100 text-amber-700", accent: "group-hover:bg-amber-600 group-hover:text-white", active: true }, { icon: Phone, title: "डायरेक्टरी", desc: "ज़रूरी नंबर, स्थानीय व्यवसाय और गाँव के महत्वपूर्ण संपर्क एक ही जगह।", href: "#", color: "bg-rose-100 text-rose-700", accent: "", active: false }].map((card, i) => (
                 <motion.div key={card.title} variants={fadeInUp} whileHover={card.active ? { y: -12 } : {}}>
@@ -727,7 +779,10 @@ export default function HomePage() {
                       <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 ${card.color} shadow-sm`}><card.icon className="w-10 h-10" /></div>
                       <h3 className="text-2xl font-black text-stone-900 mb-4">{card.title}</h3>
                       <p className="text-stone-500 leading-relaxed text-lg mb-8">{card.desc}</p>
-                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-full"><Lock className="w-3.5 h-3.5 text-amber-600" /><span className="text-xs font-bold text-amber-700 uppercase tracking-wider">जल्द आ रहा है</span></div>
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-full">
+                        <Lock className="w-3.5 h-3.5 text-amber-600" />
+                        <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">जल्द आ रहा है</span>
+                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -736,15 +791,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 5. MARKETPLACE TEASER (WITH EXACTLY 4 REAL-TIME TOWERS) ===== */}
-        <section className="py-24 px-6 bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 text-white relative overflow-hidden">
+        {/* ===== 5. MARKETPLACE TEASER ===== */}
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 text-white relative overflow-hidden">
           <MarketplaceTowerChart stats={liveStats} />
-          
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
-          <div className="relative z-10 max-w-6xl mx-auto">
+          <div className="relative z-10 max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-                <div className="inline-flex items-center gap-2 bg-amber-500/20 backdrop-blur-md border border-amber-500/30 rounded-full px-6 py-3 mb-8"><Sparkles className="w-5 h-5 text-amber-400" /><span className="text-sm font-black tracking-wide uppercase text-amber-300">गाँव का हाट (Marketplace)</span></div>
+                <div className="inline-flex items-center gap-2 bg-amber-500/20 backdrop-blur-md border border-amber-500/30 rounded-full px-6 py-3 mb-8">
+                  <Sparkles className="w-5 h-5 text-amber-400" />
+                  <span className="text-sm font-black tracking-wide uppercase text-amber-300">गाँव का हाट (Marketplace)</span>
+                </div>
                 <h2 className="text-4xl md:text-7xl font-black mb-8 leading-tight">स्थानीय बाज़ार, <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400">वैश्विक पहुँच</span></h2>
                 <p className="text-xl md:text-2xl text-white/80 mb-6 max-w-3xl mx-auto leading-relaxed">अपने गाँव के किसानों, कारीगरों और स्थानीय व्यवसायों को सीधा समर्थन दें।</p>
               </motion.div>
@@ -762,14 +819,16 @@ export default function HomePage() {
               ))}
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
-              <Link href="/marketplace" className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-12 py-5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] text-lg"><ShoppingBag className="w-6 h-6" /> हाट में चलें (Marketplace) <ArrowRight className="w-6 h-6" /></Link>
+              <Link href="/marketplace" className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-12 py-5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] text-lg">
+                <ShoppingBag className="w-6 h-6" /> हाट में चलें (Marketplace) <ArrowRight className="w-6 h-6" />
+              </Link>
             </motion.div>
           </div>
         </section>
 
-        {/* ===== 6. REAL-TIME TESTIMONIALS (1 PER USER) ===== */}
-        <section className="py-24 px-6 bg-white">
-          <div className="max-w-6xl mx-auto">
+        {/* ===== 6. REAL-TIME TESTIMONIALS ===== */}
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-white">
+          <div className="max-w-7xl mx-auto">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
               <div className="text-center md:text-left">
                 <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">कहानियाँ</span>
@@ -805,7 +864,10 @@ export default function HomePage() {
                           {t.userPhoto ? <img src={t.userPhoto} alt="" className="w-full h-full object-cover" /> : <span>{t.userName[0]}</span>}
                         </div>
                       </div>
-                      <div><p className="font-black text-stone-900 text-lg">{t.userName}</p><p className="text-sm text-stone-500 font-medium">{t.location} • {t.role}</p></div>
+                      <div>
+                        <p className="font-black text-stone-900 text-lg">{t.userName}</p>
+                        <p className="text-sm text-stone-500 font-medium">{t.location} • {t.role}</p>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -814,10 +876,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 7. WORKING NEWSLETTER (REAL-TIME 4-LINE CHART BACKGROUND) ===== */}
-        <section className="py-24 px-6 bg-gradient-to-br from-emerald-950 to-green-950 text-white relative overflow-hidden">
+        {/* ===== 7. WORKING NEWSLETTER ===== */}
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-gradient-to-br from-emerald-950 to-green-950 text-white relative overflow-hidden">
           <NewsletterRealtimeChart data={chartData} />
-
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
             <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
               <Mail className="w-10 h-10 text-amber-400" />
@@ -877,17 +938,13 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        {/* ===== 8. PREMIUM FOOTER WITH EXACT NAVBAR GLOBE LOGO & REAL-TIME TOWER CHART ===== */}
-        <footer className="bg-stone-950 text-stone-400 py-16 px-6 border-t border-stone-900 relative overflow-hidden">
+        {/* ===== 8. PREMIUM FOOTER ===== */}
+        <footer className="bg-stone-950 text-stone-400 py-16 px-4 md:px-8 lg:px-12 border-t border-stone-900 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
           <div className="max-w-7xl mx-auto">
-            
             <CreateraOGBanner />
 
-            {/* ✅ PREMIUM 3-COLUMN LAYOUT */}
             <div className="grid md:grid-cols-12 gap-12 mb-12 mt-8">
-              
-              {/* Column 1: Brand Logo (EXACT NAVBAR MATCH) & Description */}
               <div className="md:col-span-4">
                 <div className="mb-6">
                   <FooterBrandLogo />
@@ -905,7 +962,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Column 2: Quick Links (Including Contact) */}
               <div className="md:col-span-4">
                 <h4 className="text-white font-black mb-6 text-lg">त्वरित लिंक</h4>
                 <ul className="space-y-3 text-base">
@@ -921,7 +977,6 @@ export default function HomePage() {
                 </ul>
               </div>
 
-              {/* Column 3: Real-Time 4-Pillar Tower Chart */}
               <div className="md:col-span-4">
                 <h4 className="text-white font-black mb-6 text-lg flex items-center gap-2">
                   <Activity className="w-5 h-5 text-emerald-500" /> लाइव प्लेटफॉर्म पल्स
@@ -953,7 +1008,6 @@ export default function HomePage() {
                   <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-rose-500"></div> कुल लाइक</div>
                 </div>
               </div>
-
             </div>
 
             <div className="border-t border-stone-900 pt-8 text-center">
