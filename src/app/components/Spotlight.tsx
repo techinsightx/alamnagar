@@ -20,8 +20,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// ══════════════════════════════════════════════════════════
-// INLINE PLACEHOLDERS
+// ═════════════════════════════════════════════════════════
+// INLINE PLACEHOLDERS & UTILS
 // ══════════════════════════════════════════════════════════
 const createNotification = async (toUserId: string, type: string, fromUserId: string, fromUserName: string, fromUserPhoto: string, postId?: string, postTitle?: string, commentText?: string, followBack?: boolean, metadata?: any, userHandle?: string) => {
   try {
@@ -172,7 +172,7 @@ const REPORT_REASONS = [
   { id: "inappropriate", label: "अश्लील या अनुचित सामग्री", icon: "🔞" },
   { id: "spam", label: "स्पैम या विज्ञापन", icon: "🚫" },
   { id: "hate", label: "नफरत फैलाने वाली भाषा", icon: "⚠️" },
-  { id: "fraud", label: "धोखाधड़ी या स्कैम", icon: "💰" },
+  { id: "fraud", label: "धोखाधड़ी या स्कैम", icon: "" },
   { id: "violence", label: "हिंसा या खतरनाक सामग्री", icon: "🚨" },
   { id: "misinfo", label: "गलत जानकारी या अफवाह", icon: "❌" },
   { id: "privacy", label: "निजता का उल्लंघन", icon: "🔒" },
@@ -233,7 +233,7 @@ const EngagementScore = ({ metrics }: { metrics: EngagementMetrics }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 FIXED NOTIFICATIONS DRAWER (No Index Required + Premium Desi Vibe)
+// NOTIFICATIONS DRAWER
 // ═══════════════════════════════════════════════════════════
 const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boolean; onClose: () => void; currentUserId: string }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -247,37 +247,18 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
     }
     
     setLoading(true);
+    const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(100));
     
-    // 🔥 FIX: Fetch all notifications ordered by date (no where clause = no index needed!)
-    const q = query(
-      collection(db, "notifications"), 
-      orderBy("createdAt", "desc"),
-      limit(100) // Limit to latest 100 for performance
-    );
-    
-    const unsub = onSnapshot(
-      q, 
-      (snapshot) => {
-        // 🔥 Client-side filtering for the current user
-        const allNotifs = snapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data() 
-        }));
-        
-        const userNotifs = allNotifs.filter(
-          (n: any) => n.toUserId === currentUserId
-        );
-        
-        setNotifications(userNotifs);
-        setLoading(false);
-      },
-      (error) => {
-        // 🔥 CRITICAL: Error handler prevents infinite spinner
-        console.error("🔥 Notifications fetch error:", error);
-        setLoading(false);
-        setNotifications([]);
-      }
-    );
+    const unsub = onSnapshot(q, (snapshot) => {
+      const allNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const userNotifs = allNotifs.filter((n: any) => n.toUserId === currentUserId);
+      setNotifications(userNotifs);
+      setLoading(false);
+    }, (error) => {
+      console.error("Notifications fetch error:", error);
+      setLoading(false);
+      setNotifications([]);
+    });
     
     return () => unsub();
   }, [isOpen, currentUserId]);
@@ -286,31 +267,12 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
 
   return (
     <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        exit={{ opacity: 0 }} 
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end" 
-        onClick={onClose}
-      >
-        <motion.div 
-          initial={{ x: "100%" }} 
-          animate={{ x: 0 }} 
-          exit={{ x: "100%" }} 
-          transition={{ type: "spring", damping: 30, stiffness: 300 }} 
-          className="w-full max-w-md bg-stone-900 h-full border-l border-stone-700 flex flex-col" 
-          onClick={(e) => e.stopPropagation()}
-        >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end" onClick={onClose}>
+        <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="w-full max-w-md bg-stone-900 h-full border-l border-stone-700 flex flex-col" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 bg-stone-900/50 backdrop-blur-md sticky top-0 z-10">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Bell className="w-5 h-5 text-amber-500" /> 
-              सूचनाएँ
-            </h3>
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-              <X className="w-5 h-5 text-white/70" />
-            </button>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2"><Bell className="w-5 h-5 text-amber-500" /> सूचनाएँ</h3>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5 text-white/70" /></button>
           </div>
-          
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
@@ -319,73 +281,38 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
               </div>
             ) : notifications.length === 0 ? (
               <div className="text-center py-16 px-4">
-                <div className="w-16 h-16 mx-auto mb-4 bg-stone-800 rounded-full flex items-center justify-center">
-                  <Bell className="w-8 h-8 text-stone-500" />
-                </div>
+                <div className="w-16 h-16 mx-auto mb-4 bg-stone-800 rounded-full flex items-center justify-center"><Bell className="w-8 h-8 text-stone-500" /></div>
                 <p className="text-white/80 text-sm font-semibold mb-1">अभी कोई सूचना नहीं है</p>
                 <p className="text-white/40 text-xs">जब कोई आपकी पोस्ट को लाइक या कमेंट करेगा, यहाँ दिखेगा</p>
               </div>
             ) : (
               notifications.map((notif: any) => (
-                <motion.div 
-                  key={notif.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex gap-3 p-3 bg-stone-800/50 rounded-xl border border-white/5 hover:bg-stone-800 transition-all group"
-                >
+                <motion.div key={notif.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex gap-3 p-3 bg-stone-800/50 rounded-xl border border-white/5 hover:bg-stone-800 transition-all group">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px] flex-shrink-0">
                     <div className="w-full h-full rounded-full bg-stone-900 overflow-hidden flex items-center justify-center">
-                      {notif.fromUserPhoto ? (
-                        <img src={notif.fromUserPhoto} className="w-full h-full object-cover" alt="" />
-                      ) : (
-                        <span className="text-sm font-bold text-white">
-                          {notif.fromUserName?.[0] || "U"}
-                        </span>
-                      )}
+                      {notif.fromUserPhoto ? <img src={notif.fromUserPhoto} className="w-full h-full object-cover" alt="" /> : <span className="text-sm font-bold text-white">{notif.fromUserName?.[0] || "U"}</span>}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white/90 leading-relaxed">
-                      <span className="font-semibold text-amber-400">
-                        {notif.fromUserName || "User"}
-                      </span>{" "}
+                      <span className="font-semibold text-amber-400">{notif.fromUserName || "User"}</span>{" "}
                       <span className="text-white/60">
-                        {notif.type === 'like' 
-                          ? 'ने आपके पोस्ट को लाइक किया ❤️' 
-                          : notif.type === 'comment' 
-                          ? 'ने कमेंट किया 💬' 
-                          : notif.type === 'follow'
-                          ? 'ने आपको फॉलो किया 👥'
-                          : 'ने कुछ किया'}
+                        {notif.type === 'like' ? 'ने आपके पोस्ट को लाइक किया ❤️' : notif.type === 'comment' ? 'ने कमेंट किया 💬' : notif.type === 'follow' ? 'ने आपको फॉलो किया 👥' : 'ने कुछ किया'}
                       </span>
                     </p>
-                    {notif.postTitle && (
-                      <p className="text-xs text-white/40 mt-1 truncate flex items-center gap-1">
-                        <span className="text-amber-500/50">📝</span> "{notif.postTitle}"
-                      </p>
-                    )}
+                    {notif.postTitle && <p className="text-xs text-white/40 mt-1 truncate flex items-center gap-1"><span className="text-amber-500/50">📝</span> "{notif.postTitle}"</p>}
                     <p className="text-[10px] text-white/40 mt-1.5 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {notif.createdAt?.toDate 
-                        ? new Date(notif.createdAt.toDate()).toLocaleString('hi-IN', {
-                            day: 'numeric',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })
-                        : "हाल ही में"}
+                      {notif.createdAt?.toDate ? new Date(notif.createdAt.toDate()).toLocaleString('hi-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : "हाल ही में"}
                     </p>
                   </div>
                 </motion.div>
               ))
             )}
           </div>
-          
           {notifications.length > 0 && (
             <div className="p-3 border-t border-stone-700 text-center bg-stone-900/50 backdrop-blur-md sticky bottom-0">
-              <p className="text-xs text-white/40 font-medium">
-                कुल {notifications.length} सूचनाएँ
-              </p>
+              <p className="text-xs text-white/40 font-medium">कुल {notifications.length} सूचनाएँ</p>
             </div>
           )}
         </motion.div>
@@ -450,9 +377,7 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
               </div>
             ) : alreadyReported ? (
               <div className="text-center py-12">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="inline-flex p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-4">
-                  <Check className="w-8 h-8 text-emerald-400" />
-                </motion.div>
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="inline-flex p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-4"><Check className="w-8 h-8 text-emerald-400" /></motion.div>
                 <h4 className="text-lg font-bold text-white mb-2">आपने यह पोस्ट पहले ही रिपोर्ट कर दी है</h4>
                 <p className="text-white/60 text-sm mb-6">हमारी टीम जल्द ही इसकी समीक्षा करेगी।</p>
                 <button onClick={onClose} className="px-6 py-2.5 bg-white/10 border border-white/20 text-white font-semibold rounded-full hover:bg-white/20 transition-all">बंद करें</button>
@@ -877,42 +802,29 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   useEffect(() => { setSaved(getSavedPosts().includes(post.id)); }, [post.id]);
 
-  // 🔥 FIXED VIEW TRACKING: Removed localStorage block that was blocking other users on the same browser
   useEffect(() => {
     if (hasTrackedView || !cardRef.current) return;
-
     const observer = new IntersectionObserver(
       async ([entry]) => {
         if (entry.isIntersecting && !hasTrackedView) {
-          console.log("👁️ View Triggered for Post:", post.id, "by User:", currentUserId || "Guest");
           setHasTrackedView(true);
-          
           try {
-            // 1. Always increment the main view count
-            await updateDoc(doc(db, "spotlights", post.id), { 
-              views: increment(1) 
-            });
-            console.log("✅ SUCCESS: Main view count incremented!");
-            
-            // 2. If logged in, record detailed view
+            await updateDoc(doc(db, "spotlights", post.id), { views: increment(1) });
             if (currentUserId) {
               const viewDocRef = doc(db, "spotlights", post.id, "views", currentUserId);
               const viewSnap = await getDoc(viewDocRef);
               if (!viewSnap.exists()) {
                 await setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() });
-                console.log("✅ SUCCESS: User view sub-document created!");
               }
             }
           } catch (error: any) {
-            console.error("❌ CRITICAL VIEW UPDATE ERROR:", error.code, error.message);
+            console.error("View update error:", error.message);
           }
-          
           observer.disconnect();
         }
       },
       { threshold: 0.3 }
     );
-
     observer.observe(cardRef.current);
     return () => observer.disconnect();
   }, [post.id, currentUserId, hasTrackedView]);
@@ -956,7 +868,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       }
       setLiked(!liked);
     } catch (error: any) { 
-      console.error("Like Error Details:", error.message);
       setLiked(liked); setLikeCount(likeCount);
       showToast("इस कार्रवाई के लिए अनुमति नहीं है या नेटवर्क त्रुटि।", "error");
     }
@@ -969,7 +880,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
     setTimeout(() => setShowHeartAnim(false), 1000);
   };
 
-  // 🔥 FIXED FOLLOW LOGIC: Updates BOTH the array AND the count field
   const handleFollow = async () => {
     if (!auth.currentUser) { requireAuth("follow", postId); return; }
     if (post.userId === currentUserId) return;
@@ -981,34 +891,17 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       const creatorRef = doc(db, "users", post.userId);
       
       if (isFollowing) {
-        batch.update(currentUserRef, { 
-          following: arrayRemove(post.userId),
-          followingCount: increment(-1)
-        });
-        batch.update(creatorRef, { 
-          followers: arrayRemove(currentUserId),
-          followersCount: increment(-1)
-        });
+        batch.update(currentUserRef, { following: arrayRemove(post.userId), followingCount: increment(-1) });
+        batch.update(creatorRef, { followers: arrayRemove(currentUserId), followersCount: increment(-1) });
       } else {
-        batch.update(currentUserRef, { 
-          following: arrayUnion(post.userId),
-          followingCount: increment(1)
-        });
-        batch.update(creatorRef, { 
-          followers: arrayUnion(currentUserId),
-          followersCount: increment(1)
-        });
+        batch.update(currentUserRef, { following: arrayUnion(post.userId), followingCount: increment(1) });
+        batch.update(creatorRef, { followers: arrayUnion(currentUserId), followersCount: increment(1) });
         createNotification(post.userId, "follow", currentUserId, auth.currentUser.displayName || "User", auth.currentUser.photoURL || "").catch(console.warn);
       }
-      
       await batch.commit();
-      console.log("✅ Follow/Unfollow successfully updated in Firestore!");
     } catch (error: any) { 
-      console.error("❌ Follow Error Details:", error.message);
       showToast("फॉलो करने में त्रुटि हुई।", "error");
-    } finally { 
-      setFollowLoading(false); 
-    }
+    } finally { setFollowLoading(false); }
   };
 
   const handleAddComment = async () => {
@@ -1028,14 +921,14 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       setNewComment("");
       showToast("टिप्पणी सफलतापूर्वक जोड़ी गई!", "success");
     } catch (error: any) { 
-      console.error("Comment Error Details:", error.message);
       showToast("टिप्पणी जोड़ने में त्रुटि हुई।", "error");
     } finally { setPostingComment(false); }
   };
 
+  // ✅ UPDATED SHARE URL FOR WORLD-CLASS OG PREVIEW
   const handleShare = async (platform: string) => {
     if (!auth.currentUser) { requireAuth("share", postId); return; }
-    const shareUrl = `${window.location.origin}/community?post=${postId}`;
+    const shareUrl = `${window.location.origin}/spotlights/${postId}`; // Changed from /community?post=
     try {
       await updateDoc(doc(db, "spotlights", postId), { shares: increment(1) });
       if (platform === 'copy') {
@@ -1047,7 +940,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
         window.open(`https://wa.me/?text=${encodeURIComponent("आलमनगर स्पॉटलाइट देखें: ")}${encodeURIComponent(shareUrl)}`, '_blank');
       }
     } catch (error: any) { 
-      console.error("Share Error Details:", error.message);
       showToast("शेयर करने में त्रुटि हुई।", "error");
     }
     if (platform !== 'copy') setShowShareSheet(false);
@@ -1060,7 +952,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       setShowDeleteConfirm(false); setShowMenu(false); onDelete(postId);
       showToast("पोस्ट सफलतापूर्वक हटा दी गई।", "success");
     } catch (error) { 
-      console.error("Delete error:", error); 
       showToast("पोस्ट हटाने में त्रुटि हुई।", "error");
     } finally { setDeleting(false); }
   };
@@ -1132,9 +1023,12 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           </div>
         </div>
 
+        {/* ✅ CLICKABLE TITLE FOR DEDICATED POST PAGE */}
         {post.title && (
           <div className="px-4 pb-2 flex items-center gap-2 flex-wrap relative">
-            <h2 className="text-xl font-bold text-white leading-tight">{post.title}</h2>
+            <Link href={`/spotlights/${post.id}`} className="text-xl font-bold text-white leading-tight hover:text-emerald-400 transition-colors">
+              {post.title}
+            </Link>
             <FeaturedBadge level={featuredLevel} isTrendingPost={trending} />
           </div>
         )}
@@ -1164,15 +1058,16 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           </div>
         )}
 
+        {/* ✅ CLICKABLE MEDIA FOR DEDICATED POST PAGE */}
         {post.mediaUrl && (
-          <div className="relative bg-black border-y border-white/5" onDoubleClick={handleDoubleTap}>
+          <Link href={`/spotlights/${post.id}`} className="block relative bg-black border-y border-white/5" onDoubleClick={handleDoubleTap}>
             {post.mediaType === "image" ? (
               <img src={post.mediaUrl} alt="" className={getMediaClasses()} loading="lazy" />
             ) : (
               <div className="relative">
-                <video ref={videoRef} src={post.mediaUrl} className={getMediaClasses()} loop muted={muted} playsInline onClick={() => videoPlaying ? videoRef.current?.pause() : videoRef.current?.play()} onPlay={() => setVideoPlaying(true)} onPause={() => setVideoPlaying(false)} />
+                <video ref={videoRef} src={post.mediaUrl} className={getMediaClasses()} loop muted={muted} playsInline onClick={(e) => { e.preventDefault(); videoPlaying ? videoRef.current?.pause() : videoRef.current?.play(); }} onPlay={() => setVideoPlaying(true)} onPause={() => setVideoPlaying(false)} />
                 <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); setMuted(!muted); }} className="p-2 bg-black/60 backdrop-blur-sm rounded-full hover:bg-black/80 transition-colors">
+                  <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMuted(!muted); }} className="p-2 bg-black/60 backdrop-blur-sm rounded-full hover:bg-black/80 transition-colors">
                     {muted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
                   </button>
                 </div>
@@ -1190,7 +1085,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
                 <Heart className="w-24 h-24 text-red-500 fill-red-500 drop-shadow-2xl" />
               </motion.div>
             )}
-          </div>
+          </Link>
         )}
 
         <div className="px-4 py-2.5 flex items-center justify-between text-xs text-white/50 border-b border-white/5 relative">
