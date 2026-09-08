@@ -523,7 +523,6 @@ const CreateSpotlightModal = memo(({ isOpen, onClose, onPostCreated, showToast }
       return; 
     }
     
-    // 🚀 OPTIMIZATION: Revoke previous object URL
     if (mediaPreview && mediaPreview.startsWith('blob:')) {
       URL.revokeObjectURL(mediaPreview);
     }
@@ -1282,7 +1281,6 @@ function SpotlightContent() {
   
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   
-  // 🚀 OPTIMIZATION: Stable callbacks
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type });
   }, []);
@@ -1323,7 +1321,7 @@ function SpotlightContent() {
   }, []);
 
   // 🚀 OPTIMIZATION: Memoized filtering to prevent unnecessary re-calculations
-  const getFilteredPosts = useMemo(() => {
+  const filteredPosts = useMemo(() => {
     let filtered = savedOnly ? posts.filter((p) => getSavedPosts().includes(p.id)) : posts;
     if (filterMode === 'featured') {
       filtered = filtered.filter(p => getFeaturedLevel({ views: p.views || 0, likes: p.likes || 0, comments: p.comments || 0, shares: p.shares || 0 }, p.isFeatured || false) !== 'none');
@@ -1421,7 +1419,7 @@ function SpotlightContent() {
 
         {loading ? (
           <div className="space-y-4"><SkeletonPost /><SkeletonPost /><SkeletonPost /></div>
-        ) : getFilteredPosts().length === 0 ? (
+        ) : filteredPosts.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200">
               <Star className="w-10 h-10 text-emerald-600" />
@@ -1432,7 +1430,7 @@ function SpotlightContent() {
           </div>
         ) : (
           <div className="space-y-4">
-            {getFilteredPosts().map((post) => (
+            {filteredPosts.map((post: SpotlightPost) => (
               <SpotlightCard key={post.id} post={post} currentUserId={user?.uid || ""} currentUserObj={user} requireAuth={requireAuth} onDelete={handlePostDeleted} postId={post.id} showToast={showToast} />
             ))}
           </div>
