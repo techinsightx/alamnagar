@@ -8,7 +8,7 @@ import {
   User, Link2, Check, Home, Trash2, ChevronDown, ChevronUp, Bookmark, 
   BadgeCheck, Eye, Clock, Camera, Circle, StopCircle, Hash, Wand2, 
   Flame, Zap, Sliders, RotateCcw, Mic, MicOff, ShoppingBag, Flag, AlertTriangle, Users,
-  Music, Upload, Bell, UserPlus, UserCheck, BarChart3, Award
+  Music, Upload, Bell, UserPlus, UserCheck, BarChart3, Award, Bug
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { 
@@ -21,23 +21,35 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 // ══════════════════════════════════════════════════════════
-// INLINE PLACEHOLDERS & UTILS
+// 🔔 NOTIFICATION CREATOR WITH DEBUG LOGGING
 // ══════════════════════════════════════════════════════════
 const createNotification = async (toUserId: string, type: string, fromUserId: string, fromUserName: string, fromUserPhoto: string, postId?: string, postTitle?: string, commentText?: string, followBack?: boolean, metadata?: any, userHandle?: string) => {
+  // Don't send notification to yourself
+  if (toUserId === fromUserId) {
+    console.log("️ Skipping self-notification");
+    return;
+  }
+  
+  console.log("🔔 Creating notification:", { toUserId, type, fromUserId, postId });
+  
   try {
-    console.log(" Creating notification for:", toUserId, "type:", type);
-    await addDoc(collection(db, "notifications"), {
+    const notifData = {
       toUserId, type, fromUserId, fromUserName, fromUserPhoto,
       postId, postTitle, commentText, followBack, metadata, userHandle,
       createdAt: serverTimestamp(),
       read: false
-    });
-    console.log("✅ Notification created successfully");
+    };
+    
+    const docRef = await addDoc(collection(db, "notifications"), notifData);
+    console.log("✅ Notification created with ID:", docRef.id);
   } catch (error: any) {
     console.error("❌ Notification error:", error.code, error.message);
   }
 };
 
+// ══════════════════════════════════════════════════════════
+// INLINE PLACEHOLDERS & UTILS
+// ══════════════════════════════════════════════════════════
 const AudioLibrary = ({ isOpen, onClose, onApplyAudio }: any) => {
   if (!isOpen) return null;
   return (
@@ -245,12 +257,13 @@ const EngagementScore = ({ metrics }: { metrics: EngagementMetrics }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 FIXED: NOTIFICATIONS DRAWER (With proper where clause & error handling)
+// 🔍 DEBUG-FRIENDLY NOTIFICATIONS DRAWER
 // ═══════════════════════════════════════════════════════════
-const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boolean; onClose: () => void; currentUserId: string }) => {
+const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { isOpen: boolean; onClose: () => void; currentUserId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   useEffect(() => {
     if (!isOpen || !currentUserId) {
@@ -259,11 +272,12 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
       setError(null);
       return;
     }
+    
     setLoading(true);
     setError(null);
+    setDebugInfo(`User UID: ${currentUserId}`);
     
-    // 🔥 FIXED: Added where clause for proper Firestore query
-    // Note: If you get "missing index" error, create composite index in Firestore console
+    // Strategy 1: Try with where clause (needs composite index)
     const q = query(
       collection(db, "notifications"), 
       where("toUserId", "==", currentUserId),
@@ -273,23 +287,31 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
     
     const unsub = onSnapshot(q, (snapshot) => {
       const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log("📬 Notifications fetched for user:", currentUserId, "count:", notifs.length);
+      console.log("📬 Notifications fetched (with where):", notifs.length);
+      setDebugInfo(prev => `${prev}\n✅ Fetched ${notifs.length} notifications with where clause`);
       setNotifications(notifs);
       setLoading(false);
     }, (err: any) => {
-      console.error("🔥 Notifications fetch error:", err.code, err.message);
+      console.error("🔥 Query with where failed:", err.code, err.message);
+      setDebugInfo(prev => `${prev}\n❌ Where clause failed: ${err.code}`);
       
-      //  Fallback: If index error, try without where clause (client-side filter)
-      if (err.code === 'failed-precondition') {
-        console.log("⚠️ Missing index, falling back to client-side filtering");
+      // Strategy 2: Fallback - fetch all and filter client-side
+      if (err.code === 'failed-precondition' || err.code === 'permission-denied') {
+        console.log("⚠️ Falling back to client-side filtering");
+        setDebugInfo(prev => `${prev}\n⚠️ Using fallback: client-side filtering`);
+        
         const fallbackQ = query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(200));
         const fallbackUnsub = onSnapshot(fallbackQ, (snapshot) => {
           const allNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          console.log("📬 All notifications:", allNotifs.length);
           const userNotifs = allNotifs.filter((n: any) => n.toUserId === currentUserId);
+          console.log("📬 Filtered for user:", userNotifs.length);
+          setDebugInfo(prev => `${prev}\n✅ Fallback fetched ${userNotifs.length} notifications`);
           setNotifications(userNotifs);
           setLoading(false);
         }, (fallbackErr) => {
-          console.error("Fallback also failed:", fallbackErr);
+          console.error("❌ Fallback also failed:", fallbackErr);
+          setDebugInfo(prev => `${prev}\n❌ Fallback failed: ${fallbackErr.message}`);
           setError("सूचनाएँ लोड करने में त्रुटि");
           setLoading(false);
         });
@@ -302,6 +324,40 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
     });
     return () => unsub();
   }, [isOpen, currentUserId]);
+
+  const sendTestNotification = async () => {
+    if (!currentUserId) return;
+    console.log("🧪 Sending test notification...");
+    try {
+      await createNotification(
+        currentUserId,
+        "comment",
+        currentUserId, // Will be skipped (self-notification)
+        "Test User",
+        "",
+        "test-post-id",
+        "Test Post",
+        "This is a test comment"
+      );
+      // Since self-notification is skipped, create a dummy one directly
+      await addDoc(collection(db, "notifications"), {
+        toUserId: currentUserId,
+        type: "comment",
+        fromUserId: "test-user-id",
+        fromUserName: "टेस्ट यूज़र",
+        fromUserPhoto: "",
+        postId: "test-post-id",
+        postTitle: "टेस्ट पोस्ट",
+        commentText: "यह एक टेस्ट कमेंट है",
+        createdAt: serverTimestamp(),
+        read: false
+      });
+      showToast("टेस्ट नोटिफिकेशन भेजा गया!", "success");
+    } catch (err: any) {
+      console.error("Test notification error:", err);
+      showToast("टेस्ट नोटिफिकेशन विफल: " + err.message, "error");
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -343,6 +399,25 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
               <X className="w-5 h-5 text-white/70" />
             </button>
           </div>
+          
+          {/*  Debug Info Section */}
+          <div className="bg-blue-900/20 border-b border-blue-500/20 p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Bug className="w-4 h-4 text-blue-400" />
+              <span className="text-xs font-bold text-blue-300">DEBUG MODE</span>
+            </div>
+            <pre className="text-[10px] text-blue-200 whitespace-pre-wrap font-mono max-h-20 overflow-y-auto">
+              {debugInfo || "Waiting..."}
+            </pre>
+            <button 
+              type="button"
+              onClick={sendTestNotification}
+              className="mt-2 w-full px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded text-xs font-bold text-blue-300 transition-all"
+            >
+              🧪 Send Test Notification
+            </button>
+          </div>
+          
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
@@ -367,6 +442,7 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
                 </div>
                 <p className="text-white/80 text-sm font-semibold mb-1">अभी कोई सूचना नहीं है</p>
                 <p className="text-white/40 text-xs">जब कोई आपकी पोस्ट को लाइक या कमेंट करेगा, यहाँ दिखेगा</p>
+                <p className="text-yellow-400/60 text-[10px] mt-4">💡 ऊपर "Send Test Notification" बटन दबाकर टेस्ट करें</p>
               </div>
             ) : (
               notifications.map((notif: any) => (
@@ -1093,7 +1169,10 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       });
       await updateDoc(doc(db, "spotlights", postId), { comments: increment(1) });
       if (post.userId !== auth.currentUser.uid) {
+        console.log(" Sending comment notification to:", post.userId);
         createNotification(post.userId, "comment", auth.currentUser.uid, auth.currentUser.displayName || "User", auth.currentUser.photoURL || "", postId, post.title, newComment.trim()).catch(console.warn);
+      } else {
+        console.log("⏭️ Skipping notification (commented on own post)");
       }
       setNewComment("");
       showToast("टिप्पणी जोड़ी गई!", "success");
@@ -1534,7 +1613,7 @@ function SpotlightContent() {
         )}
       </main>
       <AnimatePresence>{showCreatePost && <CreateSpotlightModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} onPostCreated={() => {}} showToast={showToast} />}</AnimatePresence>
-      <NotificationsDrawer isOpen={showNotifications} onClose={() => setShowNotifications(false)} currentUserId={user?.uid || ""} />
+      <NotificationsDrawer isOpen={showNotifications} onClose={() => setShowNotifications(false)} currentUserId={user?.uid || ""} showToast={showToast} />
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-40 pb-[env(safe-area-inset-bottom)]">
         <div className="max-w-4xl mx-auto px-2 py-1 flex items-center justify-between">
           <Link href="/" className="flex flex-col items-center gap-0.5 p-1.5 text-stone-500 hover:text-emerald-600 transition-colors flex-1">
