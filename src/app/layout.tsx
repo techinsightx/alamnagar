@@ -4,8 +4,9 @@ import Script from "next/script";
 // import { SpeedInsights } from "@vercel/speed-insights/next"; // Uncomment if deploying on Vercel
 import "./globals.css";
 
-// ✅ PWA Provider Import (Ensure you created components/PWAProvider.tsx)
+// ✅ PWA Provider & Navbar Imports
 import PWAProvider from "./components/PWAProvider";
+import Navbar from "./components/Navbar"; // ⚠️ Note: Agar tumhara Navbar components folder mein hai, toh ye path sahi hai. Agar nahi, toh "./components/Navbar" kar dena.
 
 // ==================== FONTS (Hindi + English) ====================
 const inter = Inter({ 
@@ -326,6 +327,9 @@ export default function RootLayout({
         {/* ✅ PWA Service Worker Registration */}
         <PWAProvider />
         
+        {/* ✅ GLOBAL NAVBAR: Ab ye HAR PAGE par dikhega! */}
+        <Navbar />
+        
         <noscript>
           <iframe 
             src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`} 
@@ -336,6 +340,7 @@ export default function RootLayout({
           />
         </noscript>
 
+        {/* ✅ Page Content Yahan Render Hoga */}
         {children}
         
         {/* ✅ Google Tag Manager (Lazy Loaded for Performance) */}
