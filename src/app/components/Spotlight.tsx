@@ -8,7 +8,7 @@ import {
   User, Link2, Check, Home, Trash2, ChevronDown, ChevronUp, Bookmark, 
   BadgeCheck, Eye, Clock, Camera, Circle, StopCircle, Hash, Wand2, 
   Flame, Zap, Sliders, RotateCcw, Mic, MicOff, ShoppingBag, Flag, AlertTriangle, Users,
-  Music, Upload, Bell, UserPlus, UserCheck, BarChart3, Award, Bug
+  Music, Upload, Bell, UserPlus, UserCheck, BarChart3, Award
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { 
@@ -21,26 +21,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 // ══════════════════════════════════════════════════════════
-//  FIXED NOTIFICATION CREATOR (No undefined fields)
+// 🔔 NOTIFICATION CREATOR (No undefined fields)
 // ══════════════════════════════════════════════════════════
 const createNotification = async (toUserId: string, type: string, fromUserId: string, fromUserName: string, fromUserPhoto: string, postId?: string, postTitle?: string, commentText?: string, followBack?: boolean, metadata?: any, userHandle?: string) => {
-  if (toUserId === fromUserId) {
-    console.log("⏭️ Skipping self-notification");
-    return;
-  }
-
-  console.log("🔔 Creating notification:", { toUserId, type, fromUserId, postId });
+  if (toUserId === fromUserId) return;
 
   try {
-    // 🔥 FIX: Build object dynamically to avoid 'undefined' fields which Firestore rejects
     const notifData: any = {
-      toUserId,
-      type,
-      fromUserId,
-      fromUserName,
-      fromUserPhoto,
-      createdAt: serverTimestamp(),
-      read: false
+      toUserId, type, fromUserId, fromUserName, fromUserPhoto,
+      createdAt: serverTimestamp(), read: false
     };
 
     if (postId !== undefined) notifData.postId = postId;
@@ -50,14 +39,13 @@ const createNotification = async (toUserId: string, type: string, fromUserId: st
     if (metadata !== undefined) notifData.metadata = metadata;
     if (userHandle !== undefined) notifData.userHandle = userHandle;
 
-    const docRef = await addDoc(collection(db, "notifications"), notifData);
-    console.log("✅ Notification created with ID:", docRef.id);
+    await addDoc(collection(db, "notifications"), notifData);
   } catch (error: any) {
-    console.error("❌ Notification error:", error.code, error.message);
+    console.error("Notification error:", error.code, error.message);
   }
 };
 
-// ═════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // INLINE PLACEHOLDERS & UTILS
 // ══════════════════════════════════════════════════════════
 const AudioLibrary = ({ isOpen, onClose, onApplyAudio }: any) => {
@@ -267,13 +255,12 @@ const EngagementScore = ({ metrics }: { metrics: EngagementMetrics }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🔍 DEBUG-FRIENDLY NOTIFICATIONS DRAWER
+//  NOTIFICATIONS DRAWER (Clean - No Debug Mode)
 // ═══════════════════════════════════════════════════════════
 const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { isOpen: boolean; onClose: () => void; currentUserId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>("");
 
   useEffect(() => {
     if (!isOpen || !currentUserId) {
@@ -285,7 +272,6 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
     
     setLoading(true);
     setError(null);
-    setDebugInfo(`User UID: ${currentUserId}`);
     
     const q = query(
       collection(db, "notifications"), 
@@ -296,30 +282,20 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
     
     const unsub = onSnapshot(q, (snapshot) => {
       const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log("📬 Notifications fetched (with where):", notifs.length);
-      setDebugInfo(prev => `${prev}\n✅ Fetched ${notifs.length} notifications with where clause`);
       setNotifications(notifs);
       setLoading(false);
     }, (err: any) => {
-      console.error(" Query with where failed:", err.code, err.message);
-      setDebugInfo(prev => `${prev}\n❌ Where clause failed: ${err.code}`);
+      console.error("Notifications query failed:", err.code, err.message);
       
       if (err.code === 'failed-precondition' || err.code === 'permission-denied') {
-        console.log("⚠️ Falling back to client-side filtering");
-        setDebugInfo(prev => `${prev}\n⚠️ Using fallback: client-side filtering`);
-        
         const fallbackQ = query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(200));
         const fallbackUnsub = onSnapshot(fallbackQ, (snapshot) => {
           const allNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          console.log("📬 All notifications:", allNotifs.length);
           const userNotifs = allNotifs.filter((n: any) => n.toUserId === currentUserId);
-          console.log(" Filtered for user:", userNotifs.length);
-          setDebugInfo(prev => `${prev}\n✅ Fallback fetched ${userNotifs.length} notifications`);
           setNotifications(userNotifs);
           setLoading(false);
         }, (fallbackErr) => {
-          console.error("❌ Fallback also failed:", fallbackErr);
-          setDebugInfo(prev => `${prev}\n❌ Fallback failed: ${fallbackErr.message}`);
+          console.error("Fallback also failed:", fallbackErr);
           setError("सूचनाएँ लोड करने में त्रुटि");
           setLoading(false);
         });
@@ -333,37 +309,14 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
     return () => unsub();
   }, [isOpen, currentUserId]);
 
-  const sendTestNotification = async () => {
-    if (!currentUserId) return;
-    console.log("🧪 Sending test notification...");
-    try {
-      await addDoc(collection(db, "notifications"), {
-        toUserId: currentUserId,
-        type: "comment",
-        fromUserId: "test-user-id",
-        fromUserName: "टेस्ट यूज़र",
-        fromUserPhoto: "",
-        postId: "test-post-id",
-        postTitle: "टेस्ट पोस्ट",
-        commentText: "यह एक टेस्ट कमेंट है",
-        createdAt: serverTimestamp(),
-        read: false
-      });
-      showToast("टेस्ट नोटिफिकेशन भेजा गया!", "success");
-    } catch (err: any) {
-      console.error("Test notification error:", err);
-      showToast("टेस्ट नोटिफिकेशन विफल: " + err.message, "error");
-    }
-  };
-
   if (!isOpen) return null;
 
   const getNotificationIcon = (type: string) => {
     switch(type) {
       case 'like': return '❤️';
       case 'comment': return '💬';
-      case 'follow': return '';
-      case 'share': return '';
+      case 'follow': return '👥';
+      case 'share': return '🔗';
       default: return '🔔';
     }
   };
@@ -394,23 +347,6 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
             </h3>
             <button type="button" onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
               <X className="w-5 h-5 text-white/70" />
-            </button>
-          </div>
-          
-          <div className="bg-blue-900/20 border-b border-blue-500/20 p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Bug className="w-4 h-4 text-blue-400" />
-              <span className="text-xs font-bold text-blue-300">DEBUG MODE</span>
-            </div>
-            <pre className="text-[10px] text-blue-200 whitespace-pre-wrap font-mono max-h-20 overflow-y-auto">
-              {debugInfo || "Waiting..."}
-            </pre>
-            <button 
-              type="button"
-              onClick={sendTestNotification}
-              className="mt-2 w-full px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded text-xs font-bold text-blue-300 transition-all"
-            >
-              🧪 Send Test Notification
             </button>
           </div>
           
@@ -452,7 +388,7 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
                       <span className="font-semibold text-amber-400">{notif.fromUserName || "User"}</span>{" "}
                       <span className="text-white/60">{getNotificationText(notif)}</span>
                     </p>
-                    {notif.postTitle && <p className="text-xs text-white/40 mt-1 truncate flex items-center gap-1"><span className="text-amber-500/50"></span> "{notif.postTitle}"</p>}
+                    {notif.postTitle && <p className="text-xs text-white/40 mt-1 truncate flex items-center gap-1"><span className="text-amber-500/50">📝</span> "{notif.postTitle}"</p>}
                     <p className="text-[10px] text-white/40 mt-1.5 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {notif.createdAt?.toDate ? new Date(notif.createdAt.toDate()).toLocaleString('hi-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : "हाल ही में"}
@@ -817,7 +753,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
         if (foundHashtags.length > 0) setHashtags(foundHashtags.join(' '));
       } else { throw new Error("API limit"); }
     } catch (error) {
-      setContent(`🔥 ${title || 'आलमनगर की शान'} यहाँ देखें! 💯 #आलमनगर #मधेपुरा #बिहार #Spotlight`);
+      setContent(`🔥 ${title || 'आलमनगर की शान'} यहाँ देखें!  #आलमनगर #मधेपुरा #बिहार #Spotlight`);
     } finally { setIsGeneratingAI(false); }
   };
 
@@ -1066,7 +1002,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             const viewSnap = await getDoc(viewDocRef);
             if (!viewSnap.exists()) await setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() });
           }
-        } catch (error: any) { console.error(" VIEW UPDATE ERROR:", error.code, error.message); }
+        } catch (error: any) { console.error("View update error:", error.code, error.message); }
         observer.disconnect();
       }
     }, { threshold: 0.3 });
@@ -1161,10 +1097,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       });
       await updateDoc(doc(db, "spotlights", postId), { comments: increment(1) });
       if (post.userId !== auth.currentUser.uid) {
-        console.log(" Sending comment notification to:", post.userId);
         createNotification(post.userId, "comment", auth.currentUser.uid, auth.currentUser.displayName || "User", auth.currentUser.photoURL || "", postId, post.title, newComment.trim()).catch(console.warn);
-      } else {
-        console.log("⏭️ Skipping notification (commented on own post)");
       }
       setNewComment("");
       showToast("टिप्पणी जोड़ी गई!", "success");
