@@ -25,14 +25,16 @@ import Link from "next/link";
 // ══════════════════════════════════════════════════════════
 const createNotification = async (toUserId: string, type: string, fromUserId: string, fromUserName: string, fromUserPhoto: string, postId?: string, postTitle?: string, commentText?: string, followBack?: boolean, metadata?: any, userHandle?: string) => {
   try {
+    console.log(" Creating notification for:", toUserId, "type:", type);
     await addDoc(collection(db, "notifications"), {
       toUserId, type, fromUserId, fromUserName, fromUserPhoto,
       postId, postTitle, commentText, followBack, metadata, userHandle,
       createdAt: serverTimestamp(),
       read: false
     });
-  } catch (error) {
-    console.error("Notification error:", error);
+    console.log("✅ Notification created successfully");
+  } catch (error: any) {
+    console.error("❌ Notification error:", error.code, error.message);
   }
 };
 
@@ -170,7 +172,7 @@ interface Comment { id: string; userId: string; userName: string; userPhoto: str
 
 const REPORT_REASONS = [
   { id: "inappropriate", label: "अश्लील या अनुचित सामग्री", icon: "🔞" },
-  { id: "spam", label: "स्पैम या विज्ञापन", icon: "🚫" },
+  { id: "spam", label: "स्पैम या विज्ञापन", icon: "" },
   { id: "hate", label: "नफरत फैलाने वाली भाषा", icon: "⚠️" },
   { id: "fraud", label: "धोखाधड़ी या स्कैम", icon: "💰" },
   { id: "violence", label: "हिंसा या खतरनाक सामग्री", icon: "🚨" },
@@ -242,28 +244,59 @@ const EngagementScore = ({ metrics }: { metrics: EngagementMetrics }) => {
   );
 };
 
-// ══════════════════════════════════════════════════════════
-// NOTIFICATIONS DRAWER
+// ═══════════════════════════════════════════════════════════
+// 🔥 FIXED: NOTIFICATIONS DRAWER (With proper where clause & error handling)
 // ═══════════════════════════════════════════════════════════
 const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boolean; onClose: () => void; currentUserId: string }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen || !currentUserId) {
       setNotifications([]);
       setLoading(false);
+      setError(null);
       return;
     }
     setLoading(true);
-    const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(100));
+    setError(null);
+    
+    // 🔥 FIXED: Added where clause for proper Firestore query
+    // Note: If you get "missing index" error, create composite index in Firestore console
+    const q = query(
+      collection(db, "notifications"), 
+      where("toUserId", "==", currentUserId),
+      orderBy("createdAt", "desc"), 
+      limit(50)
+    );
+    
     const unsub = onSnapshot(q, (snapshot) => {
-      const allNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const userNotifs = allNotifs.filter((n: any) => n.toUserId === currentUserId);
-      setNotifications(userNotifs);
+      const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log("📬 Notifications fetched for user:", currentUserId, "count:", notifs.length);
+      setNotifications(notifs);
       setLoading(false);
-    }, (error) => {
-      console.error("🔥 Notifications fetch error:", error);
+    }, (err: any) => {
+      console.error("🔥 Notifications fetch error:", err.code, err.message);
+      
+      //  Fallback: If index error, try without where clause (client-side filter)
+      if (err.code === 'failed-precondition') {
+        console.log("⚠️ Missing index, falling back to client-side filtering");
+        const fallbackQ = query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(200));
+        const fallbackUnsub = onSnapshot(fallbackQ, (snapshot) => {
+          const allNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const userNotifs = allNotifs.filter((n: any) => n.toUserId === currentUserId);
+          setNotifications(userNotifs);
+          setLoading(false);
+        }, (fallbackErr) => {
+          console.error("Fallback also failed:", fallbackErr);
+          setError("सूचनाएँ लोड करने में त्रुटि");
+          setLoading(false);
+        });
+        return () => fallbackUnsub();
+      }
+      
+      setError("सूचनाएँ लोड करने में त्रुटि");
       setLoading(false);
       setNotifications([]);
     });
@@ -272,13 +305,43 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
 
   if (!isOpen) return null;
 
+  const getNotificationIcon = (type: string) => {
+    switch(type) {
+      case 'like': return '❤️';
+      case 'comment': return '💬';
+      case 'follow': return '👥';
+      case 'share': return '🔗';
+      default: return '🔔';
+    }
+  };
+
+  const getNotificationText = (notif: any) => {
+    switch(notif.type) {
+      case 'like': return 'ने आपके पोस्ट को लाइक किया';
+      case 'comment': return `ने कमेंट किया: "${notif.commentText || ''}"`;
+      case 'follow': return 'ने आपको फॉलो किया';
+      case 'share': return 'ने आपका पोस्ट शेयर किया';
+      default: return 'ने आपके पोस्ट पर एक्टिविटी की';
+    }
+  };
+
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end" onClick={onClose}>
         <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="w-full max-w-md bg-stone-900 h-full border-l border-stone-700 flex flex-col" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 bg-stone-900/50 backdrop-blur-md sticky top-0 z-10">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2"><Bell className="w-5 h-5 text-amber-500" /> सूचनाएँ</h3>
-            <button type="button" onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5 text-white/70" /></button>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Bell className="w-5 h-5 text-amber-500" /> 
+              सूचनाएँ
+              {notifications.length > 0 && (
+                <span className="px-2 py-0.5 bg-amber-500 text-stone-900 text-xs font-bold rounded-full">
+                  {notifications.length}
+                </span>
+              )}
+            </h3>
+            <button type="button" onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <X className="w-5 h-5 text-white/70" />
+            </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {loading ? (
@@ -286,15 +349,28 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
                 <Loader2 className="w-8 h-8 text-amber-500 animate-spin mb-3" />
                 <p className="text-sm text-white/50 font-medium">सूचनाएँ लोड हो रही हैं...</p>
               </div>
+            ) : error ? (
+              <div className="text-center py-16 px-4">
+                <div className="w-16 h-16 mx-auto mb-4 bg-red-500/10 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-8 h-8 text-red-400" />
+                </div>
+                <p className="text-white/80 text-sm font-semibold mb-2">कुछ गलत हो गया</p>
+                <p className="text-white/40 text-xs mb-4">{error}</p>
+                <button type="button" onClick={() => window.location.reload()} className="px-4 py-2 bg-amber-500 text-stone-900 text-xs font-bold rounded-full hover:bg-amber-400 transition-all">
+                  दोबारा कोशिश करें
+                </button>
+              </div>
             ) : notifications.length === 0 ? (
               <div className="text-center py-16 px-4">
-                <div className="w-16 h-16 mx-auto mb-4 bg-stone-800 rounded-full flex items-center justify-center"><Bell className="w-8 h-8 text-stone-500" /></div>
+                <div className="w-16 h-16 mx-auto mb-4 bg-stone-800 rounded-full flex items-center justify-center">
+                  <Bell className="w-8 h-8 text-stone-500" />
+                </div>
                 <p className="text-white/80 text-sm font-semibold mb-1">अभी कोई सूचना नहीं है</p>
                 <p className="text-white/40 text-xs">जब कोई आपकी पोस्ट को लाइक या कमेंट करेगा, यहाँ दिखेगा</p>
               </div>
             ) : (
               notifications.map((notif: any) => (
-                <motion.div key={notif.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex gap-3 p-3 bg-stone-800/50 rounded-xl border border-white/5 hover:bg-stone-800 transition-all group">
+                <motion.div key={notif.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={`flex gap-3 p-3 rounded-xl border transition-all group ${notif.read ? 'bg-stone-800/30 border-white/5' : 'bg-stone-800/70 border-amber-500/20'}`}>
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px] flex-shrink-0">
                     <div className="w-full h-full rounded-full bg-stone-900 overflow-hidden flex items-center justify-center">
                       {notif.fromUserPhoto ? <img src={notif.fromUserPhoto} className="w-full h-full object-cover" alt="" /> : <span className="text-sm font-bold text-white">{notif.fromUserName?.[0] || "U"}</span>}
@@ -303,16 +379,15 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white/90 leading-relaxed">
                       <span className="font-semibold text-amber-400">{notif.fromUserName || "User"}</span>{" "}
-                      <span className="text-white/60">
-                        {notif.type === 'like' ? 'ने आपके पोस्ट को लाइक किया ❤️' : notif.type === 'comment' ? 'ने कमेंट किया 💬' : notif.type === 'follow' ? 'ने आपको फॉलो किया ' : 'ने कुछ किया'}
-                      </span>
+                      <span className="text-white/60">{getNotificationText(notif)}</span>
                     </p>
-                    {notif.postTitle && <p className="text-xs text-white/40 mt-1 truncate flex items-center gap-1"><span className="text-amber-500/50">📝</span> "{notif.postTitle}"</p>}
+                    {notif.postTitle && <p className="text-xs text-white/40 mt-1 truncate flex items-center gap-1"><span className="text-amber-500/50"></span> "{notif.postTitle}"</p>}
                     <p className="text-[10px] text-white/40 mt-1.5 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {notif.createdAt?.toDate ? new Date(notif.createdAt.toDate()).toLocaleString('hi-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : "हाल ही में"}
                     </p>
                   </div>
+                  <div className="flex-shrink-0 text-xl">{getNotificationIcon(notif.type)}</div>
                 </motion.div>
               ))
             )}
@@ -452,7 +527,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   const [showAudioUpload, setShowAudioUpload] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<any>(null);
 
-  // 🔥 NEW: Voice Input States
   const [isListening, setIsListening] = useState(false);
   const [listeningField, setListeningField] = useState<'title' | 'content' | 'hashtags' | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -475,7 +549,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturate: 100, hueRotate: 0, blur: 0 });
 
-  // 🔥 Initialize Speech Recognition
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -483,70 +556,49 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
         recognitionRef.current = new SpeechRecognition();
         recognitionRef.current.continuous = true;
         recognitionRef.current.interimResults = true;
-        recognitionRef.current.lang = 'hi-IN'; // Hindi language
+        recognitionRef.current.lang = 'hi-IN';
         
         recognitionRef.current.onresult = (event: any) => {
           let finalTranscript = '';
-          let interimTranscript = '';
-          
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
               finalTranscript += transcript;
-            } else {
-              interimTranscript += transcript;
             }
           }
-          
-          // Update the appropriate field
-          if (listeningField === 'title') {
-            setTitle(prev => prev + ' ' + finalTranscript);
-          } else if (listeningField === 'content') {
-            setContent(prev => prev + ' ' + finalTranscript);
-          } else if (listeningField === 'hashtags') {
-            setHashtags(prev => prev + ' ' + finalTranscript);
-          }
+          if (listeningField === 'title') setTitle(prev => prev + ' ' + finalTranscript);
+          else if (listeningField === 'content') setContent(prev => prev + ' ' + finalTranscript);
+          else if (listeningField === 'hashtags') setHashtags(prev => prev + ' ' + finalTranscript);
         };
         
         recognitionRef.current.onerror = (event: any) => {
           console.error('Speech recognition error:', event.error);
           if (event.error === 'not-allowed') {
-            showToast("माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग्स चेक करें।", "error");
+            showToast("माइक्रोफ़ोन की अनुमति नहीं मिली।", "error");
           }
           stopListening();
         };
         
         recognitionRef.current.onend = () => {
-          if (isListening) {
-            recognitionRef.current.start();
-          }
+          if (isListening) recognitionRef.current.start();
         };
       }
     }
-    
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
+    return () => { if (recognitionRef.current) recognitionRef.current.stop(); };
   }, [listeningField, isListening, showToast]);
 
-  // 🔥 Voice Input Functions
   const startListening = (field: 'title' | 'content' | 'hashtags') => {
     if (!recognitionRef.current) {
       showToast("आपका ब्राउज़र वॉइस इनपुट को सपोर्ट नहीं करता।", "error");
       return;
     }
-    
     setListeningField(field);
     setIsListening(true);
     recognitionRef.current.start();
   };
   
   const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
+    if (recognitionRef.current) recognitionRef.current.stop();
     setIsListening(false);
     setListeningField(null);
   };
@@ -568,10 +620,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   }, [isCameraActive]);
 
   useEffect(() => {
-    if (!isOpen) {
-      stopCameraCleanup();
-      stopListening();
-    }
+    if (!isOpen) { stopCameraCleanup(); stopListening(); }
   }, [isOpen]);
 
   const stopCameraCleanup = () => {
@@ -583,9 +632,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
     setIsRecording(false);
     setRecordingTime(0);
     setShowSettings(false);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
+    if (timerRef.current) clearInterval(timerRef.current);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -603,7 +650,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
       showToast("वीडियो का साइज़ 100MB से कम होना चाहिए।", "error");
       return;
     }
-    
     setMediaFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setMediaPreview(reader.result as string);
@@ -611,7 +657,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
     setIsCameraActive(false);
   };
 
-  // ✅ EXACT CREATERA WORKING CAMERA LOGIC
   const openCamera = async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       showToast("आपका ब्राउज़र कैमरा एक्सेस को सपोर्ट नहीं करता।", "error");
@@ -619,77 +664,47 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: cameraFacingMode, 
-          width: { ideal: 1280 }, 
-          height: { ideal: 720 } 
-        }, 
+        video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
         audio: !isMuted
       });
       mediaStreamRef.current = stream;
       setIsCameraActive(true);
       setMediaFile(null);
       setMediaPreview("");
-      setFilters({ 
-        brightness: 100, 
-        contrast: 100, 
-        saturate: 100, 
-        hueRotate: 0, 
-        blur: 0 
-      });
+      setFilters({ brightness: 100, contrast: 100, saturate: 100, hueRotate: 0, blur: 0 });
     } catch (err) {
       console.error("Camera error:", err);
-      showToast("कैमरा एक्सेस अस्वीकार कर दिया गया या उपलब्ध नहीं है। कृपया ब्राउज़र सेटिंग्स चेक करें।", "error");
+      showToast("कैमरा एक्सेस अस्वीकार कर दिया गया।", "error");
     }
   };
 
   const switchCameraFacing = async () => {
     const newMode = cameraFacingMode === 'user' ? 'environment' : 'user';
     setCameraFacingMode(newMode);
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(track => track.stop());
-    }
+    if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach(track => track.stop());
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: newMode, 
-          width: { ideal: 1280 }, 
-          height: { ideal: 720 } 
-        }, 
+        video: { facingMode: newMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
         audio: !isMuted
       });
       mediaStreamRef.current = stream;
-      if (videoPreviewRef.current) {
-        videoPreviewRef.current.srcObject = stream;
-      }
-    } catch (err) { 
-      console.error("Switch camera error:", err); 
-    }
+      if (videoPreviewRef.current) videoPreviewRef.current.srcObject = stream;
+    } catch (err) { console.error("Switch camera error:", err); }
   };
 
   const toggleMute = () => {
     const newMuteState = !isMuted;
     setIsMuted(newMuteState);
     if (mediaStreamRef.current) {
-      mediaStreamRef.current.getAudioTracks().forEach(track => { 
-        track.enabled = !newMuteState; 
-      });
+      mediaStreamRef.current.getAudioTracks().forEach(track => { track.enabled = !newMuteState; });
     }
   };
 
   const startRecording = () => {
     if (!mediaStreamRef.current) return;
     recordedChunksRef.current = [];
-    const recorder = new MediaRecorder(mediaStreamRef.current, { 
-      mimeType: 'video/webm;codecs=vp9,opus' 
-    });
-    
-    recorder.ondataavailable = (e) => { 
-      if (e.data && e.data.size > 0) {
-        recordedChunksRef.current.push(e.data);
-      }
-    };
-    
+    const recorder = new MediaRecorder(mediaStreamRef.current, { mimeType: 'video/webm;codecs=vp9,opus' });
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) recordedChunksRef.current.push(e.data); };
     recorder.onstop = () => {
       const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
       const file = new File([blob], `alamnagar-spotlight-${Date.now()}.webm`, { type: 'video/webm' });
@@ -699,7 +714,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
       reader.readAsDataURL(file);
       stopCameraCleanup();
     };
-    
     mediaRecorderRef.current = recorder;
     recorder.start();
     setIsRecording(true);
@@ -710,16 +724,11 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
     }
   };
 
-  const clearMedia = () => { 
-    setMediaFile(null); 
-    setMediaPreview(""); 
-  };
+  const clearMedia = () => { setMediaFile(null); setMediaPreview(""); };
 
   const generateAICaption = async () => {
     if (!title.trim() && !mediaFile) { 
@@ -738,14 +747,10 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
         const contentText = text.replace(hashtagRegex, '').replace(/\s+/g, ' ').trim();
         if (contentText) setContent(contentText);
         if (foundHashtags.length > 0) setHashtags(foundHashtags.join(' '));
-      } else {
-        throw new Error("API limit");
-      }
+      } else { throw new Error("API limit"); }
     } catch (error) {
-      setContent(`🔥 ${title || 'आलमनगर की शान'} यहाँ देखें! क्या आप सहमत हैं? 💯 #आलमनगर #मधेपुरा #बिहार #Spotlight`);
-    } finally {
-      setIsGeneratingAI(false);
-    }
+      setContent(`🔥 ${title || 'आलमनगर की शान'} यहाँ देखें! 💯 #आलमनगर #मधेपुरा #बिहार #Spotlight`);
+    } finally { setIsGeneratingAI(false); }
   };
 
   const uploadToCloudinary = async (file: File): Promise<string> => {
@@ -818,66 +823,28 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
                 <p className="text-xs text-white/50">सार्वजनिक स्पॉटलाइट में पोस्ट कर रहे हैं</p>
               </div>
             </div>
-            
-            {/*  Title with Voice Input */}
             <div className="relative">
-              <input 
-                value={title} 
-                onChange={(e) => setTitle(e.target.value)} 
-                placeholder={titlePlaceholder} 
-                className="w-full bg-transparent text-white placeholder-white/40 focus:outline-none text-lg font-semibold border-b border-white/10 pb-2 pr-10" 
-              />
-              <button 
-                type="button"
-                onClick={() => isListening && listeningField === 'title' ? stopListening() : startListening('title')}
-                className={`absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all ${isListening && listeningField === 'title' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
-                title="बोलकर लिखें"
-              >
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={titlePlaceholder} className="w-full bg-transparent text-white placeholder-white/40 focus:outline-none text-lg font-semibold border-b border-white/10 pb-2 pr-10" />
+              <button type="button" onClick={() => isListening && listeningField === 'title' ? stopListening() : startListening('title')} className={`absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all ${isListening && listeningField === 'title' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`} title="बोलकर लिखें">
                 <Mic className="w-4 h-4" />
               </button>
             </div>
-            
-            {/* 🔥 Content with Voice Input */}
             <div className="relative">
-              <textarea 
-                value={content} 
-                onChange={(e) => setContent(e.target.value)} 
-                placeholder={contentPlaceholder} 
-                className="w-full bg-transparent text-white placeholder-white/40 resize-none focus:outline-none text-base min-h-[80px] pr-10" 
-              />
-              <button 
-                type="button"
-                onClick={() => isListening && listeningField === 'content' ? stopListening() : startListening('content')}
-                className={`absolute right-0 top-3 p-2 rounded-full transition-all ${isListening && listeningField === 'content' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
-                title="बोलकर लिखें"
-              >
+              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={contentPlaceholder} className="w-full bg-transparent text-white placeholder-white/40 resize-none focus:outline-none text-base min-h-[80px] pr-10" />
+              <button type="button" onClick={() => isListening && listeningField === 'content' ? stopListening() : startListening('content')} className={`absolute right-0 top-3 p-2 rounded-full transition-all ${isListening && listeningField === 'content' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`} title="बोलकर लिखें">
                 <Mic className="w-4 h-4" />
               </button>
             </div>
-            
-            {/* 🔥 Hashtags with Voice Input */}
             <div className="relative">
               <Hash className="absolute left-3 top-3 w-4 h-4 text-white/40" />
-              <input 
-                value={hashtags} 
-                onChange={(e) => setHashtags(e.target.value)} 
-                placeholder={hashtagPlaceholder} 
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-12 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50 transition-all" 
-              />
-              <button 
-                type="button"
-                onClick={() => isListening && listeningField === 'hashtags' ? stopListening() : startListening('hashtags')}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-all ${isListening && listeningField === 'hashtags' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
-                title="बोलकर लिखें"
-              >
+              <input value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder={hashtagPlaceholder} className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-12 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50 transition-all" />
+              <button type="button" onClick={() => isListening && listeningField === 'hashtags' ? stopListening() : startListening('hashtags')} className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-all ${isListening && listeningField === 'hashtags' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`} title="बोलकर लिखें">
                 <Mic className="w-4 h-4" />
               </button>
             </div>
-
             <motion.button type="button" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={generateAICaption} disabled={isGeneratingAI} className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-500/10 to-amber-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold uppercase tracking-wider hover:from-emerald-500/20 hover:to-amber-500/20 transition-all disabled:opacity-50">
               {isGeneratingAI ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Wand2 className="w-4 h-4" /> AI से कैप्शन और हैशटैग बनाएं</>}
             </motion.button>
-
             <div className="space-y-2">
               <label className="text-[10px] font-semibold text-white/50 uppercase tracking-wider">Background Audio (Optional)</label>
               <div className="flex gap-3">
@@ -898,7 +865,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
                 </div>
               )}
             </div>
-
             <div className="relative w-full aspect-video bg-black/50 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center group">
               {isCameraActive ? (
                 <>
@@ -981,14 +947,12 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   );
 };
 
-// ... (SpotlightCard component remains exactly the same as previous working version - paste the full SpotlightCard component here)
 const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDelete, postId, showToast }: { post: SpotlightPost; currentUserId: string; currentUserObj?: any; requireAuth: (action: string, postId?: string) => boolean; onDelete: (id: string) => void; postId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [liked, setLiked] = useState(post.likedBy?.includes(currentUserId) || false);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
-  
   const [showComments, setShowComments] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -1000,14 +964,11 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
   const [copied, setCopied] = useState(false);
-  
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
-  
   const [hasTrackedView, setHasTrackedView] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [needsClamp, setNeedsClamp] = useState(false);
-  
   const cardRef = useRef<HTMLDivElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1020,36 +981,27 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   useEffect(() => {
     const el = paragraphRef.current;
-    if (el && !expanded) {
-      setNeedsClamp(el.scrollHeight > el.clientHeight + 2);
-    }
+    if (el && !expanded) setNeedsClamp(el.scrollHeight > el.clientHeight + 2);
   }, [post.content, expanded]);
 
   useEffect(() => { setSaved(getSavedPosts().includes(post.id)); }, [post.id]);
 
   useEffect(() => {
     if (hasTrackedView || !cardRef.current) return;
-    const observer = new IntersectionObserver(
-      async ([entry]) => {
-        if (entry.isIntersecting && !hasTrackedView) {
-          setHasTrackedView(true);
-          try {
-            await updateDoc(doc(db, "spotlights", post.id), { views: increment(1) });
-            if (currentUserId) {
-              const viewDocRef = doc(db, "spotlights", post.id, "views", currentUserId);
-              const viewSnap = await getDoc(viewDocRef);
-              if (!viewSnap.exists()) {
-                await setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() });
-              }
-            }
-          } catch (error: any) {
-            console.error("❌ CRITICAL VIEW UPDATE ERROR:", error.code, error.message);
+    const observer = new IntersectionObserver(async ([entry]) => {
+      if (entry.isIntersecting && !hasTrackedView) {
+        setHasTrackedView(true);
+        try {
+          await updateDoc(doc(db, "spotlights", post.id), { views: increment(1) });
+          if (currentUserId) {
+            const viewDocRef = doc(db, "spotlights", post.id, "views", currentUserId);
+            const viewSnap = await getDoc(viewDocRef);
+            if (!viewSnap.exists()) await setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() });
           }
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
+        } catch (error: any) { console.error("❌ VIEW UPDATE ERROR:", error.code, error.message); }
+        observer.disconnect();
+      }
+    }, { threshold: 0.3 });
     observer.observe(cardRef.current);
     return () => observer.disconnect();
   }, [post.id, currentUserId, hasTrackedView]);
@@ -1093,9 +1045,9 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       }
       setLiked(!liked);
     } catch (error: any) { 
-      console.error("Like Error Details:", error.message);
+      console.error("Like Error:", error.message);
       setLiked(liked); setLikeCount(likeCount);
-      showToast("इस कार्रवाई के लिए अनुमति नहीं है या नेटवर्क त्रुटि।", "error");
+      showToast("त्रुटि हुई।", "error");
     }
   };
 
@@ -1109,13 +1061,11 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
   const handleFollow = async () => {
     if (!auth.currentUser) { requireAuth("follow", postId); return; }
     if (post.userId === currentUserId) return;
-    
     setFollowLoading(true);
     try {
       const batch = writeBatch(db);
       const currentUserRef = doc(db, "users", currentUserId);
       const creatorRef = doc(db, "users", post.userId);
-      
       if (isFollowing) {
         batch.update(currentUserRef, { following: arrayRemove(post.userId), followingCount: increment(-1) });
         batch.update(creatorRef, { followers: arrayRemove(currentUserId), followersCount: increment(-1) });
@@ -1126,11 +1076,9 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
       }
       await batch.commit();
     } catch (error: any) { 
-      console.error("❌ Follow Error Details:", error.message);
+      console.error("Follow Error:", error.message);
       showToast("फॉलो करने में त्रुटि हुई।", "error");
-    } finally { 
-      setFollowLoading(false); 
-    }
+    } finally { setFollowLoading(false); }
   };
 
   const handleAddComment = async () => {
@@ -1148,9 +1096,9 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
         createNotification(post.userId, "comment", auth.currentUser.uid, auth.currentUser.displayName || "User", auth.currentUser.photoURL || "", postId, post.title, newComment.trim()).catch(console.warn);
       }
       setNewComment("");
-      showToast("टिप्पणी सफलतापूर्वक जोड़ी गई!", "success");
+      showToast("टिप्पणी जोड़ी गई!", "success");
     } catch (error: any) { 
-      console.error("Comment Error Details:", error.message);
+      console.error("Comment Error:", error.message);
       showToast("टिप्पणी जोड़ने में त्रुटि हुई।", "error");
     } finally { setPostingComment(false); }
   };
@@ -1169,7 +1117,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
         window.open(`https://wa.me/?text=${encodeURIComponent("आलमनगर स्पॉटलाइट देखें: ")}${encodeURIComponent(shareUrl)}`, '_blank');
       }
     } catch (error: any) { 
-      console.error("Share Error Details:", error.message);
+      console.error("Share Error:", error.message);
       showToast("शेयर करने में त्रुटि हुई।", "error");
     }
     if (platform !== 'copy') setShowShareSheet(false);
@@ -1180,7 +1128,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
     try {
       await deleteDoc(doc(db, "spotlights", postId));
       setShowDeleteConfirm(false); setShowMenu(false); onDelete(postId);
-      showToast("पोस्ट सफलतापूर्वक हटा दी गई।", "success");
+      showToast("पोस्ट हटा दी गई।", "success");
     } catch (error) { 
       console.error("Delete error:", error); 
       showToast("पोस्ट हटाने में त्रुटि हुई।", "error");
@@ -1253,16 +1201,12 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             )}
           </div>
         </div>
-
         {post.title && (
           <div className="px-4 pb-2 flex items-center gap-2 flex-wrap relative">
-            <Link href={`/spotlights/${post.id}`} className="text-xl font-bold text-white leading-tight hover:text-emerald-400 transition-colors">
-              {post.title}
-            </Link>
+            <Link href={`/spotlights/${post.id}`} className="text-xl font-bold text-white leading-tight hover:text-emerald-400 transition-colors">{post.title}</Link>
             <FeaturedBadge level={featuredLevel} isTrendingPost={trending} />
           </div>
         )}
-
         {calculateEngagementScore(engagementMetrics) > 0 && (
           <div className="px-4 pb-2 flex items-center gap-2 relative">
             <EngagementScore metrics={engagementMetrics} />
@@ -1270,7 +1214,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             <span className="text-[10px] text-white/40">{engagementMetrics.views} views • {engagementMetrics.likes} likes</span>
           </div>
         )}
-
         {post.content && (
           <div className="px-4 pb-3 relative">
             <p ref={paragraphRef} className={`text-white/90 text-[15px] leading-relaxed whitespace-pre-wrap transition-all duration-300 ${expanded ? "" : "line-clamp-4"}`}>{post.content}</p>
@@ -1281,13 +1224,11 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             )}
           </div>
         )}
-
         {post.hashtags && post.hashtags.length > 0 && (
           <div className="px-4 pb-3 flex flex-wrap gap-2 relative">
             {post.hashtags.map((tag, idx) => <span key={idx} className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 cursor-pointer transition-colors">{tag}</span>)}
           </div>
         )}
-
         {post.mediaUrl && (
           <Link href={`/spotlights/${post.id}`} className="block relative bg-black border-y border-white/5" onDoubleClick={handleDoubleTap}>
             {post.mediaType === "image" ? (
@@ -1316,7 +1257,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             )}
           </Link>
         )}
-
         <div className="px-4 py-2.5 flex items-center justify-between text-xs text-white/50 border-b border-white/5 relative">
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-4 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full flex items-center justify-center">
@@ -1329,7 +1269,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             {post.views > 0 && <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {post.views} व्यूज़</span>}
           </div>
         </div>
-
         <div className="px-2 py-1 flex items-center justify-between relative">
           <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={handleLike} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors ${liked ? "text-red-500" : "text-white/70"}`}>
             <Heart className={`w-5 h-5 ${liked ? "fill-current" : ""}`} /> <span className="text-sm font-medium">लाइक</span>
@@ -1345,9 +1284,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           </motion.button>
         </div>
       </motion.article>
-
       <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} postId={postId} postOwnerId={post.userId} showToast={showToast} />
-
       <AnimatePresence>
         {showDeleteConfirm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => !deleting && setShowDeleteConfirm(false)}>
@@ -1369,7 +1306,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           </motion.div>
         )}
       </AnimatePresence>
-
       <AnimatePresence>
         {showComments && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={() => setShowComments(false)}>
@@ -1412,7 +1348,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           </motion.div>
         )}
       </AnimatePresence>
-
       <AnimatePresence>
         {showShareSheet && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={() => setShowShareSheet(false)}>
@@ -1453,7 +1388,6 @@ function SpotlightContent() {
   const [savedOnly, setSavedOnly] = useState(false);
   const [filterMode, setFilterMode] = useState<'all' | 'featured' | 'trending'>('all');
   const [usersCount, setUsersCount] = useState<number>(0);
-  
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type });
 
@@ -1516,9 +1450,7 @@ function SpotlightContent() {
           100% { background-position: -200% center; }
         }
       `}</style>
-
       <AnimatePresence>{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}</AnimatePresence>
-
       <header className="sticky top-0 z-40 bg-stone-50/95 backdrop-blur-xl border-b border-stone-200">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -1532,7 +1464,6 @@ function SpotlightContent() {
               <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-500"> आलमनगर समुदाय </p>
             </div>
           </div>
-          
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-amber-50 border border-emerald-200 rounded-lg">
               <Users className="w-4 h-4 text-emerald-600" />
@@ -1551,7 +1482,6 @@ function SpotlightContent() {
           </div>
         </div>
       </header>
-
       <main className="max-w-4xl mx-auto px-4 py-4">
         {user ? (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-stone-200 rounded-2xl p-3 mb-4 flex items-center gap-3 shadow-sm">
@@ -1576,7 +1506,6 @@ function SpotlightContent() {
             <button type="button" onClick={() => router.push("/auth")} className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-amber-600 text-white text-xs font-bold rounded-full hover:from-emerald-700 hover:to-amber-700 transition-all">लॉगिन</button>
           </motion.div>
         )}
-
         {user && (
           <div className="flex items-center gap-2 mb-4 flex-wrap overflow-x-auto pb-2">
             <button type="button" onClick={() => { setFilterMode('all'); setSavedOnly(false); }} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${filterMode === 'all' && !savedOnly ? "bg-stone-900 text-white" : "bg-white text-stone-600 border border-stone-200"}`}>सभी पोस्ट</button>
@@ -1585,7 +1514,6 @@ function SpotlightContent() {
             <button type="button" onClick={() => setSavedOnly(!savedOnly)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${savedOnly ? "bg-stone-900 text-white" : "bg-white text-stone-600 border border-stone-200"}`}><Bookmark className="w-3 h-3" /> सेव किए गए</button>
           </div>
         )}
-
         {loading ? (
           <div className="space-y-4"><SkeletonPost /><SkeletonPost /><SkeletonPost /></div>
         ) : filteredPosts.length === 0 ? (
@@ -1605,10 +1533,8 @@ function SpotlightContent() {
           </div>
         )}
       </main>
-
       <AnimatePresence>{showCreatePost && <CreateSpotlightModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} onPostCreated={() => {}} showToast={showToast} />}</AnimatePresence>
       <NotificationsDrawer isOpen={showNotifications} onClose={() => setShowNotifications(false)} currentUserId={user?.uid || ""} />
-
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-40 pb-[env(safe-area-inset-bottom)]">
         <div className="max-w-4xl mx-auto px-2 py-1 flex items-center justify-between">
           <Link href="/" className="flex flex-col items-center gap-0.5 p-1.5 text-stone-500 hover:text-emerald-600 transition-colors flex-1">
