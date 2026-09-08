@@ -4,9 +4,8 @@ import Script from "next/script";
 // import { SpeedInsights } from "@vercel/speed-insights/next"; // Uncomment if deploying on Vercel
 import "./globals.css";
 
-// ✅ PWA Provider & Navbar Imports
+// ✅ PWA Provider Import (Navbar removed from here)
 import PWAProvider from "./components/PWAProvider";
-import Navbar from "./components/Navbar"; // ⚠️ Note: Agar tumhara Navbar components folder mein hai, toh ye path sahi hai. Agar nahi, toh "./components/Navbar" kar dena.
 
 // ==================== FONTS (Hindi + English) ====================
 const inter = Inter({ 
@@ -326,9 +325,6 @@ export default function RootLayout({
       <body className={`antialiased bg-stone-50 text-stone-900 selection:bg-amber-200 selection:text-amber-900 font-sans`}>
         {/* ✅ PWA Service Worker Registration */}
         <PWAProvider />
-        
-        {/* ✅ GLOBAL NAVBAR: Ab ye HAR PAGE par dikhega! */}
-        <Navbar />
         
         <noscript>
           <iframe 
