@@ -39,7 +39,7 @@ const createNotification = async (toUserId: string, type: string, fromUserId: st
 const AudioLibrary = ({ isOpen, onClose, onApplyAudio }: any) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-stone-900 rounded-2xl p-6 w-full max-w-md border border-stone-700" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-white font-bold mb-4 flex items-center gap-2"><Music className="w-5 h-5 text-emerald-500" /> ट्रेंडिंग ऑडियो</h3>
         <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
@@ -59,7 +59,7 @@ const AudioLibrary = ({ isOpen, onClose, onApplyAudio }: any) => {
 const AudioUpload = ({ isOpen, onClose, onUploadSuccess }: any) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-stone-900 rounded-2xl p-6 w-full max-w-md border border-stone-700 text-center" onClick={(e) => e.stopPropagation()}>
         <Upload className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
         <h3 className="text-white font-bold mb-2">ऑडियो अपलोड करें</h3>
@@ -81,7 +81,7 @@ const Toast = ({ message, type, onClose }: { message: string; type: 'success' | 
       initial={{ opacity: 0, y: 50, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.9 }}
-      className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border ${
+      className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[110] px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border ${
         type === 'success' 
           ? 'bg-emerald-900/90 border-emerald-500/30 text-emerald-100 backdrop-blur-md' 
           : 'bg-red-900/90 border-red-500/30 text-red-100 backdrop-blur-md'
@@ -172,7 +172,7 @@ const REPORT_REASONS = [
   { id: "inappropriate", label: "अश्लील या अनुचित सामग्री", icon: "🔞" },
   { id: "spam", label: "स्पैम या विज्ञापन", icon: "🚫" },
   { id: "hate", label: "नफरत फैलाने वाली भाषा", icon: "⚠️" },
-  { id: "fraud", label: "धोखाधड़ी या स्कैम", icon: "" },
+  { id: "fraud", label: "धोखाधड़ी या स्कैम", icon: "💰" },
   { id: "violence", label: "हिंसा या खतरनाक सामग्री", icon: "🚨" },
   { id: "misinfo", label: "गलत जानकारी या अफवाह", icon: "❌" },
   { id: "privacy", label: "निजता का उल्लंघन", icon: "🔒" },
@@ -245,10 +245,8 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
       setLoading(false);
       return;
     }
-    
     setLoading(true);
     const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(100));
-    
     const unsub = onSnapshot(q, (snapshot) => {
       const allNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       const userNotifs = allNotifs.filter((n: any) => n.toUserId === currentUserId);
@@ -259,7 +257,6 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
       setLoading(false);
       setNotifications([]);
     });
-    
     return () => unsub();
   }, [isOpen, currentUserId]);
 
@@ -267,7 +264,7 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
 
   return (
     <AnimatePresence>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end" onClick={onClose}>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex justify-end" onClick={onClose}>
         <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="w-full max-w-md bg-stone-900 h-full border-l border-stone-700 flex flex-col" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 bg-stone-900/50 backdrop-blur-md sticky top-0 z-10">
             <h3 className="text-lg font-bold text-white flex items-center gap-2"><Bell className="w-5 h-5 text-amber-500" /> सूचनाएँ</h3>
@@ -363,7 +360,7 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
 
   return (
     <AnimatePresence>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
         <motion.div initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", damping: 30, stiffness: 300 }} onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-md bg-stone-900 sm:rounded-2xl rounded-t-3xl border-t sm:border border-stone-700 flex flex-col" style={{ maxHeight: '85vh' }}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 flex-shrink-0">
             <h3 className="text-lg font-bold text-white flex items-center gap-2"><Flag className="w-5 h-5 text-red-500" /> पोस्ट रिपोर्ट करें</h3>
@@ -626,7 +623,8 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   
   return (
     <AnimatePresence>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+      {/* ✅ Z-INDEX INCREASED TO z-[100] TO STAY ABOVE HEADER/NAV */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
         <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-lg bg-stone-900 sm:rounded-2xl rounded-t-3xl border-t sm:border border-stone-700 flex flex-col" style={{ maxHeight: '90vh' }}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 flex-shrink-0">
             <h3 className="text-lg font-bold text-white flex items-center gap-2"><Star className="w-5 h-5 text-amber-500 fill-amber-500" /> स्पॉटलाइट बनाएं</h3>
@@ -925,10 +923,9 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
     } finally { setPostingComment(false); }
   };
 
-  // ✅ UPDATED SHARE URL FOR WORLD-CLASS OG PREVIEW
   const handleShare = async (platform: string) => {
     if (!auth.currentUser) { requireAuth("share", postId); return; }
-    const shareUrl = `${window.location.origin}/spotlights/${postId}`; // Changed from /community?post=
+    const shareUrl = `${window.location.origin}/spotlights/${postId}`;
     try {
       await updateDoc(doc(db, "spotlights", postId), { shares: increment(1) });
       if (platform === 'copy') {
@@ -1023,7 +1020,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           </div>
         </div>
 
-        {/* ✅ CLICKABLE TITLE FOR DEDICATED POST PAGE */}
         {post.title && (
           <div className="px-4 pb-2 flex items-center gap-2 flex-wrap relative">
             <Link href={`/spotlights/${post.id}`} className="text-xl font-bold text-white leading-tight hover:text-emerald-400 transition-colors">
@@ -1058,7 +1054,6 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           </div>
         )}
 
-        {/* ✅ CLICKABLE MEDIA FOR DEDICATED POST PAGE */}
         {post.mediaUrl && (
           <Link href={`/spotlights/${post.id}`} className="block relative bg-black border-y border-white/5" onDoubleClick={handleDoubleTap}>
             {post.mediaType === "image" ? (
@@ -1121,7 +1116,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
       <AnimatePresence>
         {showDeleteConfirm && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => !deleting && setShowDeleteConfirm(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => !deleting && setShowDeleteConfirm(false)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-stone-800 border border-stone-700 rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
               <div className="text-center">
                 <motion.div className="inline-flex p-3 bg-red-500/10 border border-red-500/20 rounded-full mb-4" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1, repeat: Infinity }}>
@@ -1143,7 +1138,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
       <AnimatePresence>
         {showComments && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={() => setShowComments(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={() => setShowComments(false)}>
             <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="w-full max-w-lg bg-stone-900 rounded-t-3xl border-t border-stone-700 flex flex-col" style={{ maxHeight: '75vh' }} onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between px-5 py-4 border-b border-stone-700 flex-shrink-0">
                 <div className="flex items-center gap-2">
@@ -1186,7 +1181,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
       <AnimatePresence>
         {showShareSheet && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={() => setShowShareSheet(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={() => setShowShareSheet(false)}>
             <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="w-full max-w-md bg-stone-900 rounded-t-3xl border-t border-stone-700 p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2"><Share2 className="w-5 h-5 text-emerald-500" /> पोस्ट शेयर करें</h3>
@@ -1287,8 +1282,9 @@ function SpotlightContent() {
 
       <AnimatePresence>{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}</AnimatePresence>
 
+      {/* ✅ HEADER WIDTH INCREASED TO max-w-4xl FOR FULL WIDTH FEEL */}
       <header className="sticky top-20 z-40 bg-stone-50/90 backdrop-blur-xl border-b border-stone-200">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="relative">
               <div className="w-9 h-9 bg-gradient-to-br from-emerald-600 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
@@ -1320,7 +1316,8 @@ function SpotlightContent() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-4">
+      {/* ✅ MAIN CONTENT WIDTH INCREASED TO max-w-4xl FOR DESKTOP FULL WIDTH */}
+      <main className="max-w-4xl mx-auto px-4 py-4">
         {user ? (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-stone-200 rounded-2xl p-3 mb-4 flex items-center gap-3 shadow-sm">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-amber-500 p-[2px] flex-shrink-0">
@@ -1377,8 +1374,9 @@ function SpotlightContent() {
       <AnimatePresence>{showCreatePost && <CreateSpotlightModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} onPostCreated={() => {}} showToast={showToast} />}</AnimatePresence>
       <NotificationsDrawer isOpen={showNotifications} onClose={() => setShowNotifications(false)} currentUserId={user?.uid || ""} />
 
+      {/* ✅ BOTTOM NAV WIDTH INCREASED TO max-w-4xl FOR CONSISTENCY */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-40 pb-[env(safe-area-inset-bottom)]">
-        <div className="max-w-2xl mx-auto px-2 py-1 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-2 py-1 flex items-center justify-between">
           <Link href="/" className="flex flex-col items-center gap-0.5 p-1.5 text-stone-500 hover:text-emerald-600 transition-colors flex-1">
             <Home className="w-5 h-5" /> <span className="text-[9px] font-medium">होम</span>
           </Link>
