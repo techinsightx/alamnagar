@@ -20,7 +20,7 @@ import { onAuthStateChanged } from "firebase/auth";
 
 // 📊 Recharts Imports
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar 
 } from "recharts";
 
 // ═══════════════════════════════════════════════════════════
@@ -41,6 +41,93 @@ const fadeInUp = {
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🎨 ALAMNAGAR PREMIUM LOGO COMPONENT (Shared for Navbar & Footer)
+// ═══════════════════════════════════════════════════════════
+const AlamnagarLogo = ({ size = 48, variant = "dark" }: { size?: number; variant?: "dark" | "light" }) => {
+  const textColor = variant === "dark" ? "#1c1917" : "#ffffff";
+  const subTextColor = variant === "dark" ? "#78716c" : "#d6d3d1";
+  
+  return (
+    <div className="flex items-center gap-3">
+      <div 
+        className="relative flex items-center justify-center rounded-2xl shadow-lg"
+        style={{ 
+          width: size, 
+          height: size,
+          background: 'linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)',
+          padding: '2px'
+        }}
+      >
+        <div 
+          className="w-full h-full rounded-2xl flex items-center justify-center relative overflow-hidden"
+          style={{ backgroundColor: variant === "dark" ? "#1c1917" : "#292524" }}
+        >
+          {/* Decorative background pattern */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-orange-500/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-green-500/30 to-transparent" />
+          </div>
+          
+          {/* Stylized "आ" character */}
+          <svg viewBox="0 0 100 100" className="w-3/4 h-3/4 relative z-10">
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FF9933" />
+                <stop offset="50%" stopColor="#FCD34D" />
+                <stop offset="100%" stopColor="#138808" />
+              </linearGradient>
+            </defs>
+            {/* Outer circle */}
+            <circle cx="50" cy="50" r="45" fill="none" stroke="url(#logoGrad)" strokeWidth="2" opacity="0.3" />
+            {/* Inner decorative ring */}
+            <circle cx="50" cy="50" r="38" fill="none" stroke="url(#logoGrad)" strokeWidth="1" opacity="0.2" strokeDasharray="4 4" />
+            {/* Stylized "आ" */}
+            <text 
+              x="50" 
+              y="62" 
+              textAnchor="middle" 
+              fontSize="42" 
+              fontWeight="900" 
+              fill="url(#logoGrad)"
+              fontFamily="serif"
+            >
+              आ
+            </text>
+            {/* Small decorative dots */}
+            <circle cx="50" cy="20" r="2" fill="#FF9933" />
+            <circle cx="50" cy="80" r="2" fill="#138808" />
+          </svg>
+        </div>
+      </div>
+      
+      <div className="flex flex-col leading-none">
+        <span 
+          className="font-black tracking-tight"
+          style={{ 
+            color: textColor, 
+            fontSize: size * 0.45,
+            lineHeight: 1
+          }}
+        >
+          आलम<span style={{ color: '#F59E0B' }}>नगर</span>
+        </span>
+        <span 
+          className="font-medium tracking-wider uppercase"
+          style={{ 
+            color: subTextColor, 
+            fontSize: size * 0.2,
+            marginTop: size * 0.08,
+            letterSpacing: '0.15em'
+          }}
+        >
+          मिथिला • बिहार
+        </span>
+      </div>
+    </div>
+  );
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -81,30 +168,16 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
-  
   return (
     <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-60">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
           <defs>
-            <linearGradient id="glowViews" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/>
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="glowLikes" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/>
-              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="glowComments" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.2}/>
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="glowShares" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity={0.1}/>
-              <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
-            </linearGradient>
+            <linearGradient id="glowViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
+            <linearGradient id="glowLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+            <linearGradient id="glowComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.2}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+            <linearGradient id="glowShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
           </defs>
-          
           <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={14} fillOpacity={1} fill="url(#glowViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
           <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={10} fillOpacity={1} fill="url(#glowLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
           <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={7} fillOpacity={1} fill="url(#glowComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
@@ -116,22 +189,12 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 NEWSLETTER 4-LINE RAINBOW BACKGROUND CHART (NEW)
+// 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART
 // ═══════════════════════════════════════════════════════════
-const NewsletterBackgroundChart = () => {
-  // Generate smooth, continuous wave data for the background
-  const data = Array.from({ length: 30 }, (_, i) => {
-    return {
-      name: i,
-      Views: 50 + Math.sin(i * 0.4) * 30 + Math.random() * 5,
-      Likes: 70 + Math.cos(i * 0.3) * 25 + Math.random() * 5,
-      Comments: 40 + Math.sin(i * 0.5 + 1) * 20 + Math.random() * 5,
-      Shares: 60 + Math.cos(i * 0.6 + 2) * 15 + Math.random() * 5,
-    };
-  });
-
+const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
+  if (data.length === 0) return null;
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-25">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
@@ -152,10 +215,10 @@ const NewsletterBackgroundChart = () => {
               <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={10} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={8} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={6} fillOpacity={1} fill="url(#nlComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#nlShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={8} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={6} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={4} fillOpacity={1} fill="url(#nlComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#nlShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -220,22 +283,10 @@ const CommunityPulseChart = ({ data }: { data: any[] }) => {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorShares" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-              </linearGradient>
+              <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
+              <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/><stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+              <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+              <linearGradient id="colorShares" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
             <XAxis dataKey="day" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#78716c', fontWeight: 600 }} />
@@ -428,28 +479,15 @@ const CreateraOGBanner = () => {
       >
         <div className="flex flex-col md:flex-row w-full">
           <div className="w-full md:w-1/3 h-48 md:h-40 bg-stone-100 relative overflow-hidden flex-shrink-0">
-            <img 
-              src={imageUrl}
-              alt="Preview"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
+            <img src={imageUrl} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           </div>
-
           <div className="flex-1 p-4 md:p-5 flex flex-col justify-center min-w-0">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Globe className="w-3.5 h-3.5 text-stone-400" />
-              <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide truncate">
-                {domain}
-              </span>
+              <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide truncate">{domain}</span>
             </div>
-
-            <h3 className="text-base md:text-lg font-bold text-stone-900 line-clamp-1 mb-1.5 group-hover:text-emerald-600 transition-colors">
-              {title}
-            </h3>
-
-            <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
-              {description}
-            </p>
+            <h3 className="text-base md:text-lg font-bold text-stone-900 line-clamp-1 mb-1.5 group-hover:text-emerald-600 transition-colors">{title}</h3>
+            <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">{description}</p>
           </div>
         </div>
       </Link>
@@ -465,7 +503,6 @@ export default function HomePage() {
   const [liveStats, setLiveStats] = useState({ totalUsers: 0, totalPosts: 0, totalViews: 0, totalLikes: 0, totalComments: 0, totalShares: 0 });
   const [chartData, setChartData] = useState<any[]>([]);
   
-  // ✅ Newsletter State with Error Handling
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -529,19 +566,15 @@ export default function HomePage() {
     return () => { unsubUsers(); unsubPosts(); unsubTestimonials(); };
   }, []);
 
-  // ✅ UPGRADED: Robust Newsletter Submission with Validation & Error Feedback
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!newsletterEmail || !newsletterEmail.includes('@')) {
       setNewsletterStatus("error");
       setErrorMessage("कृपया एक वैध ईमेल पता दर्ज करें।");
       return;
     }
-    
     setNewsletterStatus("loading");
     setErrorMessage("");
-    
     try {
       await addDoc(collection(db, "newsletter"), {
         email: newsletterEmail,
@@ -557,7 +590,6 @@ export default function HomePage() {
     }
   };
 
-  // ✅ UPDATED: Create OR Update Review (1 per user)
   const handleAddReview = async () => {
     if (!currentUser || !newReviewText.trim()) return;
     try {
@@ -571,7 +603,6 @@ export default function HomePage() {
         updatedAt: serverTimestamp(),
         createdAt: userExistingReview ? userExistingReview.createdAt : serverTimestamp(),
       }, { merge: true });
-      
       setNewReviewText("");
       setShowReviewModal(false);
     } catch (error) {
@@ -596,18 +627,8 @@ export default function HomePage() {
   return (
     <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
       <style>{`
-        .tiranga-shimmer {
-          background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 25%, #138808 50%, #FFFFFF 75%, #FF9933 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text; background-clip: text; color: transparent;
-          animation: shimmer 4s linear infinite;
-        }
-        .golden-shimmer {
-          background: linear-gradient(90deg, #FCD34D 0%, #FFFFFF 40%, #F59E0B 60%, #FCD34D 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text; background-clip: text; color: transparent;
-          animation: shimmer 3s linear infinite;
-        }
+        .tiranga-shimmer { background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 25%, #138808 50%, #FFFFFF 75%, #FF9933 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 4s linear infinite; }
+        .golden-shimmer { background: linear-gradient(90deg, #FCD34D 0%, #FFFFFF 40%, #F59E0B 60%, #FCD34D 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 3s linear infinite; }
         @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: -200% center; } }
       `}</style>
 
@@ -617,7 +638,6 @@ export default function HomePage() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-950 text-white px-6">
         <HeroBackgroundChart data={chartData} />
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-stone-950/85 via-emerald-950/75 to-stone-950/85" />
-
         {isAdmin && (
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-24 right-6 z-20">
             <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-5 py-2.5 hover:bg-red-500/30 transition-all group shadow-lg">
@@ -626,7 +646,6 @@ export default function HomePage() {
             </Link>
           </motion.div>
         )}
-
         <div className="relative z-10 text-center max-w-5xl mx-auto pt-20">
           {currentUser ? (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="inline-flex items-center gap-3 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 rounded-full px-6 py-3 mb-6 shadow-lg">
@@ -643,56 +662,21 @@ export default function HomePage() {
               <span className="text-sm font-semibold tracking-wide">मधेपुरा, मिथिलांचल, बिहार</span>
             </motion.div>
           )}
-
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl pt-2">
-            आलमनगर
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md leading-relaxed py-1">
-            "जड़ों से जुड़ा, मिथिला की धरती का गौरव"
-          </motion.p>
-          <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">
-            हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।
-          </motion.p>
-
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl pt-2">आलमनगर</motion.h1>
+          <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md leading-relaxed py-1">"जड़ों से जुड़ा, मिथिला की धरती का गौरव"</motion.p>
+          <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।</motion.p>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12 px-4">
-            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
-              <Users className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs text-white/70">सदस्य</span>
-              <span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
-              <Star className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-white/70">पोस्ट</span>
-              <span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
-              <Eye className="w-4 h-4 text-blue-400" />
-              <span className="text-xs text-white/70">व्यूज़</span>
-              <span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
-              <Heart className="w-4 h-4 text-red-400" />
-              <span className="text-xs text-white/70">लाइक</span>
-              <span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span>
-            </div>
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Users className="w-4 h-4 text-emerald-400" /><span className="text-xs text-white/70">सदस्य</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span></div>
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Star className="w-4 h-4 text-amber-400" /><span className="text-xs text-white/70">पोस्ट</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span></div>
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Eye className="w-4 h-4 text-blue-400" /><span className="text-xs text-white/70">व्यूज़</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span></div>
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Heart className="w-4 h-4 text-red-400" /><span className="text-xs text-white/70">लाइक</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span></div>
           </motion.div>
-
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }} className="flex flex-col sm:flex-row gap-5 justify-center mb-16">
-            <Link href="/about" className="group bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] flex items-center justify-center gap-3 text-lg">
-              <BookOpen className="w-5 h-5" /> हमारी विरासत देखें <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link href="/community" className="group bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg">
-              <Users className="w-5 h-5" /> चौपाल में शामिल हों
-            </Link>
-            <Link href="/marketplace" className="group bg-emerald-600/80 hover:bg-emerald-500/80 backdrop-blur-md border border-emerald-400/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg">
-              <ShoppingBag className="w-5 h-5" /> गाँव का हाट
-            </Link>
+            <Link href="/about" className="group bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] flex items-center justify-center gap-3 text-lg"><BookOpen className="w-5 h-5" /> हमारी विरासत देखें <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></Link>
+            <Link href="/community" className="group bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><Users className="w-5 h-5" /> चौपाल में शामिल हों</Link>
+            <Link href="/marketplace" className="group bg-emerald-600/80 hover:bg-emerald-500/80 backdrop-blur-md border border-emerald-400/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><ShoppingBag className="w-5 h-5" /> गाँव का हाट</Link>
           </motion.div>
-
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-            <span className="text-xs text-white/50 uppercase tracking-widest">स्क्रॉल करें</span>
-            <ChevronDown className="w-8 h-8 text-white/50" />
-          </motion.div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"><span className="text-xs text-white/50 uppercase tracking-widest">स्क्रॉल करें</span><ChevronDown className="w-8 h-8 text-white/50" /></motion.div>
         </div>
       </section>
 
@@ -701,29 +685,15 @@ export default function HomePage() {
       {/* ===== 2. QUICK STATS & REAL-TIME CHART ===== */}
       <section className="py-20 px-6 bg-stone-50 relative z-20">
         <div className="max-w-6xl mx-auto space-y-12">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
-            <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">लाइव स्टैट्स</span>
-            <h2 className="text-3xl md:text-5xl font-black text-stone-900">आलमनगर आज</h2>
-          </motion.div>
-
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center"><span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">लाइव स्टैट्स</span><h2 className="text-3xl md:text-5xl font-black text-stone-900">आलमनगर आज</h2></motion.div>
           <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: Users, label: "जुड़े परिवार", value: liveStats.totalUsers, color: "bg-emerald-100 text-emerald-700" },
-              { icon: Star, label: "कुल पोस्ट", value: liveStats.totalPosts, color: "bg-amber-100 text-amber-700" },
-              { icon: Eye, label: "कुल व्यूज़", value: liveStats.totalViews, color: "bg-blue-100 text-blue-700" },
-              { icon: Heart, label: "कुल लाइक", value: liveStats.totalLikes, color: "bg-rose-100 text-rose-700" },
-            ].map((stat, i) => (
+            {[{ icon: Users, label: "जुड़े परिवार", value: liveStats.totalUsers, color: "bg-emerald-100 text-emerald-700" }, { icon: Star, label: "कुल पोस्ट", value: liveStats.totalPosts, color: "bg-amber-100 text-amber-700" }, { icon: Eye, label: "कुल व्यूज़", value: liveStats.totalViews, color: "bg-blue-100 text-blue-700" }, { icon: Heart, label: "कुल लाइक", value: liveStats.totalLikes, color: "bg-rose-100 text-rose-700" }].map((stat, i) => (
               <motion.div key={stat.label} variants={fadeInUp} whileHover={{ y: -8, scale: 1.02 }} className="group bg-white rounded-3xl p-8 shadow-lg shadow-stone-200/50 border border-stone-100 transition-all duration-500 text-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-transparent to-stone-50 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:scale-150" />
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${stat.color} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
-                  <stat.icon className="w-8 h-8" />
-                </div>
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${stat.color} group-hover:scale-110 transition-transform duration-300 shadow-sm`}><stat.icon className="w-8 h-8" /></div>
                 <div className="text-4xl font-black text-stone-900 mb-2"><AnimatedNumber value={stat.value} /></div>
                 <div className="text-sm font-bold text-stone-500 uppercase tracking-wider">{stat.label}</div>
-                <div className="flex items-center justify-center gap-1.5 mt-3">
-                  <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
-                  <span className="text-[10px] text-emerald-600 font-semibold uppercase">Live</span>
-                </div>
+                <div className="flex items-center justify-center gap-1.5 mt-3"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span><span className="text-[10px] text-emerald-600 font-semibold uppercase">Live</span></div>
               </motion.div>
             ))}
           </motion.div>
@@ -736,38 +706,19 @@ export default function HomePage() {
         <MadhubaniPattern />
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-            <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 flex items-center gap-2">
-              <span className="w-8 h-[2px] bg-emerald-600"></span> आलमनगर के बारे में
-            </span>
-            <h2 className="text-4xl md:text-6xl font-black mt-3 mb-8 text-stone-900 leading-[1.1]">
-              एक गाँव, <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-amber-600 to-orange-600">हज़ारों कहानियाँ</span>
-            </h2>
-            <p className="text-stone-600 leading-relaxed mb-6 text-lg">
-              आलमनगर, मधेपुरा जिला, बिहार की पवित्र धरती पर बसा एक ऐसा गाँव जो अपनी समृद्ध संस्कृति, इतिहास और लोगों के आपनेपन की भावना के लिए जाना जाता है।
-            </p>
-            <p className="text-stone-600 leading-relaxed mb-10 text-lg">
-              यह प्लेटफॉर्म हमारा एक छोटा सा प्रयास है हमारी मिथिला की संस्कृति को संभालने का, हमारे समुदाय को जोड़ने का, और मिलकर एक बेहतर भविष्य बनाने का।
-            </p>
-            <Link href="/about" className="inline-flex items-center gap-2 text-emerald-700 font-black hover:text-emerald-600 transition-colors group text-lg border-b-2 border-emerald-200 hover:border-emerald-600 pb-1">
-              पूरा इतिहास पढ़ें <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-            </Link>
+            <span className="text-emerald-600 font-black text-sm tracking-[0.2em] uppercase mb-4 flex items-center gap-2"><span className="w-8 h-[2px] bg-emerald-600"></span> आलमनगर के बारे में</span>
+            <h2 className="text-4xl md:text-6xl font-black mt-3 mb-8 text-stone-900 leading-[1.1]">एक गाँव, <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-amber-600 to-orange-600">हज़ारों कहानियाँ</span></h2>
+            <p className="text-stone-600 leading-relaxed mb-6 text-lg">आलमनगर, मधेपुरा जिला, बिहार की पवित्र धरती पर बसा एक ऐसा गाँव जो अपनी समृद्ध संस्कृति, इतिहास और लोगों के आपनेपन की भावना के लिए जाना जाता है।</p>
+            <p className="text-stone-600 leading-relaxed mb-10 text-lg">यह प्लेटफॉर्म हमारा एक छोटा सा प्रयास है हमारी मिथिला की संस्कृति को संभालने का, हमारे समुदाय को जोड़ने का, और मिलकर एक बेहतर भविष्य बनाने का।</p>
+            <Link href="/about" className="inline-flex items-center gap-2 text-emerald-700 font-black hover:text-emerald-600 transition-colors group text-lg border-b-2 border-emerald-200 hover:border-emerald-600 pb-1">पूरा इतिहास पढ़ें <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" /></Link>
           </motion.div>
-
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="relative">
             <Link href="/gallery" className="block group">
               <div className="aspect-[4/3] bg-gradient-to-br from-emerald-50 via-stone-50 to-amber-50 rounded-[2rem] flex items-center justify-center shadow-2xl border-4 border-white relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/20 to-transparent" />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
-                    <Play className="w-8 h-8 text-white fill-white ml-1" />
-                  </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                  <p className="text-2xl font-bold mb-2">गाँव की तस्वीरें</p>
-                  <p className="text-white/80 text-sm flex items-center gap-2"><Camera className="w-4 h-4" /> अपनी यादें गैलरी में अपलोड करें</p>
-                </div>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"><div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30"><Play className="w-8 h-8 text-white fill-white ml-1" /></div></div>
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white"><p className="text-2xl font-bold mb-2">गाँव की तस्वीरें</p><p className="text-white/80 text-sm flex items-center gap-2"><Camera className="w-4 h-4" /> अपनी यादें गैलरी में अपलोड करें</p></div>
               </div>
             </Link>
             <motion.div animate={{ rotate: [6, -6, 6] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute -bottom-8 -right-8 w-40 h-40 bg-amber-200 rounded-[2rem] -z-10 opacity-60" />
@@ -779,40 +730,23 @@ export default function HomePage() {
       {/* ===== 4. EXPLORE SECTIONS ===== */}
       <section className="py-24 px-6 bg-stone-100">
         <div className="max-w-6xl mx-auto">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
-            <span className="text-amber-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">खोजें</span>
-            <h2 className="text-4xl md:text-6xl font-black text-stone-900">आलमनगर को जानें</h2>
-          </motion.div>
-
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16"><span className="text-amber-600 font-black text-sm tracking-[0.2em] uppercase mb-4 block">खोजें</span><h2 className="text-4xl md:text-6xl font-black text-stone-900">आलमनगर को जानें</h2></motion.div>
           <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-8">
-            {[
-              { icon: Camera, title: "फोटो गैलरी", desc: "पुरानी यादें, नए रंग। गाँव की वो तस्वीरें जो दिल को छू लें और आँखों में नमी ला दें।", href: "/gallery", color: "bg-emerald-100 text-emerald-700", accent: "group-hover:bg-emerald-600 group-hover:text-white", active: true },
-              { icon: Users, title: "समुदाय (चौपाल)", desc: "चाहे गाँव में हों या विदेश में, आलमनगर के परिवार से जुड़े रहें। अपनी बात रखें।", href: "/community", color: "bg-amber-100 text-amber-700", accent: "group-hover:bg-amber-600 group-hover:text-white", active: true },
-              { icon: Phone, title: "डायरेक्टरी", desc: "ज़रूरी नंबर, स्थानीय व्यवसाय और गाँव के महत्वपूर्ण संपर्क एक ही जगह।", href: "#", color: "bg-rose-100 text-rose-700", accent: "", active: false },
-            ].map((card, i) => (
+            {[{ icon: Camera, title: "फोटो गैलरी", desc: "पुरानी यादें, नए रंग। गाँव की वो तस्वीरें जो दिल को छू लें और आँखों में नमी ला दें।", href: "/gallery", color: "bg-emerald-100 text-emerald-700", accent: "group-hover:bg-emerald-600 group-hover:text-white", active: true }, { icon: Users, title: "समुदाय (चौपाल)", desc: "चाहे गाँव में हों या विदेश में, आलमनगर के परिवार से जुड़े रहें। अपनी बात रखें।", href: "/community", color: "bg-amber-100 text-amber-700", accent: "group-hover:bg-amber-600 group-hover:text-white", active: true }, { icon: Phone, title: "डायरेक्टरी", desc: "ज़रूरी नंबर, स्थानीय व्यवसाय और गाँव के महत्वपूर्ण संपर्क एक ही जगह।", href: "#", color: "bg-rose-100 text-rose-700", accent: "", active: false }].map((card, i) => (
               <motion.div key={card.title} variants={fadeInUp} whileHover={card.active ? { y: -12 } : {}}>
                 {card.active ? (
                   <Link href={card.href} className="group block bg-white rounded-[2rem] p-10 shadow-sm border border-stone-200 hover:shadow-2xl hover:border-emerald-200 transition-all duration-500 h-full relative overflow-hidden">
-                    <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 ${card.color} ${card.accent} transition-all duration-300 shadow-sm`}>
-                      <card.icon className="w-10 h-10" />
-                    </div>
+                    <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 ${card.color} ${card.accent} transition-all duration-300 shadow-sm`}><card.icon className="w-10 h-10" /></div>
                     <h3 className="text-2xl font-black text-stone-900 mb-4 group-hover:text-emerald-700 transition-colors">{card.title}</h3>
                     <p className="text-stone-500 leading-relaxed text-lg mb-8">{card.desc}</p>
-                    <div className="flex items-center gap-2 text-emerald-600 font-black opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
-                      अभी देखें <ArrowRight className="w-5 h-5" />
-                    </div>
+                    <div className="flex items-center gap-2 text-emerald-600 font-black opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">अभी देखें <ArrowRight className="w-5 h-5" /></div>
                   </Link>
                 ) : (
                   <div className="group relative bg-white rounded-[2rem] p-10 shadow-sm border border-stone-200 h-full overflow-hidden opacity-75">
-                    <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 ${card.color} shadow-sm`}>
-                      <card.icon className="w-10 h-10" />
-                    </div>
+                    <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 ${card.color} shadow-sm`}><card.icon className="w-10 h-10" /></div>
                     <h3 className="text-2xl font-black text-stone-900 mb-4">{card.title}</h3>
                     <p className="text-stone-500 leading-relaxed text-lg mb-8">{card.desc}</p>
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-full">
-                      <Lock className="w-3.5 h-3.5 text-amber-600" />
-                      <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">जल्द आ रहा है</span>
-                    </div>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-full"><Lock className="w-3.5 h-3.5 text-amber-600" /><span className="text-xs font-bold text-amber-700 uppercase tracking-wider">जल्द आ रहा है</span></div>
                   </div>
                 )}
               </motion.div>
@@ -827,43 +761,25 @@ export default function HomePage() {
         <div className="relative z-10 max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-              <div className="inline-flex items-center gap-2 bg-amber-500/20 backdrop-blur-md border border-amber-500/30 rounded-full px-6 py-3 mb-8">
-                <Sparkles className="w-5 h-5 text-amber-400" />
-                <span className="text-sm font-black tracking-wide uppercase text-amber-300">गाँव का हाट (Marketplace)</span>
-              </div>
-              <h2 className="text-4xl md:text-7xl font-black mb-8 leading-tight">
-                स्थानीय बाज़ार, <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400">वैश्विक पहुँच</span>
-              </h2>
-              <p className="text-xl md:text-2xl text-white/80 mb-6 max-w-3xl mx-auto leading-relaxed">
-                अपने गाँव के किसानों, कारीगरों और स्थानीय व्यवसायों को सीधा समर्थन दें।
-              </p>
+              <div className="inline-flex items-center gap-2 bg-amber-500/20 backdrop-blur-md border border-amber-500/30 rounded-full px-6 py-3 mb-8"><Sparkles className="w-5 h-5 text-amber-400" /><span className="text-sm font-black tracking-wide uppercase text-amber-300">गाँव का हाट (Marketplace)</span></div>
+              <h2 className="text-4xl md:text-7xl font-black mb-8 leading-tight">स्थानीय बाज़ार, <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400">वैश्विक पहुँच</span></h2>
+              <p className="text-xl md:text-2xl text-white/80 mb-6 max-w-3xl mx-auto leading-relaxed">अपने गाँव के किसानों, कारीगरों और स्थानीय व्यवसायों को सीधा समर्थन दें।</p>
             </motion.div>
           </div>
-
           <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-6 mb-12">
-            {[
-              { icon: Wheat, title: "ताज़ा उपज", desc: "खेत की ताज़ी सब्ज़ियाँ, फल और अनाज सीधे किसान से" },
-              { icon: Star, title: "मिथिला हस्तशिल्प", desc: "हस्तनिर्मित मिथिला पेंटिंग, मडबनी कला और पारंपरिक वस्तुएं" },
-              { icon: Music, title: "स्थानीय सेवाएं", desc: "प्लंबर, इलेक्ट्रीशियन, ट्यूशन और अन्य विश्वसनीय सेवाएं" },
-            ].map((item, i) => (
+            {[{ icon: Wheat, title: "ताज़ा उपज", desc: "खेत की ताज़ी सब्ज़ियाँ, फल और अनाज सीधे किसान से" }, { icon: Star, title: "मिथिला हस्तशिल्प", desc: "हस्तनिर्मित मिथिला पेंटिंग, मडबनी कला और पारंपरिक वस्तुएं" }, { icon: Music, title: "स्थानीय सेवाएं", desc: "प्लंबर, इलेक्ट्रीशियन, ट्यूशन और अन्य विश्वसनीय सेवाएं" }].map((item, i) => (
               <motion.div key={i} variants={fadeInUp} whileHover={{ y: -8, scale: 1.02 }} className="bg-white/5 backdrop-blur-sm rounded-[2rem] p-8 border border-white/10 hover:bg-white/10 hover:border-amber-500/30 transition-all duration-300 group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/10 group-hover:to-transparent transition-all duration-500" />
                 <div className="relative z-10">
-                  <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-colors duration-300">
-                    <item.icon className="w-8 h-8 text-amber-400 group-hover:text-white transition-colors" />
-                  </div>
+                  <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-colors duration-300"><item.icon className="w-8 h-8 text-amber-400 group-hover:text-white transition-colors" /></div>
                   <h3 className="text-2xl font-black mb-3 text-white">{item.title}</h3>
                   <p className="text-base text-white/60 leading-relaxed">{item.desc}</p>
                 </div>
               </motion.div>
             ))}
           </motion.div>
-
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
-            <Link href="/marketplace" className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-12 py-5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] text-lg">
-              <ShoppingBag className="w-6 h-6" /> हाट में चलें (Marketplace) <ArrowRight className="w-6 h-6" />
-            </Link>
+            <Link href="/marketplace" className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-12 py-5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] text-lg"><ShoppingBag className="w-6 h-6" /> हाट में चलें (Marketplace) <ArrowRight className="w-6 h-6" /></Link>
           </motion.div>
         </div>
       </section>
@@ -877,14 +793,7 @@ export default function HomePage() {
               <h2 className="text-4xl md:text-6xl font-black text-stone-900">आलमनगर की आवाज़ें</h2>
             </div>
             {currentUser && (
-              <motion.button
-                variants={fadeInUp}
-                onClick={() => {
-                  setNewReviewText(userExistingReview ? userExistingReview.quote : "");
-                  setShowReviewModal(true);
-                }}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-              >
+              <motion.button variants={fadeInUp} onClick={() => { setNewReviewText(userExistingReview ? userExistingReview.quote : ""); setShowReviewModal(true); }} className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
                 <MessageCircle className="w-5 h-5" />
                 {userExistingReview ? "अपनी राय अपडेट करें" : "अपनी राय दें"}
               </motion.button>
@@ -901,38 +810,19 @@ export default function HomePage() {
           ) : (
             <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {testimonials.map((t, i) => (
-                <motion.div 
-                  key={t.id} 
-                  variants={fadeInUp} 
-                  whileHover={{ y: -8 }} 
-                  className="bg-stone-50 rounded-[2rem] p-10 border border-stone-100 hover:shadow-2xl hover:border-emerald-200 transition-all duration-300 relative group"
-                >
+                <motion.div key={t.id} variants={fadeInUp} whileHover={{ y: -8 }} className="bg-stone-50 rounded-[2rem] p-10 border border-stone-100 hover:shadow-2xl hover:border-emerald-200 transition-all duration-300 relative group">
                   {currentUser?.uid === t.userId && (
-                    <button 
-                      onClick={() => handleDeleteReview(t.id)}
-                      className="absolute top-6 right-6 p-2 bg-red-50 text-red-500 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-100 transition-all"
-                      title="अपनी समीक्षा हटाएं"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <button onClick={() => handleDeleteReview(t.id)} className="absolute top-6 right-6 p-2 bg-red-50 text-red-500 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-100 transition-all" title="अपनी समीक्षा हटाएं"><Trash2 className="w-4 h-4" /></button>
                   )}
-                  
                   <Quote className="w-12 h-12 text-amber-400 mb-6 opacity-30 absolute top-8 left-8" />
                   <p className="text-stone-700 leading-relaxed mb-8 text-lg italic relative z-10 pt-4">"{t.quote}"</p>
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg p-[2px]">
                       <div className="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
-                        {t.userPhoto ? (
-                          <img src={t.userPhoto} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span>{t.userName[0]}</span>
-                        )}
+                        {t.userPhoto ? <img src={t.userPhoto} alt="" className="w-full h-full object-cover" /> : <span>{t.userName[0]}</span>}
                       </div>
                     </div>
-                    <div>
-                      <p className="font-black text-stone-900 text-lg">{t.userName}</p>
-                      <p className="text-sm text-stone-500 font-medium">{t.location} • {t.role}</p>
-                    </div>
+                    <div><p className="font-black text-stone-900 text-lg">{t.userName}</p><p className="text-sm text-stone-500 font-medium">{t.location} • {t.role}</p></div>
                   </div>
                 </motion.div>
               ))}
@@ -941,12 +831,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 7. WORKING NEWSLETTER (WITH 4-LINE RAINBOW CHART BACKGROUND) ===== */}
+      {/* ===== 7. WORKING NEWSLETTER (REAL-TIME 4-LINE CHART BACKGROUND) ===== */}
       <section className="py-24 px-6 bg-gradient-to-br from-emerald-950 to-green-950 text-white relative overflow-hidden">
-        <MadhubaniPattern />
-        
-        {/* ✅ NEW: 4-Line Rainbow Recharts Background (Exactly like Hero) */}
-        <NewsletterBackgroundChart />
+        <NewsletterRealtimeChart data={chartData} />
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
           <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
@@ -994,22 +881,12 @@ export default function HomePage() {
           
           <AnimatePresence>
             {newsletterStatus === "success" && (
-              <motion.p 
-                initial={{ opacity: 0, y: 10 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                exit={{ opacity: 0 }}
-                className="text-emerald-400 mt-6 font-bold flex items-center justify-center gap-2"
-              >
+              <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-emerald-400 mt-6 font-bold flex items-center justify-center gap-2">
                 <CheckCircle className="w-5 h-5" /> ✅ सफलतापूर्वक सदस्यता ले ली गई!
               </motion.p>
             )}
             {newsletterStatus === "error" && (
-              <motion.p 
-                initial={{ opacity: 0, y: 10 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                exit={{ opacity: 0 }}
-                className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2"
-              >
+              <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2">
                 <AlertTriangle className="w-5 h-5" /> ❌ {errorMessage}
               </motion.p>
             )}
@@ -1017,19 +894,22 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ===== 8. FOOTER WITH CLEAN OG METADATA BANNER ===== */}
-      <footer className="bg-stone-950 text-stone-400 py-16 px-6 border-t border-stone-900 relative">
+      {/* ===== 8. PREMIUM FOOTER WITH LOGO & REAL-TIME 4-PILLAR TOWER CHART ===== */}
+      <footer className="bg-stone-950 text-stone-400 py-16 px-6 border-t border-stone-900 relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           
           <CreateraOGBanner />
 
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            <div className="md:col-span-2">
-              <h3 className="text-white text-4xl font-black mb-6 tracking-tight">
-                आलम<span className="text-amber-500">नगर</span>
-              </h3>
-              <p className="text-base mb-8 max-w-md leading-relaxed text-stone-400">
+          {/* ✅ PREMIUM 3-COLUMN LAYOUT WITH LOGO */}
+          <div className="grid md:grid-cols-12 gap-12 mb-12 mt-8">
+            
+            {/* Column 1: Brand Logo & Description */}
+            <div className="md:col-span-4">
+              <div className="mb-6">
+                <AlamnagarLogo size={64} variant="light" />
+              </div>
+              <p className="text-base mb-8 leading-relaxed text-stone-400">
                 मधेपुरा, बिहार, भारत का आधिकारिक डिजिटल प्लेटफॉर्म। हमारी विरासत, हमारा समुदाय, हमारा गौरव।
               </p>
               <div className="flex gap-4">
@@ -1041,27 +921,58 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div>
+
+            {/* Column 2: Quick Links (Including Contact) */}
+            <div className="md:col-span-4">
               <h4 className="text-white font-black mb-6 text-lg">त्वरित लिंक</h4>
-              <ul className="space-y-4 text-base">
+              <ul className="space-y-3 text-base">
                 <li><Link href="/about" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> हमारे बारे में</Link></li>
                 <li><Link href="/gallery" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> गैलरी</Link></li>
                 <li><Link href="/community" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> समुदाय</Link></li>
                 <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
+                <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
                 <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
                 {isAdmin && (
                   <li><Link href="/admin/reports" className="hover:text-red-400 transition-colors flex items-center gap-2 border-l-2 border-red-500/50 pl-2"><Shield className="w-3 h-3" /> Admin Dashboard</Link></li>
                 )}
               </ul>
             </div>
-            <div>
-              <h4 className="text-white font-black mb-6 text-lg">संपर्क</h4>
-              <ul className="space-y-4 text-base">
-                <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
-                {!currentUser && (<li><Link href="/auth" className="hover:text-amber-400 transition-colors flex items-center gap-2"><LogIn className="w-3 h-3" /> लॉगिन / रजिस्टर</Link></li>)}
-              </ul>
+
+            {/* Column 3: Real-Time 4-Pillar Tower Chart */}
+            <div className="md:col-span-4">
+              <h4 className="text-white font-black mb-6 text-lg flex items-center gap-2">
+                <Activity className="w-5 h-5 text-emerald-500" /> लाइव प्लेटफॉर्म पल्स
+              </h4>
+              <div className="bg-stone-900/50 rounded-2xl p-4 border border-stone-800 h-64 flex flex-col justify-end">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={[
+                    { name: 'सदस्य', value: liveStats.totalUsers || 1, fill: '#10b981' },
+                    { name: 'पोस्ट', value: liveStats.totalPosts || 1, fill: '#f59e0b' },
+                    { name: 'व्यूज़', value: liveStats.totalViews || 1, fill: '#3b82f6' },
+                    { name: 'लाइक', value: liveStats.totalLikes || 1, fill: '#f43f5e' },
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#292524" vertical={false} />
+                    <XAxis dataKey="name" stroke="#78716c" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#78716c" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${(Number(value)/1000).toFixed(1)}k`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1c1917', borderColor: '#44403c', color: '#fff', borderRadius: '8px' }}
+                      itemStyle={{ color: '#fff' }}
+                      formatter={(value: any) => [Number(value || 0).toLocaleString('hi-IN'), '']}
+                    />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1500} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-stone-500">
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> कुल सदस्य</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500"></div> कुल पोस्ट</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500"></div> कुल व्यूज़</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-rose-500"></div> कुल लाइक</div>
+              </div>
             </div>
+
           </div>
+
           <div className="border-t border-stone-900 pt-8 text-center">
             <p className="text-sm text-stone-500">
               © {new Date().getFullYear()} alamnagar.in — आलमनगर के लिए <Heart className="w-4 h-4 inline text-red-500 fill-red-500 mx-1" /> के साथ बनाया गया
@@ -1073,35 +984,16 @@ export default function HomePage() {
       {/* 📝 ADD/UPDATE REVIEW MODAL */}
       <AnimatePresence>
         {showReviewModal && currentUser && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setShowReviewModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl"
-            >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowReviewModal(false)}>
+            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-black text-stone-900">{userExistingReview ? "अपनी राय अपडेट करें" : "अपनी राय साझा करें"}</h3>
-                <button onClick={() => setShowReviewModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
-                  <X className="w-6 h-6 text-stone-500" />
-                </button>
+                <button onClick={() => setShowReviewModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="w-6 h-6 text-stone-500" /></button>
               </div>
-              
               <div className="flex items-center gap-3 mb-6 p-4 bg-stone-50 rounded-xl">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-amber-500 p-[2px]">
                   <div className="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
-                    {currentUser.photoURL ? (
-                      <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-sm font-bold text-stone-700">{currentUser.displayName?.[0] || "U"}</span>
-                    )}
+                    {currentUser.photoURL ? <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-stone-700">{currentUser.displayName?.[0] || "U"}</span>}
                   </div>
                 </div>
                 <div>
@@ -1109,28 +1001,10 @@ export default function HomePage() {
                   <p className="text-xs text-stone-500">{userExistingReview ? "आपकी पुरानी राय को अपडेट कर दिया जाएगा" : "आपकी राय सार्वजनिक रूप से दिखाई जाएगी"}</p>
                 </div>
               </div>
-
-              <textarea
-                value={newReviewText}
-                onChange={(e) => setNewReviewText(e.target.value)}
-                className="w-full p-4 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all resize-none mb-6"
-                rows={4}
-                placeholder="आलमनगर के बारे में आपका अनुभव कैसा रहा?..."
-                maxLength={300}
-              />
-              
+              <textarea value={newReviewText} onChange={(e) => setNewReviewText(e.target.value)} className="w-full p-4 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all resize-none mb-6" rows={4} placeholder="आलमनगर के बारे में आपका अनुभव कैसा रहा?..." maxLength={300} />
               <div className="flex gap-3">
-                <button 
-                  onClick={() => setShowReviewModal(false)} 
-                  className="flex-1 py-3 rounded-xl border border-stone-200 font-bold text-stone-600 hover:bg-stone-50 transition-colors"
-                >
-                  रद्द करें
-                </button>
-                <button 
-                  onClick={handleAddReview} 
-                  disabled={!newReviewText.trim()}
-                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                >
+                <button onClick={() => setShowReviewModal(false)} className="flex-1 py-3 rounded-xl border border-stone-200 font-bold text-stone-600 hover:bg-stone-50 transition-colors">रद्द करें</button>
+                <button onClick={handleAddReview} disabled={!newReviewText.trim()} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg">
                   {userExistingReview ? "अपडेट करें" : "सबमिट करें"}
                 </button>
               </div>
