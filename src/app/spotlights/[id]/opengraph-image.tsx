@@ -1,26 +1,20 @@
-// app/spotlights/[id]/opengraph-image.tsx
+// src/app/spotlights/[id]/opengraph-image.tsx
 import { ImageResponse } from 'next/og';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase'; // Apne firebase config ka path check karna
+import { db } from '@/lib/firebase'; // Ensure ye path tumhare project mein sahi hai
 
-export const runtime = 'edge'; // Zaroori hai fast generation ke liye
+export const runtime = 'edge';
 
 export const alt = 'Alamnagar Spotlight';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-// Font loading for premium look
-const fontBold = fetch(new URL('@/assets/fonts/Inter-Bold.ttf', import.meta.url)).then((res) => res.arrayBuffer());
-// Note: Agar font load na ho toh default system font use hoga, jo ki fine hai.
-
 export default async function Image({ params }: { params: { id: string } }) {
   let title = 'Alamnagar Spotlight';
   let author = 'Alamnagar Community';
   let category = 'Community';
-  let hasImage = false;
 
   try {
-    // Fetch post data from Firestore
     const docRef = doc(db, 'spotlights', params.id);
     const docSnap = await getDoc(docRef);
 
@@ -29,13 +23,12 @@ export default async function Image({ params }: { params: { id: string } }) {
       title = data.title || 'Untitled Post';
       author = data.userName || 'Anonymous';
       category = data.category || 'Spotlight';
-      hasImage = !!(data.imageUrl || data.videoThumbnail);
     }
   } catch (error) {
     console.error('Error fetching post for OG image:', error);
   }
 
-  // Truncate long titles
+  // Truncate long titles to fit nicely in the image
   const displayTitle = title.length > 60 ? title.substring(0, 57) + '...' : title;
 
   return new ImageResponse(
@@ -49,7 +42,7 @@ export default async function Image({ params }: { params: { id: string } }) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: 'sans-serif',
+          fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', // ✅ 100% Safe System Font
           color: 'white',
           padding: '60px',
           position: 'relative',
@@ -73,12 +66,12 @@ export default async function Image({ params }: { params: { id: string } }) {
             {category} • Spotlight
           </div>
           
-          <h1 style={{ fontSize: '72px', fontWeight: '900', lineHeight: '1.1', marginBottom: '40px', letterSpacing: '-2px' }}>
+          <h1 style={{ fontSize: '64px', fontWeight: '900', lineHeight: '1.1', marginBottom: '40px', letterSpacing: '-2px' }}>
             {displayTitle}
           </h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '28px', color: '#a8a29e' }}>
-            <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+            <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold' }}>
               {author.charAt(0).toUpperCase()}
             </div>
             <span style={{ fontWeight: '600', color: 'white' }}>{author}</span>
