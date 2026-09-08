@@ -78,12 +78,12 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 HERO BACKGROUND CHART
+// 🌈 HERO BACKGROUND CHART (Adjusted to 40% opacity for half-visibility)
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-60">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-40">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
           <defs>
@@ -103,7 +103,7 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART
+// 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART (Adjusted to 30% opacity)
 // ═══════════════════════════════════════════════════════════
 const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
@@ -128,7 +128,7 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🏢 MARKETPLACE REAL-TIME TOWER CHART BACKGROUND
+// 🏢 MARKETPLACE REAL-TIME TOWER CHART BACKGROUND (Adjusted to 30% opacity)
 // ═══════════════════════════════════════════════════════════
 const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
@@ -139,7 +139,7 @@ const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   ], [stats]);
 
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
@@ -600,10 +600,11 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION ===== */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-950 text-white px-4 md:px-8 lg:px-12">
+        {/* ===== 1. CINEMATIC HERO SECTION (Soft Matte Dark Background) ===== */}
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-900 text-white px-4 md:px-8 lg:px-12">
           <HeroBackgroundChart data={chartData} />
-          <div className="absolute inset-0 z-0 bg-gradient-to-br from-stone-950/85 via-emerald-950/75 to-stone-950/85" />
+          <div className="absolute inset-0 z-0 bg-gradient-to-br from-stone-900/85 via-stone-800/75 to-stone-900/85" />
+          
           {isAdmin && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-24 right-6 z-20">
               <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-5 py-2.5 hover:bg-red-500/30 transition-all group shadow-lg">
@@ -614,52 +615,44 @@ export default function HomePage() {
           )}
           
           <div className="relative z-10 text-center w-full max-w-7xl mx-auto pt-20">
-            {/* 🌟 PREMIUM FEATURED WELCOME HERO FOR LOGGED-IN USERS */}
+            {/* 🌟 FULLY TRANSPARENT WELCOME CARD (No Border) */}
             {currentUser ? (
               <motion.div 
                 initial={{ opacity: 0, y: 20, scale: 0.95 }} 
                 animate={{ opacity: 1, y: 0, scale: 1 }} 
                 transition={{ duration: 0.7, ease: "easeOut" }} 
-                className="relative w-full max-w-3xl mx-auto mb-10 p-[1px] rounded-3xl bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500 shadow-2xl shadow-amber-500/20"
+                className="relative w-full max-w-3xl mx-auto mb-10 rounded-3xl bg-white/5 backdrop-blur-md p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6"
               >
-                <div className="relative bg-stone-950/90 backdrop-blur-2xl rounded-[22px] p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 border border-white/5">
-                  <div className="relative shrink-0">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-xl opacity-40 animate-pulse" />
-                    <div className="relative w-20 h-20 rounded-full bg-stone-900 p-[2px]">
-                      <div className="w-full h-full rounded-full overflow-hidden bg-stone-950 flex items-center justify-center">
-                        {currentUser.photoURL ? (
-                          <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-amber-400">
-                            {currentUser.displayName?.[0] || "U"}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-400 to-amber-500 text-stone-950 text-[10px] font-black px-3 py-1 rounded-full border-2 border-stone-950 shadow-lg flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-stone-950" />
-                      PREMIUM
-                    </div>
+                <div className="relative shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-xl opacity-30" />
+                  <div className="relative w-20 h-20 rounded-full overflow-hidden bg-stone-900/50 flex items-center justify-center backdrop-blur-sm">
+                    {currentUser.photoURL ? (
+                      <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-amber-400">
+                        {currentUser.displayName?.[0] || "U"}
+                      </span>
+                    )}
                   </div>
-                  
-                  <div className="flex-1 text-center sm:text-left">
-                    <h3 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">
-                      स्वागत है, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span>! 🙏
-                    </h3>
-                    <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
-                      आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका विशेष स्वागत है।
-                    </p>
-                  </div>
-
-                  <Link 
-                    href="/community" 
-                    className="shrink-0 group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-500 hover:to-amber-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-xl shadow-emerald-500/20 flex items-center gap-3 hover:scale-105"
-                  >
-                    <Zap className="w-5 h-5 fill-white group-hover:animate-pulse" />
-                    <span>चौपाल देखें</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
                 </div>
+                
+                <div className="flex-1 text-center sm:text-left">
+                  <h3 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">
+                    स्वागत है, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span>! 🙏
+                  </h3>
+                  <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
+                    आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका विशेष स्वागत है।
+                  </p>
+                </div>
+
+                <Link 
+                  href="/community" 
+                  className="shrink-0 group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-500 hover:to-amber-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-xl shadow-emerald-500/20 flex items-center gap-3 hover:scale-105"
+                >
+                  <Zap className="w-5 h-5 fill-white group-hover:animate-pulse" />
+                  <span>चौपाल देखें</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </motion.div>
             ) : (
               <motion.div 
@@ -791,8 +784,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 5. MARKETPLACE TEASER ===== */}
-        <section className="py-24 px-4 md:px-8 lg:px-12 bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 text-white relative overflow-hidden">
+        {/* ===== 5. MARKETPLACE TEASER (Soft Matte Slate Background) ===== */}
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-slate-800 text-white relative overflow-hidden">
           <MarketplaceTowerChart stats={liveStats} />
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10 max-w-7xl mx-auto">
@@ -876,8 +869,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 7. WORKING NEWSLETTER ===== */}
-        <section className="py-24 px-4 md:px-8 lg:px-12 bg-gradient-to-br from-emerald-950 to-green-950 text-white relative overflow-hidden">
+        {/* ===== 7. WORKING NEWSLETTER (Soft Matte Zinc Background) ===== */}
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-zinc-800 text-white relative overflow-hidden">
           <NewsletterRealtimeChart data={chartData} />
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
             <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
