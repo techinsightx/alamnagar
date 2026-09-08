@@ -623,7 +623,6 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   
   return (
     <AnimatePresence>
-      {/* ✅ Z-INDEX INCREASED TO z-[9999] TO STAY ABSOLUTELY ABOVE EVERYTHING */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
         <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-lg bg-stone-900 sm:rounded-2xl rounded-t-3xl border-t sm:border border-stone-700 flex flex-col" style={{ maxHeight: '90vh' }}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 flex-shrink-0">
@@ -1282,8 +1281,8 @@ function SpotlightContent() {
 
       <AnimatePresence>{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}</AnimatePresence>
 
-      {/* ✅ HEADER Z-INDEX REDUCED TO z-30 TO STAY BELOW MODALS */}
-      <header className="sticky top-20 z-30 bg-stone-50/90 backdrop-blur-xl border-b border-stone-200">
+      {/* ✅ SPOTLIGHT NAV FIXED TO THE VERY TOP (top-0) */}
+      <header className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur-xl border-b border-stone-200">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="relative">
@@ -1316,7 +1315,7 @@ function SpotlightContent() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-4">
+      <main className="max-w-4xl mx-auto px-4 py-4 pt-6">
         {user ? (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-stone-200 rounded-2xl p-3 mb-4 flex items-center gap-3 shadow-sm">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-amber-500 p-[2px] flex-shrink-0">
