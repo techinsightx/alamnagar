@@ -7,14 +7,14 @@ import {
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
-  CheckCircle, X, Globe
+  CheckCircle, X, Globe, AlertTriangle // ✅ AlertTriangle added for error handling
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
 import { 
   collection, query, orderBy, limit, onSnapshot, 
-  addDoc, deleteDoc, doc, serverTimestamp, setDoc // ✅ setDoc added for update/create
+  addDoc, deleteDoc, doc, serverTimestamp, setDoc 
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -418,8 +418,10 @@ export default function HomePage() {
   const [liveStats, setLiveStats] = useState({ totalUsers: 0, totalPosts: 0, totalViews: 0, totalLikes: 0, totalComments: 0, totalShares: 0 });
   const [chartData, setChartData] = useState<any[]>([]);
   
+  // ✅ Newsletter State with Error Handling
   const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
@@ -480,10 +482,19 @@ export default function HomePage() {
     return () => { unsubUsers(); unsubPosts(); unsubTestimonials(); };
   }, []);
 
+  // ✅ UPGRADED: Robust Newsletter Submission with Validation & Error Feedback
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsletterEmail) return;
+    
+    if (!newsletterEmail || !newsletterEmail.includes('@')) {
+      setNewsletterStatus("error");
+      setErrorMessage("कृपया एक वैध ईमेल पता दर्ज करें।");
+      return;
+    }
+    
     setNewsletterStatus("loading");
+    setErrorMessage("");
+    
     try {
       await addDoc(collection(db, "newsletter"), {
         email: newsletterEmail,
@@ -491,10 +502,11 @@ export default function HomePage() {
       });
       setNewsletterStatus("success");
       setNewsletterEmail("");
-      setTimeout(() => setNewsletterStatus("idle"), 4000);
-    } catch (error) {
+      setTimeout(() => setNewsletterStatus("idle"), 5000);
+    } catch (error: any) {
       console.error("Newsletter error:", error);
-      setNewsletterStatus("idle");
+      setNewsletterStatus("error");
+      setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
     }
   };
 
@@ -502,7 +514,6 @@ export default function HomePage() {
   const handleAddReview = async () => {
     if (!currentUser || !newReviewText.trim()) return;
     try {
-      // setDoc with merge: true ensures it updates if exists, creates if it doesn't
       await setDoc(doc(db, "testimonials", currentUser.uid), {
         userId: currentUser.uid,
         userName: currentUser.displayName || "आलमनगर वासी",
@@ -533,8 +544,6 @@ export default function HomePage() {
   };
 
   const isAdmin = currentUser && ADMIN_UIDS.includes(currentUser.uid);
-  
-  // ✅ Find if current user already has a review
   const userExistingReview = testimonials.find(t => t.userId === currentUser?.uid);
 
   return (
@@ -824,7 +833,7 @@ export default function HomePage() {
               <motion.button
                 variants={fadeInUp}
                 onClick={() => {
-                  setNewReviewText(userExistingReview ? userExistingReview.quote : ""); // Pre-fill if updating
+                  setNewReviewText(userExistingReview ? userExistingReview.quote : "");
                   setShowReviewModal(true);
                 }}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
@@ -885,7 +894,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== 7. WORKING NEWSLETTER ===== */}
+      {/* ===== 7. WORKING NEWSLETTER (FULLY FIXED & EXPANDABLE) ===== */}
       <section className="py-24 px-6 bg-gradient-to-br from-emerald-950 to-green-950 text-white relative overflow-hidden">
         <MadhubaniPattern />
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
@@ -897,14 +906,24 @@ export default function HomePage() {
             आलमनगर के कार्यक्रमों, समाचारों और समुदाय की कहानियों की सीधी जानकारी अपने ईमेल पर पाएं।
           </p>
           
-          <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto" onSubmit={handleNewsletterSubmit}>
+          <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto relative" onSubmit={handleNewsletterSubmit}>
             <input 
               type="email" 
               value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
+              onChange={(e) => {
+                setNewsletterEmail(e.target.value);
+                if (newsletterStatus === "error") {
+                  setNewsletterStatus("idle");
+                  setErrorMessage("");
+                }
+              }}
               placeholder="अपना ईमेल दर्ज करें" 
-              className="flex-1 px-8 py-5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-4 focus:ring-amber-400/30 focus:border-amber-400 transition-all text-lg disabled:opacity-50" 
-              disabled={newsletterStatus === "success"}
+              className={`flex-1 px-8 py-5 rounded-full bg-white/10 backdrop-blur-md border text-white placeholder-white/50 focus:outline-none focus:ring-4 transition-all text-lg disabled:opacity-50 ${
+                newsletterStatus === "error" 
+                  ? "border-red-500/50 focus:ring-red-500/30 focus:border-red-500" 
+                  : "border-white/20 focus:ring-amber-400/30 focus:border-amber-400"
+              }`} 
+              disabled={newsletterStatus === "success" || newsletterStatus === "loading"}
               required
             />
             <button 
@@ -912,8 +931,13 @@ export default function HomePage() {
               disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
               className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-10 py-5 rounded-full transition-all duration-300 hover:scale-105 shadow-lg text-lg whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[180px]"
             >
-              {newsletterStatus === "loading" ? <Loader2 className="w-5 h-5 animate-spin" /> : 
-               newsletterStatus === "success" ? "सफल!" : "सदस्यता लें"}
+              {newsletterStatus === "loading" ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> प्रोसेस हो रहा है...</>
+              ) : newsletterStatus === "success" ? (
+                <><CheckCircle className="w-5 h-5" /> सफल!</>
+              ) : (
+                "सदस्यता लें"
+              )}
             </button>
           </form>
           
@@ -926,6 +950,16 @@ export default function HomePage() {
                 className="text-emerald-400 mt-6 font-bold flex items-center justify-center gap-2"
               >
                 <CheckCircle className="w-5 h-5" /> ✅ सफलतापूर्वक सदस्यता ले ली गई!
+              </motion.p>
+            )}
+            {newsletterStatus === "error" && (
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0 }}
+                className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2"
+              >
+                <AlertTriangle className="w-5 h-5" /> ❌ {errorMessage}
               </motion.p>
             )}
           </AnimatePresence>
