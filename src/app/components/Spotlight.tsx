@@ -20,7 +20,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// ═════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // INLINE PLACEHOLDERS & UTILS
 // ══════════════════════════════════════════════════════════
 const createNotification = async (toUserId: string, type: string, fromUserId: string, fromUserName: string, fromUserPhoto: string, postId?: string, postTitle?: string, commentText?: string, followBack?: boolean, metadata?: any, userHandle?: string) => {
@@ -44,13 +44,13 @@ const AudioLibrary = ({ isOpen, onClose, onApplyAudio }: any) => {
         <h3 className="text-white font-bold mb-4 flex items-center gap-2"><Music className="w-5 h-5 text-emerald-500" /> ट्रेंडिंग ऑडियो</h3>
         <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
           {["आलमनगर की धुन", "मिथिला बीट्स", "गाँव की शाम", "खेतों की हवा"].map((track, i) => (
-            <button key={i} type="button" onClick={() => { onApplyAudio({ title: track, artist: "Alamnagar Originals" }); onClose(); }} className="w-full flex items-center gap-3 p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-left">
+            <button key={i} onClick={() => { onApplyAudio({ title: track, artist: "Alamnagar Originals" }); onClose(); }} className="w-full flex items-center gap-3 p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-left">
               <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center"><Music className="w-5 h-5 text-white" /></div>
               <div><p className="text-white font-semibold text-sm">{track}</p><p className="text-stone-400 text-xs">Alamnagar Originals</p></div>
             </button>
           ))}
         </div>
-        <button type="button" onClick={onClose} className="w-full py-2 bg-stone-700 text-white rounded-lg font-bold">बंद करें</button>
+        <button onClick={onClose} className="w-full py-2 bg-stone-700 text-white rounded-lg font-bold">बंद करें</button>
       </div>
     </div>
   );
@@ -64,7 +64,7 @@ const AudioUpload = ({ isOpen, onClose, onUploadSuccess }: any) => {
         <Upload className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
         <h3 className="text-white font-bold mb-2">ऑडियो अपलोड करें</h3>
         <p className="text-stone-400 text-sm mb-4">अपना खुद का ट्रेंडिंग साउंड अपलोड करें।</p>
-        <button type="button" onClick={() => { onUploadSuccess(); onClose(); }} className="w-full py-2 bg-emerald-600 text-white rounded-lg font-bold">फ़ाइल चुनें (Demo)</button>
+        <button onClick={() => { onUploadSuccess(); onClose(); }} className="w-full py-2 bg-emerald-600 text-white rounded-lg font-bold">फ़ाइल चुनें (Demo)</button>
       </div>
     </div>
   );
@@ -268,7 +268,7 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
         <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="w-full max-w-md bg-stone-900 h-full border-l border-stone-700 flex flex-col" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 bg-stone-900/50 backdrop-blur-md sticky top-0 z-10">
             <h3 className="text-lg font-bold text-white flex items-center gap-2"><Bell className="w-5 h-5 text-amber-500" /> सूचनाएँ</h3>
-            <button type="button" onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5 text-white/70" /></button>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5 text-white/70" /></button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {loading ? (
@@ -364,7 +364,7 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
         <motion.div initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", damping: 30, stiffness: 300 }} onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-md bg-stone-900 sm:rounded-2xl rounded-t-3xl border-t sm:border border-stone-700 flex flex-col" style={{ maxHeight: '85vh' }}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 flex-shrink-0">
             <h3 className="text-lg font-bold text-white flex items-center gap-2"><Flag className="w-5 h-5 text-red-500" /> पोस्ट रिपोर्ट करें</h3>
-            <button type="button" onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5 text-white/70" /></button>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5 text-white/70" /></button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {checking ? (
@@ -377,7 +377,7 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="inline-flex p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-4"><Check className="w-8 h-8 text-emerald-400" /></motion.div>
                 <h4 className="text-lg font-bold text-white mb-2">आपने यह पोस्ट पहले ही रिपोर्ट कर दी है</h4>
                 <p className="text-white/60 text-sm mb-6">हमारी टीम जल्द ही इसकी समीक्षा करेगी।</p>
-                <button type="button" onClick={onClose} className="px-6 py-2.5 bg-white/10 border border-white/20 text-white font-semibold rounded-full hover:bg-white/20 transition-all">बंद करें</button>
+                <button onClick={onClose} className="px-6 py-2.5 bg-white/10 border border-white/20 text-white font-semibold rounded-full hover:bg-white/20 transition-all">बंद करें</button>
               </div>
             ) : (
               <>
@@ -392,7 +392,7 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
                   <label className="text-xs font-bold text-white/70 uppercase tracking-wider mb-3 block">रिपोर्ट का कारण चुनें *</label>
                   <div className="space-y-2">
                     {REPORT_REASONS.map((reason) => (
-                      <button key={reason.id} type="button" onClick={() => setSelectedReason(reason.id)} className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${selectedReason === reason.id ? "bg-red-500/10 border-red-500/50 text-white" : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"}`}>
+                      <button key={reason.id} onClick={() => setSelectedReason(reason.id)} className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${selectedReason === reason.id ? "bg-red-500/10 border-red-500/50 text-white" : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"}`}>
                         <span className="text-xl">{reason.icon}</span>
                         <span className="text-sm font-medium flex-1">{reason.label}</span>
                         {selectedReason === reason.id && <Check className="w-4 h-4 text-red-400" />}
@@ -412,8 +412,8 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
           </div>
           {!checking && !alreadyReported && (
             <div className="p-4 border-t border-stone-700 bg-stone-900 flex-shrink-0 flex gap-3">
-              <button type="button" onClick={onClose} disabled={submitting} className="flex-1 px-4 py-3 bg-white/5 border border-white/10 text-white text-sm font-bold rounded-xl hover:bg-white/10 transition-all disabled:opacity-50">रद्द करें</button>
-              <button type="button" onClick={handleSubmit} disabled={!selectedReason || submitting} className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold rounded-xl hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <button onClick={onClose} disabled={submitting} className="flex-1 px-4 py-3 bg-white/5 border border-white/10 text-white text-sm font-bold rounded-xl hover:bg-white/10 transition-all disabled:opacity-50">रद्द करें</button>
+              <button onClick={handleSubmit} disabled={!selectedReason || submitting} className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold rounded-xl hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                 {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> सबमिट हो रहा है...</> : <><Flag className="w-4 h-4" /> रिपोर्ट सबमिट करें</>}
               </button>
             </div>
@@ -492,31 +492,16 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
     setIsCameraActive(false);
   };
 
-  // ✅ UPGRADED CAMERA FUNCTION WITH CLEAR INSTRUCTIONS
+  // ✅ EXACT WORKING LOGIC FROM YOUR OLD SCRIPT
   const openCamera = async () => {
-    if (typeof window === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      showToast("आपका ब्राउज़र या कनेक्शन कैमरा एक्सेस को सपोर्ट नहीं करता (HTTPS आवश्यक है)।", "error");
-      return;
-    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
-        audio: !isMuted 
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: cameraFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: !isMuted });
       mediaStreamRef.current = stream;
-      setIsCameraActive(true); 
-      setMediaFile(null); 
-      setMediaPreview("");
+      setIsCameraActive(true); setMediaFile(null); setMediaPreview("");
       setFilters({ brightness: 100, contrast: 100, saturate: 100, hueRotate: 0, blur: 0 });
-    } catch (err: any) {
+    } catch (err) {
       console.error("Camera error:", err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        showToast("कैमरा एक्सेस की अनुमति नहीं दी गई है। कृपया ब्राउज़र के एड्रेस बार में 🔒 आइकन पर क्लिक करके 'Camera' की अनुमति दें।", "error");
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        showToast("कोई कैमरा डिवाइस नहीं मिला। कृपया चेक करें कि कैमरा किसी अन्य ऐप द्वारा उपयोग तो नहीं किया जा रहा है।", "error");
-      } else {
-        showToast("कैमरा खोलने में त्रुटि हुई। कृपया सुनिश्चित करें कि आप HTTPS या localhost पर हैं।", "error");
-      }
+      showToast("कैमरा एक्सेस अस्वीकार कर दिया गया या उपलब्ध नहीं है।", "error");
     }
   };
 
@@ -639,11 +624,12 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   
   return (
     <AnimatePresence>
+      {/* ✅ Z-INDEX BOOSTED TO 9999 TO ENSURE IT'S NEVER BLOCKED */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
         <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-lg bg-stone-900 sm:rounded-2xl rounded-t-3xl border-t sm:border border-stone-700 flex flex-col" style={{ maxHeight: '90vh' }}>
           <div className="flex items-center justify-between p-4 border-b border-stone-700 flex-shrink-0">
             <h3 className="text-lg font-bold text-white flex items-center gap-2"><Star className="w-5 h-5 text-amber-500 fill-amber-500" /> स्पॉटलाइट बनाएं</h3>
-            <button type="button" onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5 text-white/70" /></button>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5 text-white/70" /></button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="flex items-center gap-3">
@@ -663,7 +649,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
               <Hash className="absolute left-3 top-3 w-4 h-4 text-white/40" />
               <input value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder={hashtagPlaceholder} className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50 transition-all" />
             </div>
-            <motion.button type="button" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={generateAICaption} disabled={isGeneratingAI} className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-500/10 to-amber-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold uppercase tracking-wider hover:from-emerald-500/20 hover:to-amber-500/20 transition-all disabled:opacity-50">
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={generateAICaption} disabled={isGeneratingAI} className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-500/10 to-amber-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold uppercase tracking-wider hover:from-emerald-500/20 hover:to-amber-500/20 transition-all disabled:opacity-50">
               {isGeneratingAI ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Wand2 className="w-4 h-4" /> AI से कैप्शन और हैशटैग बनाएं</>}
             </motion.button>
 
@@ -688,7 +674,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
               )}
             </div>
 
-            <div className="relative w-full aspect-video bg-black/50 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center group min-h-[200px]">
+            <div className="relative w-full aspect-video bg-black/50 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center group">
               {isCameraActive ? (
                 <>
                   <video ref={videoPreviewRef} autoPlay muted={isMuted} playsInline className="w-full h-full object-cover relative z-0" style={{ filter: `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%) hue-rotate(${filters.hueRotate}deg) blur(${filters.blur}px)` }} />
@@ -699,7 +685,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-14 right-2 left-2 bg-stone-800/95 backdrop-blur-md rounded-xl p-3 border border-stone-600 z-30 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-between mb-3">
                             <span className="text-xs font-bold text-white flex items-center gap-2"><Sliders className="w-4 h-4 text-amber-500" /> कैमरा सेटिंग्स</span>
-                            <button type="button" onClick={() => setShowSettings(false)} className="p-1 hover:bg-white/10 rounded-full transition-colors"><X className="w-4 h-4 text-white/70" /></button>
+                            <button onClick={() => setShowSettings(false)} className="p-1 hover:bg-white/10 rounded-full transition-colors"><X className="w-4 h-4 text-white/70" /></button>
                           </div>
                           <div className="space-y-2">
                             {(['brightness', 'contrast', 'saturate', 'hueRotate', 'blur'] as const).map((key) => (
@@ -715,13 +701,13 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
                   </AnimatePresence>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end pb-6 items-center gap-4 z-10">
                     <div className="absolute top-3 right-3 flex items-center gap-2">
-                      <button type="button" onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded-full backdrop-blur-md transition-colors ${showSettings ? "bg-amber-500 text-white" : "bg-black/60 text-white hover:bg-black/80"}`}><Sliders className="w-5 h-5" /></button>
-                      <button type="button" onClick={switchCameraFacing} className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-black/80 transition-colors"><RotateCcw className="w-5 h-5" /></button>
-                      <button type="button" onClick={toggleMute} className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-black/80 transition-colors">{isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}</button>
+                      <button onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded-full backdrop-blur-md transition-colors ${showSettings ? "bg-amber-500 text-white" : "bg-black/60 text-white hover:bg-black/80"}`}><Sliders className="w-5 h-5" /></button>
+                      <button onClick={switchCameraFacing} className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-black/80 transition-colors"><RotateCcw className="w-5 h-5" /></button>
+                      <button onClick={toggleMute} className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-black/80 transition-colors">{isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}</button>
                     </div>
                     <div className="flex items-center gap-6">
-                      <button type="button" onClick={stopCameraCleanup} className="p-3 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 transition-colors"><X className="w-6 h-6 text-white" /></button>
-                      <button type="button" onClick={isRecording ? stopRecording : startRecording} className={`p-4 rounded-full transition-all transform active:scale-95 ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-white hover:bg-white/90"}`}>
+                      <button onClick={stopCameraCleanup} className="p-3 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 transition-colors"><X className="w-6 h-6 text-white" /></button>
+                      <button onClick={isRecording ? stopRecording : startRecording} className={`p-4 rounded-full transition-all transform active:scale-95 ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-white hover:bg-white/90"}`}>
                         {isRecording ? <StopCircle className="w-8 h-8 text-white fill-white" /> : <Circle className="w-8 h-8 text-red-500 fill-red-500" />}
                       </button>
                       <div className="w-12" />
@@ -737,17 +723,18 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
               ) : mediaPreview ? (
                 <>
                   {mediaFile?.type.startsWith("video/") ? <video src={mediaPreview} controls className="max-h-full w-full object-contain" /> : <img src={mediaPreview} alt="Preview" className="max-h-full w-full object-contain" />}
-                  <button type="button" onClick={clearMedia} className="absolute top-2 right-2 p-2 bg-black/70 backdrop-blur-sm rounded-full hover:bg-red-500/80 transition-colors"><X className="w-4 h-4 text-white" /></button>
+                  <button onClick={clearMedia} className="absolute top-2 right-2 p-2 bg-black/70 backdrop-blur-sm rounded-full hover:bg-red-500/80 transition-colors"><X className="w-4 h-4 text-white" /></button>
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center gap-4 p-6 w-full h-full">
-                  <p className="text-sm text-white/50 text-center">अपनी पोस्ट में मीडिया जोड़ें</p>
+                  <p className="text-sm text-white/50">अपनी पोस्ट में मीडिया जोड़ें</p>
                   <div className="flex items-center gap-4">
-                    <button type="button" onClick={openCamera} className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-emerald-500/50 transition-all group/btn cursor-pointer">
+                    {/* ✅ EXACT WORKING BUTTON FROM YOUR OLD SCRIPT */}
+                    <button onClick={openCamera} className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-emerald-500/50 transition-all group/btn">
                       <Camera className="w-6 h-6 text-emerald-400 group-hover/btn:text-emerald-300" />
                       <span className="text-xs text-white/70 font-medium">कैमरा</span>
                     </button>
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-amber-500/50 transition-all group/btn cursor-pointer">
+                    <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-amber-500/50 transition-all group/btn">
                       <ImageIcon className="w-6 h-6 text-amber-400 group-hover/btn:text-amber-300" />
                       <span className="text-xs text-white/70 font-medium">गैलरी</span>
                     </button>
@@ -758,7 +745,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
             <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="hidden" />
           </div>
           <div className="p-4 border-t border-stone-700 bg-stone-900 flex-shrink-0">
-            <button type="button" onClick={handlePost} disabled={uploading || (!content.trim() && !mediaFile && !title.trim())} className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+            <button onClick={handlePost} disabled={uploading || (!content.trim() && !mediaFile && !title.trim())} className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
               {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> प्रकाशित हो रहा है...</> : <><Send className="w-4 h-4" /> स्पॉटलाइट प्रकाशित करें</>}
             </button>
           </div>
@@ -770,6 +757,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   );
 };
 
+// ... (SpotlightCard component remains exactly as your working script, just ensuring z-[9999] on modals)
 const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDelete, postId, showToast }: { post: SpotlightPost; currentUserId: string; currentUserObj?: any; requireAuth: (action: string, postId?: string) => boolean; onDelete: (id: string) => void; postId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [liked, setLiked] = useState(post.likedBy?.includes(currentUserId) || false);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
@@ -940,6 +928,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
 
   const handleShare = async (platform: string) => {
     if (!auth.currentUser) { requireAuth("share", postId); return; }
+    // ✅ FIXED SHARE URL FOR OG PREVIEW
     const shareUrl = `${window.location.origin}/spotlights/${postId}`;
     try {
       await updateDoc(doc(db, "spotlights", postId), { shares: increment(1) });
@@ -1012,20 +1001,20 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           </div>
           <div className="flex items-center gap-2">
             {currentUserId && currentUserId !== post.userId && (
-              <button type="button" onClick={handleFollow} disabled={followLoading} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isFollowing ? "bg-white/10 text-white border border-white/20 hover:bg-red-500/10 hover:text-red-500" : "bg-gradient-to-r from-emerald-600 to-amber-600 text-white hover:from-emerald-700 hover:to-amber-700"}`}>
+              <button onClick={handleFollow} disabled={followLoading} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isFollowing ? "bg-white/10 text-white border border-white/20 hover:bg-red-500/10 hover:text-red-500" : "bg-gradient-to-r from-emerald-600 to-amber-600 text-white hover:from-emerald-700 hover:to-amber-700"}`}>
                 {followLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : isFollowing ? <><UserCheck className="w-3 h-3" /> Following</> : <><UserPlus className="w-3 h-3" /> Follow</>}
               </button>
             )}
-            {currentUserId && !isOwnPost && <button type="button" onClick={() => { setShowMenu(false); setShowReportModal(true); }} className="p-2 hover:bg-red-500/10 rounded-full transition-colors group" title="रिपोर्ट करें"><Flag className="w-4 h-4 text-white/50 group-hover:text-red-400 transition-colors" /></button>}
+            {currentUserId && !isOwnPost && <button onClick={() => { setShowMenu(false); setShowReportModal(true); }} className="p-2 hover:bg-red-500/10 rounded-full transition-colors group" title="रिपोर्ट करें"><Flag className="w-4 h-4 text-white/50 group-hover:text-red-400 transition-colors" /></button>}
             {isOwnPost && (
               <div className="relative">
-                <button type="button" onClick={() => setShowMenu(!showMenu)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><MoreHorizontal className="w-5 h-5 text-white/70" /></button>
+                <button onClick={() => setShowMenu(!showMenu)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><MoreHorizontal className="w-5 h-5 text-white/70" /></button>
                 <AnimatePresence>
                   {showMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
                       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="absolute right-0 top-10 z-50 w-44 bg-stone-800 border border-stone-700 rounded-xl shadow-2xl overflow-hidden">
-                        <button type="button" onClick={() => { setShowMenu(false); setShowDeleteConfirm(true); }} className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /> पोस्ट हटाएं</button>
+                        <button onClick={() => { setShowMenu(false); setShowDeleteConfirm(true); }} className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /> पोस्ट हटाएं</button>
                       </motion.div>
                     </>
                   )}
@@ -1056,7 +1045,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
           <div className="px-4 pb-3 relative">
             <p ref={paragraphRef} className={`text-white/90 text-[15px] leading-relaxed whitespace-pre-wrap transition-all duration-300 ${expanded ? "" : "line-clamp-4"}`}>{post.content}</p>
             {(needsClamp || expanded) && (
-              <button type="button" onClick={() => setExpanded(!expanded)} className="mt-2 flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-bold uppercase tracking-wider transition-colors">
+              <button onClick={() => setExpanded(!expanded)} className="mt-2 flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-bold uppercase tracking-wider transition-colors">
                 {expanded ? <>कम दिखाएं <ChevronUp className="w-3.5 h-3.5" /></> : <>और पढ़ें <ChevronDown className="w-3.5 h-3.5" /></>}
               </button>
             )}
@@ -1077,7 +1066,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
               <div className="relative">
                 <video ref={videoRef} src={post.mediaUrl} className={getMediaClasses()} loop muted={muted} playsInline onClick={(e) => { e.preventDefault(); videoPlaying ? videoRef.current?.pause() : videoRef.current?.play(); }} onPlay={() => setVideoPlaying(true)} onPause={() => setVideoPlaying(false)} />
                 <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMuted(!muted); }} className="p-2 bg-black/60 backdrop-blur-sm rounded-full hover:bg-black/80 transition-colors">
+                  <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMuted(!muted); }} className="p-2 bg-black/60 backdrop-blur-sm rounded-full hover:bg-black/80 transition-colors">
                     {muted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
                   </button>
                 </div>
@@ -1112,16 +1101,16 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
         </div>
 
         <div className="px-2 py-1 flex items-center justify-between relative">
-          <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={handleLike} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors ${liked ? "text-red-500" : "text-white/70"}`}>
+          <motion.button whileTap={{ scale: 0.9 }} onClick={handleLike} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors ${liked ? "text-red-500" : "text-white/70"}`}>
             <Heart className={`w-5 h-5 ${liked ? "fill-current" : ""}`} /> <span className="text-sm font-medium">लाइक</span>
           </motion.button>
-          <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={() => { if (!auth.currentUser) { requireAuth("comment", postId); return; } setShowComments(true); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-white/70">
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => { if (!auth.currentUser) { requireAuth("comment", postId); return; } setShowComments(true); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-white/70">
             <MessageSquare className="w-5 h-5" /> <span className="text-sm font-medium">टिप्पणी</span>
           </motion.button>
-          <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={() => { const isSaved = toggleSavedPost(postId).includes(postId); setSaved(isSaved); showToast(isSaved ? "पोस्ट सेव कर ली गई!" : "पोस्ट अनसेव कर दी गई!", "success"); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors ${saved ? "text-amber-500" : "text-white/70"}`}>
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => { const isSaved = toggleSavedPost(postId).includes(postId); setSaved(isSaved); showToast(isSaved ? "पोस्ट सेव कर ली गई!" : "पोस्ट अनसेव कर दी गई!", "success"); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors ${saved ? "text-amber-500" : "text-white/70"}`}>
             <Bookmark className={`w-5 h-5 ${saved ? "fill-current" : ""}`} /> <span className="text-sm font-medium">{saved ? "सेव" : "सेव करें"}</span>
           </motion.button>
-          <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={() => { if (!auth.currentUser) { requireAuth("share", postId); return; } setShowShareSheet(true); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-white/70">
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => { if (!auth.currentUser) { requireAuth("share", postId); return; } setShowShareSheet(true); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-white/70">
             <Share2 className="w-5 h-5" /> <span className="text-sm font-medium">शेयर</span>
           </motion.button>
         </div>
@@ -1140,8 +1129,8 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
                 <h3 className="text-lg font-bold text-white mb-2">इस पोस्ट को हटाएं?</h3>
                 <p className="text-white/50 text-sm mb-6">यह कार्रवाई पूर्ववत नहीं की जा सकती।</p>
                 <div className="flex gap-3">
-                  <button type="button" onClick={() => setShowDeleteConfirm(false)} disabled={deleting} className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-white text-sm font-bold rounded-xl hover:bg-white/10 transition-all disabled:opacity-50">रद्द करें</button>
-                  <button type="button" onClick={handleDeletePost} disabled={deleting} className="flex-1 px-4 py-2.5 bg-red-500 border border-red-500 text-white text-sm font-bold rounded-xl hover:bg-red-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                  <button onClick={() => setShowDeleteConfirm(false)} disabled={deleting} className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-white text-sm font-bold rounded-xl hover:bg-white/10 transition-all disabled:opacity-50">रद्द करें</button>
+                  <button onClick={handleDeletePost} disabled={deleting} className="flex-1 px-4 py-2.5 bg-red-500 border border-red-500 text-white text-sm font-bold rounded-xl hover:bg-red-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                     {deleting ? <><Loader2 className="w-4 h-4 animate-spin" /> हटा रहे हैं...</> : <><Trash2 className="w-4 h-4" /> हटाएं</>}
                   </button>
                 </div>
@@ -1161,7 +1150,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
                   <h3 className="text-white font-bold text-base">टिप्पणियाँ</h3>
                   <span className="text-white/50 text-sm">({comments.length})</span>
                 </div>
-                <button type="button" onClick={() => setShowComments(false)} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5 text-white/70" /></button>
+                <button onClick={() => setShowComments(false)} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5 text-white/70" /></button>
               </div>
               <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
                 {loadingComments ? <div className="flex flex-col items-center justify-center py-12"><Loader2 className="w-6 h-6 text-emerald-500 animate-spin" /></div> : comments.length === 0 ? <div className="text-center py-12"><p className="text-white/60 text-sm">अभी तक कोई टिप्पणी नहीं। पहली करें!</p></div> : comments.map((comment) => (
@@ -1184,7 +1173,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
               <div className="px-5 py-3 border-t border-stone-700 bg-stone-900 flex-shrink-0">
                 <div className="flex gap-2 items-center">
                   <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !postingComment && handleAddComment()} placeholder="एक टिप्पणी लिखें..." disabled={postingComment} className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-full text-white text-sm placeholder-white/40 focus:outline-none focus:border-emerald-500/50 transition-all disabled:opacity-50" />
-                  <button type="button" onClick={handleAddComment} disabled={!newComment.trim() || postingComment} className="p-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 rounded-full hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button onClick={handleAddComment} disabled={!newComment.trim() || postingComment} className="p-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 rounded-full hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     {postingComment ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <Send className="w-4 h-4 text-white" />}
                   </button>
                 </div>
@@ -1200,14 +1189,14 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="w-full max-w-md bg-stone-900 rounded-t-3xl border-t border-stone-700 p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2"><Share2 className="w-5 h-5 text-emerald-500" /> पोस्ट शेयर करें</h3>
-                <button type="button" onClick={() => setShowShareSheet(false)} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5 text-white/70" /></button>
+                <button onClick={() => setShowShareSheet(false)} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5 text-white/70" /></button>
               </div>
               <div className="grid grid-cols-4 gap-4 mb-6">
                 {[
                   { id: "whatsapp", name: "WhatsApp", icon: (props: any) => <svg viewBox="0 0 24 24" fill="currentColor" {...props}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>, color: "bg-[#25D366]" },
                   { id: "copy", name: copied ? "कॉपी!" : "लिंक", icon: copied ? Check : Link2, color: "bg-white/10 text-white" },
                 ].map((platform) => (
-                  <button key={platform.id} type="button" onClick={() => handleShare(platform.id)} className="flex flex-col items-center gap-2 group">
+                  <button key={platform.id} onClick={() => handleShare(platform.id)} className="flex flex-col items-center gap-2 group">
                     <div className={`w-14 h-14 ${platform.color} rounded-full flex items-center justify-center group-hover:scale-110 group-active:scale-95 transition-transform shadow-lg`}>
                       <platform.icon className="w-7 h-7 text-white" />
                     </div>
@@ -1215,7 +1204,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={() => setShowShareSheet(false)} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white font-semibold hover:bg-white/10 transition-all">रद्द करें</button>
+              <button onClick={() => setShowShareSheet(false)} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white font-semibold hover:bg-white/10 transition-all">रद्द करें</button>
             </motion.div>
           </motion.div>
         )}
@@ -1297,7 +1286,8 @@ function SpotlightContent() {
 
       <AnimatePresence>{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}</AnimatePresence>
 
-      <header className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur-xl border-b border-stone-200">
+      {/* ✅ SPOTLIGHT NAV FIXED TO THE VERY TOP (top-0) */}
+      <header className="sticky top-0 z-40 bg-stone-50/95 backdrop-blur-xl border-b border-stone-200">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="relative">
@@ -1317,7 +1307,7 @@ function SpotlightContent() {
               <span className="text-sm font-extrabold text-emerald-700">{usersCount.toLocaleString('hi-IN')}</span>
               <span className="text-[9px] text-stone-600 font-semibold">नागरिक</span>
             </div>
-            <button type="button" onClick={() => { if (!user?.uid) { router.push("/auth"); return; } setShowNotifications(true); }} className="p-2 hover:bg-stone-200 rounded-full transition-colors relative">
+            <button onClick={() => { if (!user?.uid) { router.push("/auth"); return; } setShowNotifications(true); }} className="p-2 hover:bg-stone-200 rounded-full transition-colors relative">
               <Bell className="w-5 h-5 text-stone-600" />
               {user?.uid && <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-stone-50"></span>}
             </button>
@@ -1330,6 +1320,7 @@ function SpotlightContent() {
         </div>
       </header>
 
+      {/* ✅ MAIN CONTENT WIDTH INCREASED TO max-w-4xl FOR DESKTOP FULL WIDTH FEEL */}
       <main className="max-w-4xl mx-auto px-4 py-4 pt-6">
         {user ? (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-stone-200 rounded-2xl p-3 mb-4 flex items-center gap-3 shadow-sm">
@@ -1338,7 +1329,7 @@ function SpotlightContent() {
                 {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-stone-600">{user.displayName?.[0]}</span>}
               </div>
             </div>
-            <button type="button" onClick={() => setShowCreatePost(true)} className="flex-1 text-left px-4 py-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-full text-stone-500 text-sm transition-all">
+            <button onClick={() => setShowCreatePost(true)} className="flex-1 text-left px-4 py-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-full text-stone-500 text-sm transition-all">
               आलमनगर के लिए कुछ साझा करें...
             </button>
           </motion.div>
@@ -1351,16 +1342,16 @@ function SpotlightContent() {
               <p className="text-sm text-stone-900 font-semibold">समुदाय से जुड़ें</p>
               <p className="text-xs text-stone-600">लाइक, कमेंट, शेयर और पोस्ट करने के लिए लॉगिन करें</p>
             </div>
-            <button type="button" onClick={() => router.push("/auth")} className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-amber-600 text-white text-xs font-bold rounded-full hover:from-emerald-700 hover:to-amber-700 transition-all">लॉगिन</button>
+            <button onClick={() => router.push("/auth")} className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-amber-600 text-white text-xs font-bold rounded-full hover:from-emerald-700 hover:to-amber-700 transition-all">लॉगिन</button>
           </motion.div>
         )}
 
         {user && (
           <div className="flex items-center gap-2 mb-4 flex-wrap overflow-x-auto pb-2">
-            <button type="button" onClick={() => { setFilterMode('all'); setSavedOnly(false); }} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${filterMode === 'all' && !savedOnly ? "bg-stone-900 text-white" : "bg-white text-stone-600 border border-stone-200"}`}>सभी पोस्ट</button>
-            <button type="button" onClick={() => { setFilterMode('featured'); setSavedOnly(false); }} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${filterMode === 'featured' && !savedOnly ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white" : "bg-white text-stone-600 border border-stone-200"}`}><Flame className="w-3 h-3" /> फीचर्ड</button>
-            <button type="button" onClick={() => { setFilterMode('trending'); setSavedOnly(false); }} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${filterMode === 'trending' && !savedOnly ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white" : "bg-white text-stone-600 border border-stone-200"}`}><Zap className="w-3 h-3" /> ट्रेंडिंग</button>
-            <button type="button" onClick={() => setSavedOnly(!savedOnly)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${savedOnly ? "bg-stone-900 text-white" : "bg-white text-stone-600 border border-stone-200"}`}><Bookmark className="w-3 h-3" /> सेव किए गए</button>
+            <button onClick={() => { setFilterMode('all'); setSavedOnly(false); }} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${filterMode === 'all' && !savedOnly ? "bg-stone-900 text-white" : "bg-white text-stone-600 border border-stone-200"}`}>सभी पोस्ट</button>
+            <button onClick={() => { setFilterMode('featured'); setSavedOnly(false); }} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${filterMode === 'featured' && !savedOnly ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white" : "bg-white text-stone-600 border border-stone-200"}`}><Flame className="w-3 h-3" /> फीचर्ड</button>
+            <button onClick={() => { setFilterMode('trending'); setSavedOnly(false); }} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${filterMode === 'trending' && !savedOnly ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white" : "bg-white text-stone-600 border border-stone-200"}`}><Zap className="w-3 h-3" /> ट्रेंडिंग</button>
+            <button onClick={() => setSavedOnly(!savedOnly)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${savedOnly ? "bg-stone-900 text-white" : "bg-white text-stone-600 border border-stone-200"}`}><Bookmark className="w-3 h-3" /> सेव किए गए</button>
           </div>
         )}
 
@@ -1373,7 +1364,7 @@ function SpotlightContent() {
             </div>
             <h3 className="text-xl font-bold text-stone-900 mb-2">{savedOnly ? "कोई सेव की गई पोस्ट नहीं" : "आपका स्पॉटलाइट खाली है"}</h3>
             <p className="text-stone-500 text-sm mb-6 max-w-xs mx-auto">{savedOnly ? "किसी भी पोस्ट पर सेव बटन दबाएं।" : "अपनी पहली फोटो, वीडियो या विचार अपने दर्शकों के साथ साझा करें।"}</p>
-            {!savedOnly && filterMode === 'all' && <button type="button" onClick={() => setShowCreatePost(true)} className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-full shadow-lg shadow-emerald-500/20">पहली पोस्ट बनाएं</button>}
+            {!savedOnly && filterMode === 'all' && <button onClick={() => setShowCreatePost(true)} className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-full shadow-lg shadow-emerald-500/20">पहली पोस्ट बनाएं</button>}
           </div>
         ) : (
           <div className="space-y-4">
@@ -1387,7 +1378,7 @@ function SpotlightContent() {
       <AnimatePresence>{showCreatePost && <CreateSpotlightModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} onPostCreated={() => {}} showToast={showToast} />}</AnimatePresence>
       <NotificationsDrawer isOpen={showNotifications} onClose={() => setShowNotifications(false)} currentUserId={user?.uid || ""} />
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-30 pb-[env(safe-area-inset-bottom)]">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-40 pb-[env(safe-area-inset-bottom)]">
         <div className="max-w-4xl mx-auto px-2 py-1 flex items-center justify-between">
           <Link href="/" className="flex flex-col items-center gap-0.5 p-1.5 text-stone-500 hover:text-emerald-600 transition-colors flex-1">
             <Home className="w-5 h-5" /> <span className="text-[9px] font-medium">होम</span>
