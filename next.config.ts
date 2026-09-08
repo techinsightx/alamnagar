@@ -4,15 +4,15 @@ const nextConfig: NextConfig = {
   // ✅ Enable compression for faster page loads (Gzip/Brotli)
   compress: true,
   
-  // ✅ Hide "X-Powered-By: Next.js" header for security (attackers ko pata na chale)
+  // ✅ Hide "X-Powered-By: Next.js" header for security
   poweredByHeader: false,
   
   // ✅ React Strict Mode for better development experience
   reactStrictMode: true,
   
-  // ✅ Image Optimization: Allow Cloudinary URLs (used in Gallery & Marketplace)
+  // ✅ Image Optimization: Allow Cloudinary URLs and others
   images: {
-    formats: ['image/avif', 'image/webp'], // Modern formats for 50% smaller sizes
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -21,21 +21,20 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com', // For About page hero images
+        hostname: 'images.unsplash.com',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com', // For Google user profile photos
+        hostname: 'lh3.googleusercontent.com',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com', // Firebase storage fallback
+        hostname: 'firebasestorage.googleapis.com',
         pathname: '/**',
       },
     ],
-    // Minimum cache time for optimized images (1 year for static assets)
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
   
@@ -48,7 +47,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate', // Always fetch fresh SW
+            value: 'public, max-age=0, must-revalidate',
           },
           {
             key: 'Service-Worker-Allowed',
@@ -66,7 +65,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Cache-Control',
-            value: 'public, max-age=86400', // Cache for 24 hours
+            value: 'public, max-age=86400',
           },
         ],
       },
@@ -89,27 +88,28 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'X-Frame-Options',
-            value: 'DENY', // Prevent clickjacking attacks
+            value: 'DENY', 
           },
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff', // Prevent MIME type sniffing
+            value: 'nosniff', 
           },
           {
             key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin', // Privacy protection
+            value: 'strict-origin-when-cross-origin', 
           },
+          // 🔥 FIXED: Ab Camera aur Microphone ALLOW hoga!
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()', // Disable unused APIs
+            value: 'camera=(self), microphone=(self), geolocation=(self)', 
           },
           {
             key: 'X-DNS-Prefetch-Control',
-            value: 'on', // Faster DNS resolution
+            value: 'on', 
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload', // Force HTTPS
+            value: 'max-age=31536000; includeSubDomains; preload', 
           },
         ],
       },
@@ -119,7 +119,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable', // 1 year cache
+            value: 'public, max-age=31536000, immutable', 
           },
         ],
       },
@@ -129,7 +129,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=604800, must-revalidate', // 1 week cache
+            value: 'public, max-age=604800, must-revalidate', 
           },
         ],
       },
@@ -138,18 +138,14 @@ const nextConfig: NextConfig = {
   
   // ✅ Experimental Features for Maximum Performance
   experimental: {
-    // Optimize CSS delivery
     optimizeCss: true,
-    // Faster server components
     serverActions: {
-      bodySizeLimit: '2mb', // Allow larger form submissions
+      bodySizeLimit: '2mb', 
     },
   },
   
   // ✅ Web Vitals Optimization
-  // Automatically optimize for Core Web Vitals (LCP, FID, CLS)
   compiler: {
-    // Remove console.log in production for smaller bundle size
     removeConsole: process.env.NODE_ENV === 'production' 
       ? { exclude: ['error', 'warn'] } 
       : false,
