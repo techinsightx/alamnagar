@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +12,84 @@ import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+
+// ═══════════════════════════════════════════════════════════
+// 🧲 MAGNETIC LINK COMPONENT (Desktop Nav)
+// ═══════════════════════════════════════════════════════════
+const MagneticNavItem = ({ href, label, icon: Icon, isActive }: { href: string; label: string; icon: any; isActive: boolean }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouse = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const { clientX, clientY } = e;
+    const { height, width, left, top } = ref.current.getBoundingClientRect();
+    const middleX = clientX - (left + width / 2);
+    const middleY = clientY - (top + height / 2);
+    // 0.25 is the magnetic strength
+    setPosition({ x: middleX * 0.25, y: middleY * 0.25 });
+  };
+
+  const reset = () => setPosition({ x: 0, y: 0 });
+
+  return (
+    <Link href={href} className="relative z-10">
+      <motion.div
+        ref={ref}
+        onMouseMove={handleMouse}
+        onMouseLeave={reset}
+        animate={{ x: position.x, y: position.y }}
+        transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors duration-300 ${
+          isActive ? "text-stone-900" : "text-stone-600 hover:text-stone-900"
+        }`}
+      >
+        {isActive && (
+          <motion.div
+            layoutId="activeNav"
+            className="absolute inset-0 bg-white rounded-xl shadow-sm border border-stone-200/60"
+            transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
+          />
+        )}
+        <Icon className={`w-4 h-4 relative z-10 transition-colors ${isActive ? "text-emerald-600" : ""}`} />
+        <span className="relative z-10">{label}</span>
+      </motion.div>
+    </Link>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🧲 MAGNETIC BUTTON COMPONENT (Actions)
+// ═══════════════════════════════════════════════════════════
+const MagneticButton = ({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) => {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouse = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const { clientX, clientY } = e;
+    const { height, width, left, top } = ref.current.getBoundingClientRect();
+    const middleX = clientX - (left + width / 2);
+    const middleY = clientY - (top + height / 2);
+    setPosition({ x: middleX * 0.25, y: middleY * 0.25 });
+  };
+
+  const reset = () => setPosition({ x: 0, y: 0 });
+
+  return (
+    <motion.button
+      ref={ref}
+      onMouseMove={handleMouse}
+      onMouseLeave={reset}
+      animate={{ x: position.x, y: position.y }}
+      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+      onClick={onClick}
+      className={className}
+    >
+      {children}
+    </motion.button>
+  );
+};
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -72,35 +150,35 @@ export default function Navbar() {
 
   return (
     <>
-      <nav 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out border-b ${
-          scrolled 
-            ? "bg-white/80 backdrop-blur-2xl shadow-lg shadow-stone-900/5 border-white/40 py-3" 
-            : "bg-white/95 backdrop-blur-xl border-stone-200/60 py-4"
-        }`}
-      >
+      <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out">
+        {/* Dynamic Background with Perfect Visibility */}
+        <div 
+          className={`absolute inset-0 transition-all duration-500 border-b ${
+            scrolled 
+              ? "bg-white/85 backdrop-blur-2xl shadow-lg shadow-stone-900/5 border-stone-200/60" 
+              : "bg-white/70 backdrop-blur-xl border-white/40"
+          }`} 
+        />
+        
         {/* Premium Top Gradient Line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 opacity-80" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 opacity-80 z-10" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
             
             {/* 🌟 Animated Globe Logo Section */}
             <Link href="/" className="flex items-center gap-3 group">
               <motion.div 
-                className="relative w-11 h-11 bg-gradient-to-br from-emerald-500 via-amber-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-amber-500/30 transition-all overflow-hidden"
+                className="relative w-10 h-10 bg-gradient-to-br from-emerald-500 via-amber-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-amber-500/30 transition-all overflow-hidden"
                 whileHover={{ scale: 1.05 }}
               >
-                {/* Continuously Rotating Globe Icon */}
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                  className="w-7 h-7 text-white drop-shadow-md relative z-10"
+                  className="w-6 h-6 text-white drop-shadow-md relative z-10"
                 >
                   <Globe className="w-full h-full" strokeWidth={2.5} />
                 </motion.div>
-                
-                {/* Live Colorful Pulse/Glow Effect */}
                 <motion.div 
                   animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.5, 0.2] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -109,38 +187,24 @@ export default function Navbar() {
               </motion.div>
               
               <div>
-                <h1 className="text-xl font-extrabold text-stone-900 tracking-tight leading-none">
+                <h1 className="text-lg font-extrabold text-stone-900 tracking-tight leading-none">
                   आलम<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-amber-600">नगर</span>
                 </h1>
-                <p className="text-[10px] text-stone-500 font-semibold tracking-wider uppercase mt-0.5">हमारा गाँव, हमारी पहचान</p>
+                <p className="text-[9px] text-stone-500 font-semibold tracking-wider uppercase mt-0.5">हमारा गाँव, हमारी पहचान</p>
               </div>
             </Link>
 
-            {/* 🖥️ Desktop Navigation (Animated Pill) */}
-            <div className="hidden lg:flex items-center gap-1 relative bg-stone-100/60 p-1.5 rounded-2xl border border-stone-200/50 backdrop-blur-sm">
-              {navLinks.map((link) => {
-                const Icon = link.icon;
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-colors duration-300 ${
-                      isActive ? "text-stone-900" : "text-stone-600 hover:text-stone-900"
-                    }`}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeNav"
-                        className="absolute inset-0 bg-white rounded-xl shadow-sm border border-stone-200/60"
-                        transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
-                      />
-                    )}
-                    <Icon className={`w-4 h-4 relative z-10 ${isActive ? "text-emerald-600" : ""}`} />
-                    <span className="relative z-10">{link.label}</span>
-                  </Link>
-                );
-              })}
+            {/* 🖥️ Desktop Navigation (Magnetic Pills) */}
+            <div className="hidden lg:flex items-center gap-1 relative bg-stone-100/50 p-1.5 rounded-2xl border border-stone-200/50 backdrop-blur-sm">
+              {navLinks.map((link) => (
+                <MagneticNavItem
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  icon={link.icon}
+                  isActive={pathname === link.href}
+                />
+              ))}
             </div>
 
             {/* 🖥️ Desktop Right Side: Live Counter + Profile */}
@@ -155,11 +219,11 @@ export default function Navbar() {
                   {loadingCount ? (
                     <Loader2 className="w-4 h-4 text-emerald-600 animate-spin" />
                   ) : (
-                    <span className="text-base font-extrabold text-emerald-800 leading-none">
+                    <span className="text-sm font-extrabold text-emerald-800 leading-none">
                       {usersCount.toLocaleString('hi-IN')}
                     </span>
                   )}
-                  <span className="text-[9px] text-emerald-700/80 font-bold uppercase tracking-wider">जुड़े नागरिक</span>
+                  <span className="text-[9px] text-emerald-700/80 font-bold uppercase tracking-wider">नागरिक</span>
                 </div>
               </div>
 
@@ -188,29 +252,29 @@ export default function Navbar() {
                       <p className="text-[10px] text-stone-500 font-medium">प्रोफ़ाइल</p>
                     </div>
                   </Link>
-                  <button
+                  <MagneticButton
                     onClick={handleLogout}
                     className="p-2 text-stone-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                    title="लॉगआउट"
                   >
                     <LogOut className="w-5 h-5" />
-                  </button>
+                  </MagneticButton>
                 </div>
               ) : (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link
-                    href="/auth"
-                    className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 flex items-center gap-2"
+                <Link href="/auth">
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }} 
+                    whileTap={{ scale: 0.95 }}
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 flex items-center gap-2"
                   >
                     <User className="w-4 h-4" />
                     लॉगिन
-                  </Link>
-                </motion.div>
+                  </motion.div>
+                </Link>
               )}
             </div>
 
             {/* 📱 Mobile Menu Button */}
-            <button
+            <MagneticButton
               onClick={() => setIsOpen(!isOpen)}
               className="lg:hidden p-2.5 text-stone-700 hover:bg-stone-100 rounded-xl transition-colors"
             >
@@ -225,7 +289,7 @@ export default function Navbar() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </button>
+            </MagneticButton>
           </div>
         </div>
       </nav>
@@ -238,9 +302,9 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="lg:hidden fixed inset-0 z-40 pt-24 bg-white/95 backdrop-blur-2xl"
+            className="lg:hidden fixed inset-0 z-40 pt-20 bg-white/95 backdrop-blur-2xl"
           >
-            <div className="px-6 py-6 space-y-3 max-h-[80vh] overflow-y-auto">
+            <div className="px-6 py-6 space-y-3 max-h-[85vh] overflow-y-auto">
               
               {/* Mobile Live Counter */}
               <motion.div 
@@ -256,7 +320,7 @@ export default function Navbar() {
                 {loadingCount ? (
                   <Loader2 className="w-4 h-4 text-emerald-600 animate-spin" />
                 ) : (
-                  <span className="text-lg font-extrabold text-emerald-800">
+                  <span className="text-base font-extrabold text-emerald-800">
                     {usersCount.toLocaleString('hi-IN')} जुड़े नागरिक
                   </span>
                 )}
