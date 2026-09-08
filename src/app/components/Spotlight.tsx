@@ -242,7 +242,7 @@ const EngagementScore = ({ metrics }: { metrics: EngagementMetrics }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // NOTIFICATIONS DRAWER
 // ═══════════════════════════════════════════════════════════
 const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boolean; onClose: () => void; currentUserId: string }) => {
@@ -304,7 +304,7 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId }: { isOpen: boole
                     <p className="text-sm text-white/90 leading-relaxed">
                       <span className="font-semibold text-amber-400">{notif.fromUserName || "User"}</span>{" "}
                       <span className="text-white/60">
-                        {notif.type === 'like' ? 'ने आपके पोस्ट को लाइक किया ❤️' : notif.type === 'comment' ? 'ने कमेंट किया 💬' : notif.type === 'follow' ? 'ने आपको फॉलो किया 👥' : 'ने कुछ किया'}
+                        {notif.type === 'like' ? 'ने आपके पोस्ट को लाइक किया ❤️' : notif.type === 'comment' ? 'ने कमेंट किया 💬' : notif.type === 'follow' ? 'ने आपको फॉलो किया ' : 'ने कुछ किया'}
                       </span>
                     </p>
                     {notif.postTitle && <p className="text-xs text-white/40 mt-1 truncate flex items-center gap-1"><span className="text-amber-500/50">📝</span> "{notif.postTitle}"</p>}
@@ -435,7 +435,7 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
 };
 
 // ═══════════════════════════════════════════════════════════
-// CREATE SPOTLIGHT MODAL (WITH EXACT CREATERA WORKING CAMERA LOGIC)
+// CREATE SPOTLIGHT MODAL (WITH VOICE INPUT & CAMERA)
 // ═══════════════════════════════════════════════════════════
 const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { isOpen: boolean; onClose: () => void; onPostCreated: () => void; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [title, setTitle] = useState("");
@@ -451,6 +451,11 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   const [showAudioLibrary, setShowAudioLibrary] = useState(false);
   const [showAudioUpload, setShowAudioUpload] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<any>(null);
+
+  // 🔥 NEW: Voice Input States
+  const [isListening, setIsListening] = useState(false);
+  const [listeningField, setListeningField] = useState<'title' | 'content' | 'hashtags' | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const titlePlaceholder = useTypingEffect(["आलमनगर की एक शानदार कहानी...", "अपना विचार साझा करें...", "आज क्या खास है?"]);
   const contentPlaceholder = useTypingEffect(["यहाँ अपने विचार लिखें...", "अपने गाँव के बारे में बताएं...", "एक शानदार पोस्ट डालें..."]);
@@ -469,6 +474,82 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturate: 100, hueRotate: 0, blur: 0 });
+
+  // 🔥 Initialize Speech Recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = 'hi-IN'; // Hindi language
+        
+        recognitionRef.current.onresult = (event: any) => {
+          let finalTranscript = '';
+          let interimTranscript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+          
+          // Update the appropriate field
+          if (listeningField === 'title') {
+            setTitle(prev => prev + ' ' + finalTranscript);
+          } else if (listeningField === 'content') {
+            setContent(prev => prev + ' ' + finalTranscript);
+          } else if (listeningField === 'hashtags') {
+            setHashtags(prev => prev + ' ' + finalTranscript);
+          }
+        };
+        
+        recognitionRef.current.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          if (event.error === 'not-allowed') {
+            showToast("माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग्स चेक करें।", "error");
+          }
+          stopListening();
+        };
+        
+        recognitionRef.current.onend = () => {
+          if (isListening) {
+            recognitionRef.current.start();
+          }
+        };
+      }
+    }
+    
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [listeningField, isListening, showToast]);
+
+  // 🔥 Voice Input Functions
+  const startListening = (field: 'title' | 'content' | 'hashtags') => {
+    if (!recognitionRef.current) {
+      showToast("आपका ब्राउज़र वॉइस इनपुट को सपोर्ट नहीं करता।", "error");
+      return;
+    }
+    
+    setListeningField(field);
+    setIsListening(true);
+    recognitionRef.current.start();
+  };
+  
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+    setListeningField(null);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -489,6 +570,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   useEffect(() => {
     if (!isOpen) {
       stopCameraCleanup();
+      stopListening();
     }
   }, [isOpen]);
 
@@ -736,12 +818,62 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
                 <p className="text-xs text-white/50">सार्वजनिक स्पॉटलाइट में पोस्ट कर रहे हैं</p>
               </div>
             </div>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={titlePlaceholder} className="w-full bg-transparent text-white placeholder-white/40 focus:outline-none text-lg font-semibold border-b border-white/10 pb-2" />
-            <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={contentPlaceholder} className="w-full bg-transparent text-white placeholder-white/40 resize-none focus:outline-none text-base min-h-[80px]" />
+            
+            {/*  Title with Voice Input */}
+            <div className="relative">
+              <input 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)} 
+                placeholder={titlePlaceholder} 
+                className="w-full bg-transparent text-white placeholder-white/40 focus:outline-none text-lg font-semibold border-b border-white/10 pb-2 pr-10" 
+              />
+              <button 
+                type="button"
+                onClick={() => isListening && listeningField === 'title' ? stopListening() : startListening('title')}
+                className={`absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all ${isListening && listeningField === 'title' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+                title="बोलकर लिखें"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* 🔥 Content with Voice Input */}
+            <div className="relative">
+              <textarea 
+                value={content} 
+                onChange={(e) => setContent(e.target.value)} 
+                placeholder={contentPlaceholder} 
+                className="w-full bg-transparent text-white placeholder-white/40 resize-none focus:outline-none text-base min-h-[80px] pr-10" 
+              />
+              <button 
+                type="button"
+                onClick={() => isListening && listeningField === 'content' ? stopListening() : startListening('content')}
+                className={`absolute right-0 top-3 p-2 rounded-full transition-all ${isListening && listeningField === 'content' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+                title="बोलकर लिखें"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* 🔥 Hashtags with Voice Input */}
             <div className="relative">
               <Hash className="absolute left-3 top-3 w-4 h-4 text-white/40" />
-              <input value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder={hashtagPlaceholder} className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50 transition-all" />
+              <input 
+                value={hashtags} 
+                onChange={(e) => setHashtags(e.target.value)} 
+                placeholder={hashtagPlaceholder} 
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-12 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50 transition-all" 
+              />
+              <button 
+                type="button"
+                onClick={() => isListening && listeningField === 'hashtags' ? stopListening() : startListening('hashtags')}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-all ${isListening && listeningField === 'hashtags' ? 'bg-red-500 text-white animate-pulse' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+                title="बोलकर लिखें"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
             </div>
+
             <motion.button type="button" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={generateAICaption} disabled={isGeneratingAI} className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-500/10 to-amber-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold uppercase tracking-wider hover:from-emerald-500/20 hover:to-amber-500/20 transition-all disabled:opacity-50">
               {isGeneratingAI ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Wand2 className="w-4 h-4" /> AI से कैप्शन और हैशटैग बनाएं</>}
             </motion.button>
@@ -849,7 +981,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   );
 };
 
-// ... (SpotlightCard component remains exactly the same as previous working version)
+// ... (SpotlightCard component remains exactly the same as previous working version - paste the full SpotlightCard component here)
 const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDelete, postId, showToast }: { post: SpotlightPost; currentUserId: string; currentUserObj?: any; requireAuth: (action: string, postId?: string) => boolean; onDelete: (id: string) => void; postId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [liked, setLiked] = useState(post.likedBy?.includes(currentUserId) || false);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
