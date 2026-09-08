@@ -21,25 +21,35 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 // ══════════════════════════════════════════════════════════
-// 🔔 NOTIFICATION CREATOR WITH DEBUG LOGGING
+//  FIXED NOTIFICATION CREATOR (No undefined fields)
 // ══════════════════════════════════════════════════════════
 const createNotification = async (toUserId: string, type: string, fromUserId: string, fromUserName: string, fromUserPhoto: string, postId?: string, postTitle?: string, commentText?: string, followBack?: boolean, metadata?: any, userHandle?: string) => {
-  // Don't send notification to yourself
   if (toUserId === fromUserId) {
-    console.log("️ Skipping self-notification");
+    console.log("⏭️ Skipping self-notification");
     return;
   }
-  
+
   console.log("🔔 Creating notification:", { toUserId, type, fromUserId, postId });
-  
+
   try {
-    const notifData = {
-      toUserId, type, fromUserId, fromUserName, fromUserPhoto,
-      postId, postTitle, commentText, followBack, metadata, userHandle,
+    // 🔥 FIX: Build object dynamically to avoid 'undefined' fields which Firestore rejects
+    const notifData: any = {
+      toUserId,
+      type,
+      fromUserId,
+      fromUserName,
+      fromUserPhoto,
       createdAt: serverTimestamp(),
       read: false
     };
-    
+
+    if (postId !== undefined) notifData.postId = postId;
+    if (postTitle !== undefined) notifData.postTitle = postTitle;
+    if (commentText !== undefined) notifData.commentText = commentText;
+    if (followBack !== undefined) notifData.followBack = followBack;
+    if (metadata !== undefined) notifData.metadata = metadata;
+    if (userHandle !== undefined) notifData.userHandle = userHandle;
+
     const docRef = await addDoc(collection(db, "notifications"), notifData);
     console.log("✅ Notification created with ID:", docRef.id);
   } catch (error: any) {
@@ -47,7 +57,7 @@ const createNotification = async (toUserId: string, type: string, fromUserId: st
   }
 };
 
-// ══════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════
 // INLINE PLACEHOLDERS & UTILS
 // ══════════════════════════════════════════════════════════
 const AudioLibrary = ({ isOpen, onClose, onApplyAudio }: any) => {
@@ -277,7 +287,6 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
     setError(null);
     setDebugInfo(`User UID: ${currentUserId}`);
     
-    // Strategy 1: Try with where clause (needs composite index)
     const q = query(
       collection(db, "notifications"), 
       where("toUserId", "==", currentUserId),
@@ -292,10 +301,9 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
       setNotifications(notifs);
       setLoading(false);
     }, (err: any) => {
-      console.error("🔥 Query with where failed:", err.code, err.message);
+      console.error(" Query with where failed:", err.code, err.message);
       setDebugInfo(prev => `${prev}\n❌ Where clause failed: ${err.code}`);
       
-      // Strategy 2: Fallback - fetch all and filter client-side
       if (err.code === 'failed-precondition' || err.code === 'permission-denied') {
         console.log("⚠️ Falling back to client-side filtering");
         setDebugInfo(prev => `${prev}\n⚠️ Using fallback: client-side filtering`);
@@ -305,7 +313,7 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
           const allNotifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           console.log("📬 All notifications:", allNotifs.length);
           const userNotifs = allNotifs.filter((n: any) => n.toUserId === currentUserId);
-          console.log("📬 Filtered for user:", userNotifs.length);
+          console.log(" Filtered for user:", userNotifs.length);
           setDebugInfo(prev => `${prev}\n✅ Fallback fetched ${userNotifs.length} notifications`);
           setNotifications(userNotifs);
           setLoading(false);
@@ -329,17 +337,6 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
     if (!currentUserId) return;
     console.log("🧪 Sending test notification...");
     try {
-      await createNotification(
-        currentUserId,
-        "comment",
-        currentUserId, // Will be skipped (self-notification)
-        "Test User",
-        "",
-        "test-post-id",
-        "Test Post",
-        "This is a test comment"
-      );
-      // Since self-notification is skipped, create a dummy one directly
       await addDoc(collection(db, "notifications"), {
         toUserId: currentUserId,
         type: "comment",
@@ -365,8 +362,8 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
     switch(type) {
       case 'like': return '❤️';
       case 'comment': return '💬';
-      case 'follow': return '👥';
-      case 'share': return '🔗';
+      case 'follow': return '';
+      case 'share': return '';
       default: return '🔔';
     }
   };
@@ -400,7 +397,6 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
             </button>
           </div>
           
-          {/*  Debug Info Section */}
           <div className="bg-blue-900/20 border-b border-blue-500/20 p-3">
             <div className="flex items-center gap-2 mb-2">
               <Bug className="w-4 h-4 text-blue-400" />
@@ -442,7 +438,6 @@ const NotificationsDrawer = ({ isOpen, onClose, currentUserId, showToast }: { is
                 </div>
                 <p className="text-white/80 text-sm font-semibold mb-1">अभी कोई सूचना नहीं है</p>
                 <p className="text-white/40 text-xs">जब कोई आपकी पोस्ट को लाइक या कमेंट करेगा, यहाँ दिखेगा</p>
-                <p className="text-yellow-400/60 text-[10px] mt-4">💡 ऊपर "Send Test Notification" बटन दबाकर टेस्ट करें</p>
               </div>
             ) : (
               notifications.map((notif: any) => (
@@ -585,9 +580,6 @@ const ReportModal = ({ isOpen, onClose, postId, postOwnerId, showToast }: { isOp
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// CREATE SPOTLIGHT MODAL (WITH VOICE INPUT & CAMERA)
-// ═══════════════════════════════════════════════════════════
 const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { isOpen: boolean; onClose: () => void; onPostCreated: () => void; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -1074,7 +1066,7 @@ const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDel
             const viewSnap = await getDoc(viewDocRef);
             if (!viewSnap.exists()) await setDoc(viewDocRef, { userId: currentUserId, viewedAt: serverTimestamp() });
           }
-        } catch (error: any) { console.error("❌ VIEW UPDATE ERROR:", error.code, error.message); }
+        } catch (error: any) { console.error(" VIEW UPDATE ERROR:", error.code, error.message); }
         observer.disconnect();
       }
     }, { threshold: 0.3 });
