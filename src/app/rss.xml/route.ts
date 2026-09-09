@@ -7,7 +7,7 @@ export const revalidate = 3600; // 1 hour cache
 export async function GET() {
   try {
     const SITE_URL = 'https://alamnagar.in';
-    const FOUNDER_NAME = 'Alamnagar Admin';
+    const FOUNDER_NAME = 'Mukesh kumar Malakar';
 
     // ✅ Fetch latest spotlights instead of videos
     const q = query(
