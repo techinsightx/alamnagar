@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Devanagari } from "next/font/google";
 import Script from "next/script";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 // import { SpeedInsights } from "@vercel/speed-insights/next"; // Uncomment if deploying on Vercel
 import "./globals.css";
 
