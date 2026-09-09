@@ -301,7 +301,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" />
+        <meta name="msvalidate.01" content="04BA0BC01BC4F0F4605763AC11C4F674" />
 
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
