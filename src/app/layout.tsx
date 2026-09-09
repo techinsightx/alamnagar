@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   },
   // ⚠️ TODO: Add your Google Search Console verification code here
   verification: {
-    google: 'google-site-verification=guXiWsyDznzmNeQ9wBA6NfiPp0AuDW7QYT7TJDlDFKE',
+    google: 'guXiWsyDznzmNeQ9wBA6NfiPp0AuDW7QYT7TJDlDFKE',
   },
   openGraph: {
     type: "website",
