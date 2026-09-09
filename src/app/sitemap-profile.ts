@@ -6,7 +6,6 @@ const BASE_URL = 'https://alamnagar.in';
 const MAX_PROFILES = 10000; // Optimized limit for community platforms
 
 export const revalidate = 3600; // 1 hour cache
-export const dynamic = 'force-static';
 
 // ============================================
 // HELPERS

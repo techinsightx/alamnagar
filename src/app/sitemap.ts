@@ -2,12 +2,11 @@ import { MetadataRoute } from 'next';
 import { getDocs, collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-// ============================================
-// CONFIG
-// ============================================
 const BASE_URL = 'https://alamnagar.in';
 const MAX_URLS_PER_SITEMAP = 45000;
-const CACHE_REVALIDATE_SECONDS = 60 * 60; // 1 hour
+
+// ✅ Sirf 'revalidate' valid hai sitemap mein. 'dynamic' line hata di gayi hai.
+export const revalidate = 3600; // 1 hour cache
 
 // ============================================
 // STATIC PAGES (Alamnagar Specific)
@@ -93,14 +92,12 @@ const calculateFrequency = (createdAt: Date): MetadataRoute.Sitemap[0]['changeFr
 // ============================================
 // FETCHERS (Dynamic Content)
 // ============================================
-
-// ✨ Fetch Spotlight Posts (Main Dynamic Content)
 async function fetchSpotlights(): Promise<MetadataRoute.Sitemap> {
   try {
     const spotlightsQuery = query(
       collection(db, 'spotlights'),
       orderBy('createdAt', 'desc'),
-      limit(5000) // Limit to prevent memory issues
+      limit(5000)
     );
 
     const snapshot = await getDocs(spotlightsQuery);
@@ -112,7 +109,7 @@ async function fetchSpotlights(): Promise<MetadataRoute.Sitemap> {
       const likes = data.likes ?? 0;
 
       return {
-        url: `${BASE_URL}/spotlights/${doc.id}`, // Matches your Next.js route
+        url: `${BASE_URL}/spotlights/${doc.id}`,
         lastModified: createdAt,
         changeFrequency: calculateFrequency(createdAt),
         priority: calculatePriority(views, likes),
@@ -125,10 +122,8 @@ async function fetchSpotlights(): Promise<MetadataRoute.Sitemap> {
   }
 }
 
-// ✨ Fetch Public User Profiles (If you have a /profile/[id] page)
 async function fetchProfiles(): Promise<MetadataRoute.Sitemap> {
   try {
-    // Fetch top users by followers or just recent active users
     const usersQuery = query(
       collection(db, 'users'),
       orderBy('createdAt', 'desc'),
@@ -139,7 +134,7 @@ async function fetchProfiles(): Promise<MetadataRoute.Sitemap> {
 
     return snapshot.docs.map((doc) => {
       const data = doc.data();
-      const username = data.username || doc.id;
+      const username = data.username || data.handle || doc.id;
       
       return {
         url: `${BASE_URL}/profile/${username}`,
@@ -159,20 +154,17 @@ async function fetchProfiles(): Promise<MetadataRoute.Sitemap> {
 // MAIN SITEMAP EXPORT
 // ============================================
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Parallel fetching for maximum performance
   const [spotlights, profiles] = await Promise.all([
     fetchSpotlights(),
     fetchProfiles(),
   ]);
 
-  // Merge: Static pages first (highest priority), then dynamic content
   const sitemap: MetadataRoute.Sitemap = [
     ...STATIC_PAGES,
     ...spotlights,
     ...profiles,
   ];
 
-  // Safety check for Vercel/Next.js limits
   if (sitemap.length > MAX_URLS_PER_SITEMAP) {
     console.warn(`[Sitemap] Truncated from ${sitemap.length} to ${MAX_URLS_PER_SITEMAP}`);
     return sitemap.slice(0, MAX_URLS_PER_SITEMAP);
@@ -181,9 +173,3 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   console.log(`[Sitemap] Successfully generated ${sitemap.length} URLs for alamnagar.in`);
   return sitemap;
 }
-
-// ============================================
-// ROUTE SEGMENT CONFIG
-// ============================================
-export const revalidate = CACHE_REVALIDATE_SECONDS;
-export const dynamic = 'force-static';
