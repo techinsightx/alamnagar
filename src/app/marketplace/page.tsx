@@ -8,7 +8,6 @@ import {
   Sparkles, TrendingUp, SlidersHorizontal, Users, Camera
 } from "lucide-react";
 import { db } from "@/lib/firebase";
-// ✅ FIXED: 'limit' added to imports
 import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -31,6 +30,46 @@ interface Listing {
   createdAt: any;
   views: number;
 }
+
+// ═══════════════════════════════════════════════════════════
+// 🖼️ SMOOTH IMAGE SLIDER COMPONENT (World-Class Ken Burns Effect)
+// ═══════════════════════════════════════════════════════════
+const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 5000); // Smooth transition every 5 seconds
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  return (
+    <div className={`relative w-full h-full overflow-hidden bg-stone-200 ${className}`}>
+      {images.map((img, index) => (
+        <motion.div
+          key={img}
+          className="absolute inset-0 w-full h-full"
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ 
+            opacity: index === currentIndex ? 1 : 0,
+            scale: index === currentIndex ? 1 : 1.1
+          }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        >
+          <img 
+            src={img} 
+            alt={`Alamnagar Marketplace Slide ${index + 1}`} 
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+      ))}
+      {/* Subtle vignette overlay for premium feel */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+    </div>
+  );
+};
 
 // 🦴 Premium Skeleton Loader
 const ListingSkeleton = () => (
@@ -134,6 +173,15 @@ export default function MarketplacePage() {
     totalLikes: 0,
   });
 
+  // 🖼️ 5-Image Array for Marketplace Hero Section
+  const marketplaceHeroImages = [
+    '/images/mkt-hero-1.jpg',
+    '/images/mkt-hero-2.jpg',
+    '/images/mkt-hero-3.jpg',
+    '/images/mkt-hero-4.jpg',
+    '/images/mkt-hero-5.jpg',
+  ];
+
   useEffect(() => {
     // Fetch Listings
     const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
@@ -202,20 +250,12 @@ export default function MarketplacePage() {
 
   return (
     <main className="min-h-screen bg-stone-50 pb-24">
-      {/* 🌟 Cinematic Hero Section with Tower Chart */}
+      {/* 🌟 Cinematic Hero Section with Tower Chart & Image Slider */}
       <section className="relative bg-stone-900 text-white overflow-hidden">
-        {/* Background Image (Local Path) */}
         <div className="absolute inset-0 z-0">
-          <motion.div 
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ 
-              backgroundImage: "url('/images/marketplace-hero.jpg')", // ✅ Local Image Placeholder
-              filter: "brightness(0.4) contrast(1.1)"
-            }}
-          />
+          {/* ✅ 5-Image Smooth Slider */}
+          <SmoothImageSlider images={marketplaceHeroImages} className="w-full h-full" />
+          
           {/* ✅ REAL-TIME Tower Chart Overlay */}
           <MarketplaceHeroTowerChart stats={liveStats} />
           <div className="absolute inset-0 bg-gradient-to-b from-stone-950/60 via-stone-900/40 to-stone-900/80" />
@@ -267,7 +307,7 @@ export default function MarketplacePage() {
         </div>
       </section>
 
-      {/* ️ Sticky Glassmorphic Filters */}
+      {/* 🎛️ Sticky Glassmorphic Filters */}
       <section className="sticky top-20 z-30 bg-stone-50/80 backdrop-blur-xl border-b border-stone-200/60">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
