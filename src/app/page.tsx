@@ -495,7 +495,6 @@ export default function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  // ✅ FIXED: Properly scoped variables for cleanup
   useEffect(() => {
     const unsubUsers = onSnapshot(query(collection(db, "users")), (snapshot) => {
       setLiveStats(prev => ({ ...prev, totalUsers: snapshot.size }));
@@ -591,10 +590,10 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION - 16:9 WIDE RATIO ===== */}
+        {/* ===== 1. CINEMATIC HERO SECTION - FIXED: Profile Photo Fully Visible ===== */}
         <section className="relative w-full bg-stone-900 text-white overflow-hidden">
-          {/* ✅ 16:9 Aspect Ratio Container - Wide on both Desktop & Mobile */}
-          <div className="relative w-full aspect-video md:aspect-[21/9] lg:aspect-[21/9]">
+          {/* ✅ FIXED: Added min-height and proper padding for content */}
+          <div className="relative w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
             <div className="absolute inset-0 z-0">
               <SmoothImageSlider images={heroImages} className="w-full h-full" />
             </div>
@@ -611,18 +610,20 @@ export default function HomePage() {
               </motion.div>
             )}
             
-            <div className="relative z-[10] h-full flex items-center justify-center px-4 md:px-8 lg:px-12">
-              <div className="text-center w-full max-w-6xl mx-auto py-8 md:py-12">
+            {/* ✅ FIXED: Content container with proper padding */}
+            <div className="relative z-[10] h-full flex items-center justify-center px-4 md:px-8 lg:px-12 py-12 md:py-16 lg:py-20">
+              <div className="text-center w-full max-w-6xl mx-auto">
                 {currentUser ? (
                   <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, ease: "easeOut" }} className="relative w-full max-w-2xl mx-auto mb-6 md:mb-8 p-4 md:p-6 flex flex-col items-center text-center gap-4">
                     <div className="relative shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-2xl opacity-40 animate-pulse" />
-                      <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-white/20 flex items-center justify-center shadow-2xl">
-                        {currentUser.photoURL ? <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" /> : <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-amber-400">{currentUser.displayName?.[0] || "U"}</span>}
+                      {/* ✅ FIXED: Profile photo with proper size and no clipping */}
+                      <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white/30 flex items-center justify-center shadow-2xl">
+                        {currentUser.photoURL ? <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" /> : <span className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-amber-400">{currentUser.displayName?.[0] || "U"}</span>}
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-xl md:text-3xl font-black text-white mb-2 tracking-tight drop-shadow-lg">
+                      <h3 className="text-2xl md:text-3xl font-black text-white mb-2 tracking-tight drop-shadow-lg">
                         प्रणाम, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span> 
                       </h3>
                       <p className="text-sm md:text-base text-stone-200 leading-relaxed font-medium max-w-xl mx-auto">आलमनगर की डिजिटल चौपाल में आपका स्वागत है।</p>
