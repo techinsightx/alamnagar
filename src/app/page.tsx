@@ -18,16 +18,14 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-//  Recharts Imports
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar 
 } from "recharts";
 
-// ✅ NAVBAR IMPORT
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-// 🖼️ SMOOTH IMAGE SLIDER COMPONENT (5 Images - Cinematic)
+// 🖼️ SMOOTH IMAGE SLIDER (5 Images - Cinematic, Light Overlay)
 // ═══════════════════════════════════════════════════════════
 const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -36,23 +34,23 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
     if (images.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 4000); // ✅ Har 4 seconds par change
+    }, 4000);
     return () => clearInterval(timer);
   }, [images.length]);
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-stone-200 ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-stone-900 ${className}`}>
       {images.map((img, index) => (
         <motion.div
           key={img}
           className="absolute inset-0 w-full h-full"
-          initial={{ opacity: 0, scale: 1.2 }}
+          initial={{ opacity: 0, scale: 1.15 }}
           animate={{ 
             opacity: index === currentIndex ? 1 : 0,
             scale: index === currentIndex ? 1 : 1.15
           }}
           transition={{ 
-            duration: 2, 
+            duration: 2.5, 
             ease: "easeInOut" 
           }}
         >
@@ -61,11 +59,12 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
             alt={`Alamnagar Hero ${index + 1}`} 
             className="w-full h-full object-cover"
           />
-          {/* Cinematic Overlay Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-stone-950/60 via-transparent to-stone-950/30" />
         </motion.div>
       ))}
-      {/* Progress Indicator Dots */}
+      {/* ✅ Light overlay inside slider only */}
+      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/40 via-transparent to-stone-950/20 pointer-events-none" />
+      
+      {/* Progress Dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-2">
         {images.map((_, index) => (
           <motion.button
@@ -81,14 +80,8 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// 🔥 ADMIN UIDs
-// ══════════════════════════════════════════════════════════
 const ADMIN_UIDS = ["5fPCK8mGRTaAvIBTzUn7MEMQ2id2"];
 
-// ═══════════════════════════════════════════════════════════
-// ANIMATION VARIANTS
-// ═══════════════════════════════════════════════════════════
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } },
@@ -99,9 +92,6 @@ const staggerContainer = {
   visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
 };
 
-// ═══════════════════════════════════════════════════════════
-// 🌟 ANIMATED NUMBER COMPONENT
-// ═══════════════════════════════════════════════════════════
 const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string }) => {
   const [count, setCount] = useState(0);
   
@@ -132,13 +122,11 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
   return <span>{count.toLocaleString('hi-IN')}{suffix}</span>;
 };
 
-// ══════════════════════════════════════════════════════════
-// 🌈 HERO BACKGROUND AREA CHART (Strong 65% opacity)
-// ═══════════════════════════════════════════════════════════
+// ✅ REDUCED OPACITY: 65% → 20% (taaki slider dikhe)
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-65">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
           <defs>
@@ -147,19 +135,17 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
             <linearGradient id="glowComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05}/></linearGradient>
             <linearGradient id="glowShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/></linearGradient>
           </defs>
-          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={16} fillOpacity={1} fill="url(#glowViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={12} fillOpacity={1} fill="url(#glowLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={8} fillOpacity={1} fill="url(#glowComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={5} fillOpacity={1} fill="url(#glowShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={16} fillOpacity={1} fill="url(#glowViews)" isAnimationActive={true} animationDuration={6000} />
+          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={12} fillOpacity={1} fill="url(#glowLikes)" isAnimationActive={true} animationDuration={7500} />
+          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={8} fillOpacity={1} fill="url(#glowComments)" isAnimationActive={true} animationDuration={9000} />
+          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={5} fillOpacity={1} fill="url(#glowShares)" isAnimationActive={true} animationDuration={10500} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// 🏗️ HERO TOWER BAR CHART (Strong 40% opacity, overlaid)
-// ═══════════════════════════════════════════════════════════
+// ✅ REDUCED OPACITY: 40% → 20% (taaki slider dikhe)
 const HeroTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
     { name: 'सदस्य', value: stats.totalUsers || 10 },
@@ -169,7 +155,7 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
   ], [stats]);
 
   return (
-    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-40">
+    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-20">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
@@ -206,9 +192,6 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART (Strong 50% opacity)
-// ═══════════════════════════════════════════════════════════
 const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
@@ -221,19 +204,16 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
             <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05}/></linearGradient>
             <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/></linearGradient>
           </defs>
-          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={10} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={7} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={5} fillOpacity={1} fill="url(#nlComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#nlShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={10} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} />
+          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={7} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} />
+          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={5} fillOpacity={1} fill="url(#nlComments)" isAnimationActive={true} animationDuration={9000} />
+          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#nlShares)" isAnimationActive={true} animationDuration={10500} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
   );
 };
 
-// ══════════════════════════════════════════════════════════
-// 🏢 MARKETPLACE REAL-TIME TOWER CHART (Strong 55% opacity)
-// ═══════════════════════════════════════════════════════════
 const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
     { name: 'सदस्य', value: stats.totalUsers || 10, fill: 'url(#towerEmerald)' },
@@ -259,9 +239,6 @@ const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-//  CUSTOM CHART TOOLTIP
-// ═══════════════════════════════════════════════════════════
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -286,9 +263,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// ═══════════════════════════════════════════════════════════
-// 📈 COMMUNITY PULSE CHART COMPONENT
-// ═══════════════════════════════════════════════════════════
 const CommunityPulseChart = ({ data }: { data: any[] }) => {
   return (
     <motion.div 
@@ -337,9 +311,6 @@ const CommunityPulseChart = ({ data }: { data: any[] }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// LIVING MADHUBANI PATTERN
-// ═══════════════════════════════════════════════════════════
 const MadhubaniPattern = () => (
   <motion.div 
     animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
@@ -352,9 +323,6 @@ const MadhubaniPattern = () => (
   />
 );
 
-// ═══════════════════════════════════════════════════════════
-// 🚀 LIVE ACTIVITY TICKER COMPONENT
-// ═══════════════════════════════════════════════════════════
 interface TickerItem {
   id: string;
   type: 'post' | 'join' | 'milestone';
@@ -452,9 +420,6 @@ const LiveActivityTicker = () => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-//  TESTIMONIAL INTERFACE
-// ═══════════════════════════════════════════════════════════
 interface Testimonial {
   id: string;
   userId: string;
@@ -466,9 +431,6 @@ interface Testimonial {
   createdAt: any;
 }
 
-// ══════════════════════════════════════════════════════════
-// 🚀 CLEAN OG METADATA BANNER
-// ═══════════════════════════════════════════════════════════
 const CreateraOGBanner = () => {
   const [ogData, setOgData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -529,9 +491,6 @@ const CreateraOGBanner = () => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// 🌟 EXACT NAVBAR GLOBE LOGO ADAPTED FOR FOOTER
-// ═══════════════════════════════════════════════════════════
 const FooterBrandLogo = () => {
   return (
     <Link href="/" className="flex items-center gap-3 group w-max">
@@ -579,13 +538,12 @@ export default function HomePage() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [newReviewText, setNewReviewText] = useState("");
 
-  // ✅ 5 HERO IMAGES - Including Working Culture & History
   const heroImages = [
-    '/images/hero-1.jpg', // Alamnagar Sunrise / Kosi River
-    '/images/hero-2.jpg', // Village Choupal / Banyan Tree
-    '/images/hero-3.jpg', // Festival / Kali Mela
-    '/images/hero-4.jpg', // Working Culture / Farming
-    '/images/hero-5.jpg'  // History / Heritage Temple
+    '/images/hero-1.jpg',
+    '/images/hero-2.jpg',
+    '/images/hero-3.jpg',
+    '/images/hero-4.jpg',
+    '/images/hero-5.jpg'
   ];
 
   useEffect(() => {
@@ -662,7 +620,7 @@ export default function HomePage() {
     } catch (error: any) {
       console.error("Newsletter error:", error);
       setNewsletterStatus("error");
-      setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
+      setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई। कृपया पुन प्रयास करें।");
     }
   };
 
@@ -713,19 +671,19 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION (5 Images Slider) ===== */}
+        {/* ===== 1. CINEMATIC HERO SECTION (FIXED: Slider Visible) ===== */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-900 text-white px-4 md:px-8 lg:px-12">
-          {/* ✅ 5 IMAGES SLIDER WITH CINEMATIC TRANSITIONS */}
+          {/* ✅ Slider as BASE LAYER (z-0) */}
           <div className="absolute inset-0 z-0">
             <SmoothImageSlider images={heroImages} className="w-full h-full" />
           </div>
           
-          {/* Charts Overlays */}
+          {/* ✅ Charts with REDUCED opacity (taaki slider dikhe) */}
           <HeroBackgroundChart data={chartData} />
           <HeroTowerChart stats={liveStats} />
           
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/50 via-stone-900/40 to-stone-950/60" />
+          {/* ✅ Lighter gradient overlay (taaki slider dikhe) */}
+          <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/30 via-stone-900/20 to-stone-950/40 pointer-events-none" />
           
           {isAdmin && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-24 right-6 z-20">
@@ -780,24 +738,24 @@ export default function HomePage() {
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl pt-2">आलमनगर</motion.h1>
             <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md leading-relaxed py-1">"जड़ों से जुड़ा, मिथिला की धरती का गौरव"</motion.p>
-            <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।</motion.p>
+            <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/90 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।</motion.p>
             
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12">
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Users className="w-4 h-4 text-emerald-400" /><span className="text-xs text-white/70">सदस्य</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span></div>
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Star className="w-4 h-4 text-amber-400" /><span className="text-xs text-white/70">पोस्ट</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span></div>
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Eye className="w-4 h-4 text-blue-400" /><span className="text-xs text-white/70">व्यूज़</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span></div>
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Heart className="w-4 h-4 text-red-400" /><span className="text-xs text-white/70">लाइक</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span></div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Users className="w-4 h-4 text-emerald-400" /><span className="text-xs text-white/90">सदस्य</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span></div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Star className="w-4 h-4 text-amber-400" /><span className="text-xs text-white/90">पोस्ट</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span></div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Eye className="w-4 h-4 text-blue-400" /><span className="text-xs text-white/90">व्यूज़</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span></div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Heart className="w-4 h-4 text-red-400" /><span className="text-xs text-white/90">लाइक</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span></div>
             </motion.div>
             
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }} className="flex flex-col sm:flex-row gap-5 justify-center mb-16">
               <Link href="/about" className="group bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] flex items-center justify-center gap-3 text-lg"><BookOpen className="w-5 h-5" /> हमारी विरासत देखें <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></Link>
-              <Link href="/community" className="group bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><Users className="w-5 h-5" /> चौपाल में शामिल हों</Link>
-              <Link href="/marketplace" className="group bg-emerald-600/80 hover:bg-emerald-500/80 backdrop-blur-md border border-emerald-400/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><ShoppingBag className="w-5 h-5" /> गाँव का हाट</Link>
+              <Link href="/community" className="group bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><Users className="w-5 h-5" /> चौपाल में शामिल हों</Link>
+              <Link href="/marketplace" className="group bg-emerald-600/90 hover:bg-emerald-500/90 backdrop-blur-md border border-emerald-400/40 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><ShoppingBag className="w-5 h-5" /> गाँव का हाट</Link>
             </motion.div>
             
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-              <span className="text-xs text-white/50 uppercase tracking-widest">स्क्रॉल करें</span>
-              <ChevronDown className="w-8 h-8 text-white/50" />
+              <span className="text-xs text-white/70 uppercase tracking-widest">स्क्रॉल करें</span>
+              <ChevronDown className="w-8 h-8 text-white/70" />
             </motion.div>
           </div>
         </section>
@@ -1082,7 +1040,6 @@ export default function HomePage() {
                 </ul>
               </div>
 
-              {/* ✅ Creator Tools Integration */}
               <div className="md:col-span-4">
                 <h4 className="text-white font-black mb-6 text-lg flex items-center gap-2">
                   <Bot className="w-5 h-5 text-purple-500" /> युवा क्रिएटर टूल्स
@@ -1177,7 +1134,7 @@ export default function HomePage() {
           </div>
         </footer>
 
-        {/*  ADD/UPDATE REVIEW MODAL */}
+        {/* 📝 ADD/UPDATE REVIEW MODAL */}
         <AnimatePresence>
           {showReviewModal && currentUser && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowReviewModal(false)}>
