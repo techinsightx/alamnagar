@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShoppingBag, Plus, Search, Filter, MapPin, Star, 
   Loader2, Package, Clock, Heart, Eye, ArrowUpRight,
-  Sparkles, TrendingUp, SlidersHorizontal
+  Sparkles, TrendingUp, SlidersHorizontal, Users, Camera
 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell } from "recharts";
 
 interface Listing {
   id: string;
@@ -49,6 +50,72 @@ const ListingSkeleton = () => (
   </div>
 );
 
+// 📊 HERO TOWER CHART COMPONENT (Same as About/Home Page)
+const MarketplaceHeroTowerChart = ({ stats }: { stats: any }) => {
+  const data = [
+    { name: 'सदस्य', value: Math.max(stats.totalUsers || 0, 10) },
+    { name: 'पोस्ट', value: Math.max(stats.totalPosts || 0, 10) },
+    { name: 'व्यूज़', value: Math.max(stats.totalViews || 0, 10) },
+    { name: 'लाइक', value: Math.max(stats.totalLikes || 0, 10) },
+  ];
+
+  return (
+    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-35">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+          <defs>
+            <linearGradient id="mktTowerEmerald" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/>
+            </linearGradient>
+            <linearGradient id="mktTowerAmber" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2}/>
+            </linearGradient>
+            <linearGradient id="mktTowerBlue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/>
+            </linearGradient>
+            <linearGradient id="mktTowerRose" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.2}/>
+            </linearGradient>
+          </defs>
+          <YAxis hide />
+          <XAxis 
+            dataKey="name" 
+            stroke="#ffffff" 
+            fontSize={14} 
+            tickLine={false} 
+            axisLine={false} 
+            opacity={0.9}
+            fontWeight={700}
+          />
+          <Bar 
+            dataKey="value" 
+            radius={[10, 10, 0, 0]} 
+            animationDuration={2500} 
+            animationEasing="ease-out"
+            minPointSize={40}
+          >
+            {data.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={[
+                  'url(#mktTowerEmerald)', 
+                  'url(#mktTowerAmber)', 
+                  'url(#mktTowerBlue)', 
+                  'url(#mktTowerRose)'
+                ][index]} 
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 export default function MarketplacePage() {
   const { user } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
@@ -57,15 +124,50 @@ export default function MarketplacePage() {
   const [categoryFilter, setCategoryFilter] = useState<"all" | "product" | "service">("all");
   const [sortBy, setSortBy] = useState<"newest" | "price-low" | "price-high" | "popular">("newest");
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
+  
+  // ✅ REAL-TIME STATS FOR TOWER CHART
+  const [liveStats, setLiveStats] = useState({
+    totalUsers: 0,
+    totalPosts: 0,
+    totalViews: 0,
+    totalLikes: 0,
+  });
 
   useEffect(() => {
+    // Fetch Listings
     const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Listing));
       setListings(items);
       setLoading(false);
     });
-    return () => unsubscribe();
+
+    // Fetch Global Stats for Tower Chart
+    const usersQuery = query(collection(db, "users"));
+    const unsubUsers = onSnapshot(usersQuery, (snap) => {
+      setLiveStats(prev => ({ ...prev, totalUsers: snap.size }));
+    });
+
+    const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(500));
+    const unsubPosts = onSnapshot(postsQuery, (snap) => {
+      let views = 0, likes = 0;
+      snap.docs.forEach(doc => {
+        views += doc.data().views || 0;
+        likes += doc.data().likes || 0;
+      });
+      setLiveStats(prev => ({
+        ...prev,
+        totalPosts: snap.size,
+        totalViews: views,
+        totalLikes: likes
+      }));
+    });
+
+    return () => {
+      unsubscribe();
+      unsubUsers();
+      unsubPosts();
+    };
   }, []);
 
   // Dynamic Filtering & Sorting
@@ -99,16 +201,26 @@ export default function MarketplacePage() {
 
   return (
     <main className="min-h-screen bg-stone-50 pb-24">
-      {/* 🌟 Cinematic Hero Section */}
+      {/* 🌟 Cinematic Hero Section with Tower Chart */}
       <section className="relative bg-stone-900 text-white overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px]" />
-          <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+        {/* Background Image (Local Path) */}
+        <div className="absolute inset-0 z-0">
+          <motion.div 
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ 
+              backgroundImage: "url('/images/marketplace-hero.jpg')", // ✅ Local Image Placeholder
+              filter: "brightness(0.4) contrast(1.1)"
+            }}
+          />
+          {/* ✅ REAL-TIME Tower Chart Overlay */}
+          <MarketplaceHeroTowerChart stats={liveStats} />
+          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/60 via-stone-900/40 to-stone-900/80" />
         </div>
         
-        <div className="relative max-w-6xl mx-auto px-6 py-16 md:py-24">
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 md:py-28">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -119,13 +231,13 @@ export default function MarketplacePage() {
               <span className="text-amber-300 text-sm font-bold uppercase tracking-wider">आलमनगर का अपना हाट</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-[1.1]">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-[1.1] drop-shadow-2xl">
               अपना गाँव, <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-emerald-300 to-amber-300">
                 अपना बाज़ार
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-stone-300 max-w-2xl mb-10 leading-relaxed">
+            <p className="text-lg md:text-xl text-stone-200 max-w-2xl mb-10 leading-relaxed drop-shadow-md">
               अपने गाँव के किसानों, कारीगरों और स्थानीय व्यवसायों से सीधे जुड़ें। 
               हर खरीदारी स्थानीय अर्थव्यवस्था को मज़बूत बनाती है।
             </p>
