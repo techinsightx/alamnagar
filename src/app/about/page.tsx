@@ -43,14 +43,15 @@ const AnimatedNumber = ({ value }: { value: number }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📊 HERO TOWER CHART COMPONENT (REAL-TIME FIREBASE DATA)
+// 📊 HERO TOWER CHART COMPONENT (REAL-TIME - Same as HomePage)
 // ═══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
+  // ✅ SAME SEQUENCE AS HOMEPAGE: सदस्य, पोस्ट, व्यूज़, लाइक
   const data = [
-    { name: 'सदस्य', value: stats.totalUsers || 100, color: '#10b981' },
-    { name: 'पोस्ट', value: stats.totalPosts || 50, color: '#f59e0b' },
-    { name: 'व्यूज़', value: Math.round((stats.totalViews || 1000) / 100), color: '#3b82f6' },
-    { name: 'लाइक', value: Math.round((stats.totalLikes || 500) / 50), color: '#f43f5e' },
+    { name: 'सदस्य', value: stats.totalUsers || 100 },
+    { name: 'पोस्ट', value: stats.totalPosts || 50 },
+    { name: 'व्यूज़', value: Math.round((stats.totalViews || 1000) / 100) },
+    { name: 'लाइक', value: Math.round((stats.totalLikes || 500) / 50) },
   ];
 
   return (
@@ -58,19 +59,20 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="heroUsers" x1="0" y1="0" x2="0" y2="1">
+            {/* ✅ SAME COLORS AS HOMEPAGE: emerald, amber, blue, rose */}
+            <linearGradient id="heroTowerEmerald" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
               <stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/>
             </linearGradient>
-            <linearGradient id="heroPosts" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="heroTowerAmber" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#f59e0b" stopOpacity={1}/>
               <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2}/>
             </linearGradient>
-            <linearGradient id="heroViews" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="heroTowerBlue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/>
               <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/>
             </linearGradient>
-            <linearGradient id="heroLikes" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="heroTowerRose" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/>
               <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.2}/>
             </linearGradient>
@@ -78,7 +80,15 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
           <XAxis dataKey="name" stroke="#ffffff" fontSize={14} tickLine={false} axisLine={false} opacity={0.9} />
           <Bar dataKey="value" radius={[12, 12, 0, 0]} animationDuration={2500} animationEasing="ease-out">
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={['url(#heroUsers)', 'url(#heroPosts)', 'url(#heroViews)', 'url(#heroLikes)'][index]} />
+              <Cell 
+                key={`cell-${index}`} 
+                fill={[
+                  'url(#heroTowerEmerald)', 
+                  'url(#heroTowerAmber)', 
+                  'url(#heroTowerBlue)', 
+                  'url(#heroTowerRose)'
+                ][index]} 
+              />
             ))}
           </Bar>
         </BarChart>
@@ -115,17 +125,9 @@ const ReadMore = ({ children, limit = 200 }: { children: string; limit?: number 
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📈 BOTTOM SUMMARY CARD WITH REAL-TIME LINE CHART
+// 📈 BOTTOM SUMMARY CARD WITH REAL-TIME 4-LINE RAINBOW CHART
 // ═══════════════════════════════════════════════════════════
-const SummaryLineChartCard = ({ stats }: { stats: any }) => {
-  // Real growth data based on actual stats
-  const data = [
-    { year: '2020', growth: Math.round((stats.totalUsers || 100) * 0.2) },
-    { year: '2022', growth: Math.round((stats.totalUsers || 100) * 0.4) },
-    { year: '2024', growth: Math.round((stats.totalUsers || 100) * 0.7) },
-    { year: '2026', growth: stats.totalUsers || 100 },
-  ];
-
+const SummaryLineChartCard = ({ chartData }: { chartData: any[] }) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 40 }}
@@ -133,17 +135,34 @@ const SummaryLineChartCard = ({ stats }: { stats: any }) => {
       viewport={{ once: true }}
       className="relative bg-gradient-to-br from-emerald-900 to-stone-900 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-2xl border border-emerald-500/20"
     >
-      {/* Background Line Chart - REAL-TIME DATA */}
-      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
+      {/* ✅ REAL-TIME 4-LINE RAINBOW CHART (Same as HomePage) */}
+      <div className="absolute inset-0 z-0 opacity-35 pointer-events-none">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
+          <AreaChart data={chartData}>
             <defs>
-              <linearGradient id="lineGlow" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/>
+              {/* ✅ RAINBOW COLORS: blue, rose, amber, emerald */}
+              <linearGradient id="footerViews" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1}/>
+              </linearGradient>
+              <linearGradient id="footerLikes" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.7}/>
+                <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.1}/>
+              </linearGradient>
+              <linearGradient id="footerComments" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.6}/>
+                <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.1}/>
+              </linearGradient>
+              <linearGradient id="footerShares" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.5}/>
                 <stop offset="100%" stopColor="#10b981" stopOpacity={0.1}/>
               </linearGradient>
             </defs>
-            <Area type="monotone" dataKey="growth" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#lineGlow)" />
+            {/* ✅ 4 LINES: Views, Likes, Comments, Shares */}
+            <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#footerViews)" />
+            <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#footerLikes)" />
+            <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#footerComments)" />
+            <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#footerShares)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -199,6 +218,9 @@ export default function AboutPage() {
     totalShares: 0,
   });
 
+  // ✅ REAL-TIME CHART DATA (Last 7 Days)
+  const [chartData, setChartData] = useState<any[]>([]);
+
   useEffect(() => {
     // Fetch Users Count
     const usersQuery = query(collection(db, "users"));
@@ -206,17 +228,40 @@ export default function AboutPage() {
       setLiveStats(prev => ({ ...prev, totalUsers: snapshot.size }));
     });
 
-    // Fetch Spotlights Stats
+    // Fetch Spotlights Stats + Daily Chart Data
     const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(500));
     const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
       let totalViews = 0, totalLikes = 0, totalComments = 0, totalShares = 0;
       
+      // Calculate last 7 days
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return d.toISOString().split('T')[0];
+      });
+      
+      const dailyStats: Record<string, { Views: number; Likes: number; Comments: number; Shares: number }> = {};
+      last7Days.forEach(day => {
+        dailyStats[day] = { Views: 0, Likes: 0, Comments: 0, Shares: 0 };
+      });
+
       snapshot.docs.forEach(doc => {
         const data = doc.data();
         totalViews += data.views || 0;
         totalLikes += data.likes || 0;
         totalComments += data.comments || 0;
         totalShares += data.shares || 0;
+
+        // Daily breakdown
+        if (data.createdAt?.toDate) {
+          const dateStr = data.createdAt.toDate().toISOString().split('T')[0];
+          if (dailyStats[dateStr]) {
+            dailyStats[dateStr].Views += data.views || 0;
+            dailyStats[dateStr].Likes += data.likes || 0;
+            dailyStats[dateStr].Comments += data.comments || 0;
+            dailyStats[dateStr].Shares += data.shares || 0;
+          }
+        }
       });
 
       setLiveStats(prev => ({
@@ -227,6 +272,15 @@ export default function AboutPage() {
         totalComments,
         totalShares,
       }));
+
+      // Set chart data for last 7 days
+      setChartData(last7Days.map(day => ({
+        day: new Date(day).toLocaleDateString('hi-IN', { weekday: 'short' }),
+        Views: dailyStats[day].Views,
+        Likes: dailyStats[day].Likes,
+        Comments: dailyStats[day].Comments,
+        Shares: dailyStats[day].Shares,
+      })));
     });
 
     return () => {
@@ -258,7 +312,7 @@ export default function AboutPage() {
               filter: "brightness(0.65) contrast(1.1)"
             }}
           />
-          {/* ✅ REAL-TIME Tower Chart Overlay */}
+          {/* ✅ REAL-TIME Tower Chart Overlay - SAME AS HOMEPAGE */}
           <HeroTowerChart stats={liveStats} />
           <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-stone-900/25 to-stone-50" />
         </motion.div>
@@ -403,7 +457,6 @@ export default function AboutPage() {
                 मिट्टी से जुड़ा एक <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-amber-600">अनमोल रिश्ता</span>
               </h2>
-              {/* ✅ ORIGINAL CONTENT FROM SOURCE */}
               <div className="space-y-6">
                 <ReadMore limit={500}>
                   आलमनगर का विकास कोसी-गंगा के मैदानों में एक छोटे नदी किनारे के बस्ती से शुरू हुआ, जो धीरे-धीरे उत्तर बिहार के प्राचीन व्यापार मार्गों का एक महत्वपूर्ण पड़ाव बन गया। स्थानीय इतिहास के अनुसार, इसका नाम मुगल कालीन शाह आलमगीर से जुड़ा है, जहाँ "आलम" का अर्थ है संसार और "नगर" का अर्थ है कस्बा। स्वतंत्रता संग्राम के दौरान, यहाँ के युवाओं ने राजा रास बिहारी लाल मंडल और बी.एन. मंडल जैसे महान नेताओं से प्रेरणा ली। 1942 के 'Quit India' आंदोलन में, जयप्रकाश नारायण के आह्वान पर यहाँ के क्रांतिकारियों ने सरकारी दफ्तरों पर तिरंगा फहराया और शहीद चुल्हे मंडल जैसे वीरों ने अपने प्राण न्योछावर कर दिए। आलमनगर प्रारंभ में मधेपुरा subdivision के अंतर्गत कृषि प्रधान गाँवों का एक समूह था। सामुदायिक विकास खंडों के पुनर्गठन के साथ, इस ग्रामीण क्षेत्र को एक पूर्ण ब्लॉक में अपग्रेड किया गया, जिसे आज मधेपुरा जिले की आधिकारिक प्रशासनिक इकाइयों में से एक के रूप में मान्यता प्राप्त है। इसका महत्व तब और बढ़ गया जब आलमनगर को विधान सभा निर्वाचन क्षेत्र संख्या 70 के रूप में अधिसूचित किया गया, जिसमें आलमनगर, पुरैनी और चौसा शामिल हैं।
@@ -427,7 +480,7 @@ export default function AboutPage() {
       <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto space-y-32">
           
-          {/* Economy - ORIGINAL CONTENT */}
+          {/* Economy */}
           <motion.div 
             initial="hidden"
             whileInView="visible"
@@ -461,7 +514,7 @@ export default function AboutPage() {
             </motion.div>
           </motion.div>
 
-          {/* Education & Health - ORIGINAL CONTENT */}
+          {/* Education & Health */}
           <motion.div 
             initial="hidden"
             whileInView="visible"
@@ -501,7 +554,7 @@ export default function AboutPage() {
             </motion.div>
           </motion.div>
 
-          {/* Culture & Festivals - ORIGINAL CONTENT */}
+          {/* Culture & Festivals */}
           <motion.div 
             initial="hidden"
             whileInView="visible"
@@ -545,10 +598,10 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📈 Bottom Summary Card with REAL-TIME Line Chart */}
+      {/* 📈 Bottom Summary Card with REAL-TIME 4-LINE RAINBOW CHART */}
       <section className="py-24 px-6 bg-stone-50">
         <div className="max-w-5xl mx-auto">
-          <SummaryLineChartCard stats={liveStats} />
+          <SummaryLineChartCard chartData={chartData} />
         </div>
       </section>
 
