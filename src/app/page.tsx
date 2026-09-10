@@ -566,10 +566,10 @@ export default function HomePage() {
 
   // ✅ HERO IMAGES ARRAY
   const heroImages = [
-    '/images/hero-1.jpg',
-    '/images/hero-2.jpg',
-    '/images/hero-3.jpg'
-  ];
+  'https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670', // Kosi River
+  'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670', // Village
+  'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2670'  // Festival
+];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
