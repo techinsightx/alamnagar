@@ -694,7 +694,7 @@ export default function HomePage() {
                     प्रणाम, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span> 🙏
                   </h3>
                   <p className="text-base sm:text-lg text-stone-200 leading-relaxed font-medium max-w-2xl mx-auto">
-                    आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका विशेष स्वागत है।
+                    आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका स्वागत है।
                   </p>
                 </div>
               </motion.div>
