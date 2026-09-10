@@ -7,7 +7,8 @@ import {
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
-  CheckCircle, X, Globe, AlertTriangle, Gamepad2, Bot, LayoutTemplate, ExternalLink
+  CheckCircle, X, Globe, AlertTriangle, Gamepad2, Bot, LayoutTemplate, ExternalLink,
+  Smile, Rocket, Palette, Trophy
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -25,21 +26,20 @@ import {
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-// ️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
+// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
 // ═══════════════════════════════════════════════════════════
 const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop", // Sunrise/River
-  "https://images.unsplash.com/photo-1609766418204-94aae7d87817?q=80&w=2670&auto=format&fit=crop", // Village/Choupal
-  "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?q=80&w=2670&auto=format&fit=crop", // Festival
-  "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop", // Farming
-  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2670&auto=format&fit=crop", // Heritage/Temple
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1609766418204-94aae7d87817?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2670&auto=format&fit=crop",
 ];
 
 const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [resolvedImages, setResolvedImages] = useState<string[]>(images);
 
-  // ✅ Fallback mechanism: if local image fails, use fallback URL
   const handleImageError = (index: number) => {
     setResolvedImages(prev => {
       const updated = [...prev];
@@ -69,10 +69,7 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
             opacity: index === currentIndex ? 1 : 0,
             scale: index === currentIndex ? 1 : 1.15
           }}
-          transition={{ 
-            duration: 2.5, 
-            ease: "easeInOut" 
-          }}
+          transition={{ duration: 2.5, ease: "easeInOut" }}
         >
           <img 
             src={img} 
@@ -82,11 +79,8 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
           />
         </motion.div>
       ))}
-      {/* Light overlay inside slider */}
       <div className="absolute inset-0 bg-gradient-to-t from-stone-950/40 via-transparent to-stone-950/20 pointer-events-none" />
-      
-      {/* Progress Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
         {resolvedImages.map((_, index) => (
           <motion.button
             key={index}
@@ -115,35 +109,22 @@ const staggerContainer = {
 
 const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string }) => {
   const [count, setCount] = useState(0);
-  
   useEffect(() => {
     let start = 0;
     const end = value;
     const duration = 2000;
     const increment = end / (duration / 16);
-    
-    if (end === 0) {
-      setCount(0);
-      return;
-    }
-    
+    if (end === 0) { setCount(0); return; }
     const timer = setInterval(() => {
       start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
+      if (start >= end) { setCount(end); clearInterval(timer); }
+      else { setCount(Math.floor(start)); }
     }, 16);
-    
     return () => clearInterval(timer);
   }, [value]);
-
   return <span>{count.toLocaleString('hi-IN')}{suffix}</span>;
 };
 
-// ✅ REDUCED OPACITY for slider visibility
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
@@ -173,32 +154,15 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
     { name: 'व्यूज़', value: stats.totalViews || 10 },
     { name: 'लाइक', value: stats.totalLikes || 10 },
   ], [stats]);
-
   return (
     <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-20">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="heroTowerEmerald" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
-              <stop offset="50%" stopColor="#10b981" stopOpacity={0.5}/>
-              <stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/>
-            </linearGradient>
-            <linearGradient id="heroTowerAmber" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity={1}/>
-              <stop offset="50%" stopColor="#f59e0b" stopOpacity={0.5}/>
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05}/>
-            </linearGradient>
-            <linearGradient id="heroTowerBlue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/>
-              <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.5}/>
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/>
-            </linearGradient>
-            <linearGradient id="heroTowerRose" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/>
-              <stop offset="50%" stopColor="#f43f5e" stopOpacity={0.5}/>
-              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05}/>
-            </linearGradient>
+            <linearGradient id="heroTowerEmerald" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={1}/><stop offset="50%" stopColor="#10b981" stopOpacity={0.5}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="heroTowerAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={1}/><stop offset="50%" stopColor="#f59e0b" stopOpacity={0.5}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="heroTowerBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/><stop offset="50%" stopColor="#3b82f6" stopOpacity={0.5}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="heroTowerRose" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/><stop offset="50%" stopColor="#f43f5e" stopOpacity={0.5}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05}/></linearGradient>
           </defs>
           <Bar dataKey="value" radius={[12, 12, 0, 0]} animationDuration={2500} animationEasing="ease-out">
             {data.map((entry, index) => {
@@ -236,12 +200,11 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
 
 const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
-    { name: 'सदस्य', value: stats.totalUsers || 10, fill: 'url(#towerEmerald)' },
-    { name: 'पोस्ट', value: stats.totalPosts || 10, fill: 'url(#towerAmber)' },
-    { name: 'व्यूज़', value: stats.totalViews || 10, fill: 'url(#towerBlue)' },
-    { name: 'लाइक', value: stats.totalLikes || 10, fill: 'url(#towerRose)' },
+    { name: 'सदस्य', value: stats.totalUsers || 10 },
+    { name: 'पोस्ट', value: stats.totalPosts || 10 },
+    { name: 'व्यूज़', value: stats.totalViews || 10 },
+    { name: 'लाइक', value: stats.totalLikes || 10 },
   ], [stats]);
-
   return (
     <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-55">
       <ResponsiveContainer width="100%" height="100%">
@@ -283,53 +246,48 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const CommunityPulseChart = ({ data }: { data: any[] }) => {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-stone-200/50 border border-stone-100 relative overflow-hidden"
-    >
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-        <div>
-          <h3 className="text-2xl font-black text-stone-900 flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-emerald-600" />
-            समुदाय की धड़कन (Community Pulse)
-          </h3>
-          <p className="text-stone-500 text-sm mt-1">पिछले 7 दिनों की रियल-टाइम एक्टिविटी</p>
-        </div>
-        <div className="flex flex-wrap gap-3 text-xs font-bold">
-          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full"><div className="w-2 h-2 rounded-full bg-blue-500" /> व्यूज़</span>
-          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-700 rounded-full"><div className="w-2 h-2 rounded-full bg-rose-500" /> लाइक्स</span>
-          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full"><div className="w-2 h-2 rounded-full bg-amber-500" /> कमेंट्स</span>
-          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full"><div className="w-2 h-2 rounded-full bg-emerald-500" /> शेयर्स</span>
-        </div>
+const CommunityPulseChart = ({ data }: { data: any[] }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+    className="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-stone-200/50 border border-stone-100 relative overflow-hidden"
+  >
+    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <div>
+        <h3 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+          <TrendingUp className="w-6 h-6 text-emerald-600" />
+          समुदाय की धड़कन (Community Pulse)
+        </h3>
+        <p className="text-stone-500 text-sm mt-1">पिछले 7 दिनों की रियल-टाइम एक्टिविटी</p>
       </div>
-
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
-              <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/><stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
-              <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-              <linearGradient id="colorShares" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
-            <XAxis dataKey="day" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#78716c', fontWeight: 600 }} />
-            <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#78716c', fontWeight: 600 }} />
-            <Tooltip content={<CustomTooltip />} />
-            <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorViews)" animationDuration={1500} />
-            <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorLikes)" animationDuration={1500} />
-            <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorComments)" animationDuration={1500} />
-            <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorShares)" animationDuration={1500} />
-          </AreaChart>
-        </ResponsiveContainer>
+      <div className="flex flex-wrap gap-3 text-xs font-bold">
+        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full"><div className="w-2 h-2 rounded-full bg-blue-500" /> व्यूज़</span>
+        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-700 rounded-full"><div className="w-2 h-2 rounded-full bg-rose-500" /> लाइक्स</span>
+        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full"><div className="w-2 h-2 rounded-full bg-amber-500" /> कमेंट्स</span>
+        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full"><div className="w-2 h-2 rounded-full bg-emerald-500" /> शेयर्स</span>
       </div>
-    </motion.div>
-  );
-};
+    </div>
+    <div className="h-[300px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
+            <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/><stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+            <linearGradient id="colorComments" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+            <linearGradient id="colorShares" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
+          <XAxis dataKey="day" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#78716c', fontWeight: 600 }} />
+          <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#78716c', fontWeight: 600 }} />
+          <Tooltip content={<CustomTooltip />} />
+          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorViews)" animationDuration={1500} />
+          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorLikes)" animationDuration={1500} />
+          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorComments)" animationDuration={1500} />
+          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorShares)" animationDuration={1500} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  </motion.div>
+);
 
 const MadhubaniPattern = () => (
   <motion.div 
@@ -356,17 +314,14 @@ interface TickerItem {
 const LiveActivityTicker = () => {
   const [items, setItems] = useState<TickerItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(5));
-    const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => {
+    const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
       const newItems: TickerItem[] = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
-          id: doc.id,
-          type: 'post',
-          userName: data.userName || "आलमनगर वासी",
-          userPhoto: data.userPhoto,
+          id: doc.id, type: 'post',
+          userName: data.userName || "आलमनगर वासी", userPhoto: data.userPhoto,
           title: data.title || "एक नई तस्वीर",
           metrics: { likes: data.likes || 0, comments: data.comments || 0, shares: data.shares || 0 },
           timestamp: data.createdAt?.toDate?.()?.getTime() || Date.now()
@@ -378,9 +333,8 @@ const LiveActivityTicker = () => {
       });
       setIsLoading(false);
     });
-
     const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(5));
-    const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
+    const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
       const newUsers: TickerItem[] = snapshot.docs.map(doc => ({
         id: doc.id, type: 'join', userName: doc.data().displayName || "नया सदस्य",
         userPhoto: doc.data().photoURL, timestamp: doc.data().createdAt?.toDate?.()?.getTime() || Date.now()
@@ -390,13 +344,10 @@ const LiveActivityTicker = () => {
         return [...posts, ...newUsers].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
       });
     });
-
-    return () => { unsubscribePosts(); unsubscribeUsers(); };
+    return () => { unsubPosts(); unsubUsers(); };
   }, []);
-
   if (isLoading || items.length === 0) return null;
   const marqueeItems = [...items, ...items];
-
   return (
     <div className="relative bg-stone-900/95 backdrop-blur-md border-y border-amber-500/20 overflow-hidden py-3">
       <div className="absolute left-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-r from-stone-900 to-transparent flex items-center px-4">
@@ -454,45 +405,24 @@ interface Testimonial {
 const CreateraOGBanner = () => {
   const [ogData, setOgData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     fetch("https://api.microlink.io/?url=https://createra.in")
       .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          setOgData(data.data);
-        }
-        setIsLoading(false);
-      })
+      .then((data) => { if (data.status === "success") setOgData(data.data); setIsLoading(false); })
       .catch(() => setIsLoading(false));
   }, []);
-
-  if (isLoading) {
-    return (
-      <div className="w-full mb-12 rounded-2xl bg-stone-100 border border-stone-200 h-40 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
-      </div>
-    );
-  }
-
+  if (isLoading) return (
+    <div className="w-full mb-12 rounded-2xl bg-stone-100 border border-stone-200 h-40 flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+    </div>
+  );
   const title = ogData?.title || "Createra";
   const description = ogData?.description || "Create, publish, and share your thoughts with the world.";
   const imageUrl = ogData?.image?.url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop";
   const domain = ogData?.publisher || "createra.in";
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="w-full mb-12"
-    >
-      <Link 
-        href="https://createra.in" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="group block w-full overflow-hidden rounded-2xl bg-white border border-stone-200 shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all duration-300"
-      >
+    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="w-full mb-12">
+      <Link href="https://createra.in" target="_blank" rel="noopener noreferrer" className="group block w-full overflow-hidden rounded-2xl bg-white border border-stone-200 shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all duration-300">
         <div className="flex flex-col md:flex-row w-full">
           <div className="w-full md:w-1/3 h-48 md:h-40 bg-stone-100 relative overflow-hidden flex-shrink-0">
             <img src={imageUrl} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -511,35 +441,34 @@ const CreateraOGBanner = () => {
   );
 };
 
-const FooterBrandLogo = () => {
-  return (
-    <Link href="/" className="flex items-center gap-3 group w-max">
-      <motion.div 
-        className="relative w-11 h-11 bg-gradient-to-br from-emerald-500 via-amber-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-amber-500/30 transition-all overflow-hidden"
-        whileHover={{ scale: 1.05 }}
-      >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-          className="w-7 h-7 text-white drop-shadow-md relative z-10"
-        >
-          <Globe className="w-full h-full" strokeWidth={2.5} />
-        </motion.div>
-        <motion.div 
-          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.5, 0.2] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 bg-white/40 rounded-xl blur-md"
-        />
+const FooterBrandLogo = () => (
+  <Link href="/" className="flex items-center gap-3 group w-max">
+    <motion.div 
+      className="relative w-11 h-11 bg-gradient-to-br from-emerald-500 via-amber-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-amber-500/30 transition-all overflow-hidden"
+      whileHover={{ scale: 1.05 }}
+    >
+      <motion.div animate={{ rotate: 360 }} transition={{ duration: 12, repeat: Infinity, ease: "linear" }} className="w-7 h-7 text-white drop-shadow-md relative z-10">
+        <Globe className="w-full h-full" strokeWidth={2.5} />
       </motion.div>
-      <div>
-        <h1 className="text-xl font-extrabold text-white tracking-tight leading-none">
-          आलम<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">नगर</span>
-        </h1>
-        <p className="text-[10px] text-stone-400 font-semibold tracking-wider uppercase mt-0.5">हमारा गाँव, हमारी पहचान</p>
-      </div>
-    </Link>
-  );
-};
+      <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="absolute inset-0 bg-white/40 rounded-xl blur-md" />
+    </motion.div>
+    <div>
+      <h1 className="text-xl font-extrabold text-white tracking-tight leading-none">
+        आलम<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">नगर</span>
+      </h1>
+      <p className="text-[10px] text-stone-400 font-semibold tracking-wider uppercase mt-0.5">हमारा गाँव, हमारी पहचान</p>
+    </div>
+  </Link>
+);
+
+const FloatingBubble = ({ delay, size, left, duration }: { delay: number; size: number; left: number; duration: number }) => (
+  <motion.div
+    className="absolute rounded-full bg-white/20 backdrop-blur-sm"
+    style={{ width: size, height: size, left: `${left}%`, bottom: -size }}
+    animate={{ y: ["0vh", "-120vh"], x: [0, 30, -30, 0] }}
+    transition={{ duration, delay, repeat: Infinity, ease: "linear" }}
+  />
+);
 
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
@@ -548,40 +477,31 @@ export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [liveStats, setLiveStats] = useState({ totalUsers: 0, totalPosts: 0, totalViews: 0, totalLikes: 0, totalComments: 0, totalShares: 0 });
   const [chartData, setChartData] = useState<any[]>([]);
-  
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
-
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [newReviewText, setNewReviewText] = useState("");
 
-  // ✅ Local images first, fallback URLs will auto-activate if local fails
   const heroImages = [
-    '/images/hero-1.jpg',
-    '/images/hero-2.jpg',
-    '/images/hero-3.jpg',
-    '/images/hero-4.jpg',
-    '/images/hero-5.jpg'
+    '/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg',
+    '/images/hero-4.jpg', '/images/hero-5.jpg'
   ];
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-    });
+    const unsubscribe = onAuthStateChanged(auth, (user) => setCurrentUser(user));
     return () => unsubscribe();
   }, []);
 
+  // ✅ FIXED: Properly scoped variables for cleanup
   useEffect(() => {
-    const usersQuery = query(collection(db, "users"));
-    const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
+    const unsubUsers = onSnapshot(query(collection(db, "users")), (snapshot) => {
       setLiveStats(prev => ({ ...prev, totalUsers: snapshot.size }));
     });
 
-    const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(200));
-    const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
+    const unsubPosts = onSnapshot(query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(200)), (snapshot) => {
       let totalViews = 0, totalLikes = 0, totalComments = 0, totalShares = 0;
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(); d.setDate(d.getDate() - (6 - i));
@@ -589,7 +509,6 @@ export default function HomePage() {
       });
       const dailyStats: Record<string, { Views: number; Likes: number; Comments: number; Shares: number }> = {};
       last7Days.forEach(day => { dailyStats[day] = { Views: 0, Likes: 0, Comments: 0, Shares: 0 }; });
-
       snapshot.docs.forEach(doc => {
         const data = doc.data();
         totalViews += data.views || 0; totalLikes += data.likes || 0;
@@ -602,7 +521,6 @@ export default function HomePage() {
           }
         }
       });
-
       setChartData(last7Days.map(day => ({
         day: new Date(day).toLocaleDateString('hi-IN', { weekday: 'short' }),
         Views: dailyStats[day].Views, Likes: dailyStats[day].Likes,
@@ -611,37 +529,30 @@ export default function HomePage() {
       setLiveStats(prev => ({ ...prev, totalPosts: snapshot.size, totalViews, totalLikes, totalComments, totalShares }));
     });
 
-    const testimonialsQuery = query(collection(db, "testimonials"), orderBy("createdAt", "desc"), limit(50));
-    const unsubTestimonials = onSnapshot(testimonialsQuery, (snapshot) => {
-      const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
-      setTestimonials(reviews);
+    const unsubTestimonials = onSnapshot(query(collection(db, "testimonials"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
+      setTestimonials(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial)));
       setLoadingTestimonials(false);
     });
 
-    return () => { unsubUsers(); unsubPosts(); unsubTestimonials(); };
+    return () => { 
+      unsubUsers(); 
+      unsubPosts(); 
+      unsubTestimonials(); 
+    };
   }, []);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsletterEmail || !newsletterEmail.includes('@')) {
-      setNewsletterStatus("error");
-      setErrorMessage("कृपया एक वैध ईमेल पता दर्ज करें।");
-      return;
+      setNewsletterStatus("error"); setErrorMessage("कृपया एक वैध ईमेल पता दर्ज करें।"); return;
     }
-    setNewsletterStatus("loading");
-    setErrorMessage("");
+    setNewsletterStatus("loading"); setErrorMessage("");
     try {
-      await addDoc(collection(db, "newsletter"), {
-        email: newsletterEmail,
-        subscribedAt: serverTimestamp(),
-      });
-      setNewsletterStatus("success");
-      setNewsletterEmail("");
+      await addDoc(collection(db, "newsletter"), { email: newsletterEmail, subscribedAt: serverTimestamp() });
+      setNewsletterStatus("success"); setNewsletterEmail("");
       setTimeout(() => setNewsletterStatus("idle"), 5000);
     } catch (error: any) {
-      console.error("Newsletter error:", error);
-      setNewsletterStatus("error");
-      setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
+      setNewsletterStatus("error"); setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई।");
     }
   };
 
@@ -649,30 +560,19 @@ export default function HomePage() {
     if (!currentUser || !newReviewText.trim()) return;
     try {
       await setDoc(doc(db, "testimonials", currentUser.uid), {
-        userId: currentUser.uid,
-        userName: currentUser.displayName || "आलमनगर वासी",
-        userPhoto: currentUser.photoURL || "",
-        quote: newReviewText.trim(),
-        location: "आलमनगर, बिहार",
-        role: "सदस्य",
-        updatedAt: serverTimestamp(),
-        createdAt: userExistingReview ? userExistingReview.createdAt : serverTimestamp(),
+        userId: currentUser.uid, userName: currentUser.displayName || "आलमनगर वासी",
+        userPhoto: currentUser.photoURL || "", quote: newReviewText.trim(),
+        location: "आलमनगर, बिहार", role: "सदस्य",
+        updatedAt: serverTimestamp(), createdAt: userExistingReview ? userExistingReview.createdAt : serverTimestamp(),
       }, { merge: true });
-      setNewReviewText("");
-      setShowReviewModal(false);
-    } catch (error) {
-      console.error("Review error:", error);
-    }
+      setNewReviewText(""); setShowReviewModal(false);
+    } catch (error) { console.error("Review error:", error); }
   };
 
   const handleDeleteReview = async (reviewId: string) => {
     if (!currentUser) return;
     if (window.confirm("क्या आप वाकई अपनी यह समीक्षा हटाना चाहते हैं?")) {
-      try {
-        await deleteDoc(doc(db, "testimonials", reviewId));
-      } catch (error) {
-        console.error("Delete review error:", error);
-      }
+      try { await deleteDoc(doc(db, "testimonials", reviewId)); } catch (error) { console.error("Delete review error:", error); }
     }
   };
 
@@ -682,7 +582,6 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      
       <main className="bg-stone-50 text-stone-900 overflow-x-hidden selection:bg-amber-200 selection:text-amber-900">
         <style>{`
           .tiranga-shimmer { background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 25%, #138808 50%, #FFFFFF 75%, #FF9933 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 4s linear infinite; }
@@ -692,92 +591,68 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION (With Fallback Images) ===== */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-900 text-white px-4 md:px-8 lg:px-12">
-          {/* ✅ Slider as BASE LAYER */}
-          <div className="absolute inset-0 z-0">
-            <SmoothImageSlider images={heroImages} className="w-full h-full" />
-          </div>
-          
-          {/* ✅ Charts with reduced opacity */}
-          <HeroBackgroundChart data={chartData} />
-          <HeroTowerChart stats={liveStats} />
-          
-          {/* ✅ Lighter gradient overlay */}
-          <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/30 via-stone-900/20 to-stone-950/40 pointer-events-none" />
-          
-          {isAdmin && (
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-24 right-6 z-20">
-              <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-5 py-2.5 hover:bg-red-500/30 transition-all group shadow-lg">
-                <Shield className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
-                <span className="text-sm font-bold text-red-300">Admin Panel</span>
-              </Link>
-            </motion.div>
-          )}
-          
-          <div className="relative z-[10] text-center w-full max-w-7xl mx-auto pt-20">
-            {currentUser ? (
-              <motion.div 
-                initial={{ opacity: 0, y: 20, scale: 0.95 }} 
-                animate={{ opacity: 1, y: 0, scale: 1 }} 
-                transition={{ duration: 0.7, ease: "easeOut" }} 
-                className="relative w-full max-w-3xl mx-auto mb-12 p-6 sm:p-8 flex flex-col items-center text-center gap-6"
-              >
-                <div className="relative shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-2xl opacity-40 animate-pulse" />
-                  <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 flex items-center justify-center shadow-2xl">
-                    {currentUser.photoURL ? (
-                      <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-amber-400">
-                        {currentUser.displayName?.[0] || "U"}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="text-3xl sm:text-4xl font-black text-white mb-3 tracking-tight drop-shadow-lg">
-                    प्रणाम, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span> 
-                  </h3>
-                  <p className="text-base sm:text-lg text-stone-200 leading-relaxed font-medium max-w-2xl mx-auto">
-                    आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका स्वागत है।
-                  </p>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }} 
-                animate={{ opacity: 1, scale: 1 }} 
-                transition={{ duration: 0.8 }} 
-                className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-3 mb-8 shadow-lg hover:bg-white/20 transition-colors cursor-default"
-              >
-                <MapPin className="w-5 h-5 text-amber-400" />
-                <span className="text-sm font-semibold tracking-wide">मधेपुरा, मिथिलांचल, बिहार</span>
+        {/* ===== 1. CINEMATIC HERO SECTION - 16:9 WIDE RATIO ===== */}
+        <section className="relative w-full bg-stone-900 text-white overflow-hidden">
+          {/* ✅ 16:9 Aspect Ratio Container - Wide on both Desktop & Mobile */}
+          <div className="relative w-full aspect-video md:aspect-[21/9] lg:aspect-[21/9]">
+            <div className="absolute inset-0 z-0">
+              <SmoothImageSlider images={heroImages} className="w-full h-full" />
+            </div>
+            <HeroBackgroundChart data={chartData} />
+            <HeroTowerChart stats={liveStats} />
+            <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/40 via-stone-900/25 to-stone-950/50 pointer-events-none" />
+            
+            {isAdmin && (
+              <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
+                <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-4 py-2 md:px-5 md:py-2.5 hover:bg-red-500/30 transition-all group shadow-lg">
+                  <Shield className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs md:text-sm font-bold text-red-300">Admin</span>
+                </Link>
               </motion.div>
             )}
+            
+            <div className="relative z-[10] h-full flex items-center justify-center px-4 md:px-8 lg:px-12">
+              <div className="text-center w-full max-w-6xl mx-auto py-8 md:py-12">
+                {currentUser ? (
+                  <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, ease: "easeOut" }} className="relative w-full max-w-2xl mx-auto mb-6 md:mb-8 p-4 md:p-6 flex flex-col items-center text-center gap-4">
+                    <div className="relative shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-2xl opacity-40 animate-pulse" />
+                      <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-white/20 flex items-center justify-center shadow-2xl">
+                        {currentUser.photoURL ? <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" /> : <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-amber-400">{currentUser.displayName?.[0] || "U"}</span>}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl md:text-3xl font-black text-white mb-2 tracking-tight drop-shadow-lg">
+                        प्रणाम, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span> 
+                      </h3>
+                      <p className="text-sm md:text-base text-stone-200 leading-relaxed font-medium max-w-xl mx-auto">आलमनगर की डिजिटल चौपाल में आपका स्वागत है।</p>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 md:px-6 py-2 md:py-3 mb-4 md:mb-6 shadow-lg">
+                    <MapPin className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
+                    <span className="text-xs md:text-sm font-semibold tracking-wide">मधेपुरा, मिथिलांचल, बिहार</span>
+                  </motion.div>
+                )}
 
-            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl pt-2">आलमनगर</motion.h1>
-            <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md leading-relaxed py-1">"जड़ों से जुड़ा, मिथिला की धरती का गौरव"</motion.p>
-            <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/90 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।</motion.p>
-            
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12">
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Users className="w-4 h-4 text-emerald-400" /><span className="text-xs text-white/90">सदस्य</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span></div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Star className="w-4 h-4 text-amber-400" /><span className="text-xs text-white/90">पोस्ट</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span></div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Eye className="w-4 h-4 text-blue-400" /><span className="text-xs text-white/90">व्यूज़</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span></div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Heart className="w-4 h-4 text-red-400" /><span className="text-xs text-white/90">लाइक</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span></div>
-            </motion.div>
-            
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }} className="flex flex-col sm:flex-row gap-5 justify-center mb-16">
-              <Link href="/about" className="group bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] flex items-center justify-center gap-3 text-lg"><BookOpen className="w-5 h-5" /> हमारी विरासत देखें <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></Link>
-              <Link href="/community" className="group bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><Users className="w-5 h-5" /> चौपाल में शामिल हों</Link>
-              <Link href="/marketplace" className="group bg-emerald-600/90 hover:bg-emerald-500/90 backdrop-blur-md border border-emerald-400/40 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><ShoppingBag className="w-5 h-5" /> गाँव का हाट</Link>
-            </motion.div>
-            
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-              <span className="text-xs text-white/70 uppercase tracking-widest">स्क्रॉल करें</span>
-              <ChevronDown className="w-8 h-8 text-white/70" />
-            </motion.div>
+                <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-4xl md:text-6xl lg:text-8xl font-black mb-3 md:mb-4 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl">आलमनगर</motion.h1>
+                <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-lg md:text-2xl lg:text-3xl mb-3 md:mb-4 font-medium italic golden-shimmer drop-shadow-md leading-relaxed">"जड़ों से जुड़ा, मिथिला की धरती का गौरव"</motion.p>
+                <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-xs md:text-base lg:text-lg text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">हमारी विरासत, हमारे लोग, हमारा गौरव।</motion.p>
+                
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="flex flex-wrap justify-center gap-2 md:gap-6 mb-6 md:mb-8">
+                  <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 md:px-4 py-1.5 md:py-2"><Users className="w-3 h-3 md:w-4 md:h-4 text-emerald-400" /><span className="text-[10px] md:text-xs text-white/90">सदस्य</span><span className="text-xs md:text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span></div>
+                  <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 md:px-4 py-1.5 md:py-2"><Star className="w-3 h-3 md:w-4 md:h-4 text-amber-400" /><span className="text-[10px] md:text-xs text-white/90">पोस्ट</span><span className="text-xs md:text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span></div>
+                  <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 md:px-4 py-1.5 md:py-2"><Eye className="w-3 h-3 md:w-4 md:h-4 text-blue-400" /><span className="text-[10px] md:text-xs text-white/90">व्यूज़</span><span className="text-xs md:text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span></div>
+                  <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 md:px-4 py-1.5 md:py-2"><Heart className="w-3 h-3 md:w-4 md:h-4 text-red-400" /><span className="text-[10px] md:text-xs text-white/90">लाइक</span><span className="text-xs md:text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span></div>
+                </motion.div>
+                
+                <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }} className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+                  <Link href="/about" className="group bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-bold px-5 md:px-8 py-2.5 md:py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] flex items-center justify-center gap-2 md:gap-3 text-sm md:text-lg"><BookOpen className="w-4 h-4 md:w-5 md:h-5" /> <span className="hidden sm:inline">हमारी विरासत देखें</span><span className="sm:hidden">विरासत</span> <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" /></Link>
+                  <Link href="/community" className="group bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white font-bold px-5 md:px-8 py-2.5 md:py-3 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 md:gap-3 text-sm md:text-lg"><Users className="w-4 h-4 md:w-5 md:h-5" /> <span className="hidden sm:inline">चौपाल में शामिल हों</span><span className="sm:hidden">चौपाल</span></Link>
+                  <Link href="/marketplace" className="group bg-emerald-600/90 hover:bg-emerald-500/90 backdrop-blur-md border border-emerald-400/40 text-white font-bold px-5 md:px-8 py-2.5 md:py-3 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 md:gap-3 text-sm md:text-lg"><ShoppingBag className="w-4 h-4 md:w-5 md:h-5" /> <span className="hidden sm:inline">गाँव का हाट</span><span className="sm:hidden">हाट</span></Link>
+                </motion.div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -960,6 +835,52 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ===== NEW: KIDS ZONE SECTION ===== */}
+        <section className="relative py-24 px-4 md:px-8 lg:px-12 overflow-hidden bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <FloatingBubble delay={0} size={80} left={10} duration={12} />
+            <FloatingBubble delay={2} size={60} left={25} duration={15} />
+            <FloatingBubble delay={4} size={100} left={50} duration={18} />
+            <FloatingBubble delay={1} size={50} left={70} duration={14} />
+            <FloatingBubble delay={3} size={90} left={85} duration={16} />
+            <FloatingBubble delay={5} size={70} left={40} duration={20} />
+          </div>
+
+          <div className="relative z-10 max-w-6xl mx-auto text-center">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+              <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }} className="inline-block text-7xl md:text-8xl mb-4">🎈</motion.div>
+              <span className="inline-block px-6 py-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-white font-black text-sm tracking-widest uppercase mb-6">✨ Kids Zone ✨</span>
+              <h2 className="text-5xl md:text-7xl font-black text-white mb-6 drop-shadow-2xl">बच्चों की <span className="text-yellow-300">मस्ती की दुनिया</span></h2>
+              <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">आलमनगर के बच्चों के लिए एक खास जगह! यहाँ खेलो, सीखो, और मज़े करो।</p>
+            </motion.div>
+
+            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-6 mb-12">
+              {[
+                { icon: Smile, title: "Fun & Safe", desc: "बच्चों के लिए 100% सुरक्षित और मज़ेदार", color: "from-yellow-400 to-orange-400" },
+                { icon: Palette, title: "Colorful World", desc: "रंग-बिरंगी दुनिया में खो जाओ", color: "from-pink-400 to-purple-400" },
+                { icon: Trophy, title: "Win Stars", desc: "हर game में stars जमा करो", color: "from-blue-400 to-cyan-400" }
+              ].map((feature, i) => (
+                <motion.div key={i} variants={fadeInUp} whileHover={{ y: -10, rotate: 2 }} className="bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border-4 border-white/50">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                    <feature.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-black text-stone-900 mb-2">{feature.title}</h3>
+                  <p className="text-stone-600 text-sm">{feature.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.4 }}>
+              <Link href="/games/bubble-pop" className="group inline-flex items-center gap-4 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white font-black text-2xl px-12 py-6 rounded-full shadow-2xl hover:shadow-yellow-500/50 transition-all hover:scale-110 border-4 border-white/30">
+                <Gamepad2 className="w-8 h-8 group-hover:rotate-12 transition-transform" />
+                Bubble Pop Game खेलो!
+                <Sparkles className="w-8 h-8 group-hover:rotate-180 transition-transform duration-500" />
+              </Link>
+              <p className="text-white/80 text-sm mt-6 font-medium">🎮 Free • No Login Required • Mobile Friendly</p>
+            </motion.div>
+          </div>
+        </section>
+
         {/* ===== 7. WORKING NEWSLETTER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-zinc-800 text-white relative overflow-hidden">
           <NewsletterRealtimeChart data={chartData} />
@@ -968,56 +889,16 @@ export default function HomePage() {
               <Mail className="w-10 h-10 text-amber-400" />
             </div>
             <h2 className="text-4xl md:text-6xl font-black mb-6">जुड़े रहें</h2>
-            <p className="text-lg text-white/70 mb-10 max-w-xl mx-auto">
-              आलमनगर के कार्यक्रमों, समाचारों और समुदाय की कहानियों की सीधी जानकारी अपने ईमेल पर पाएं।
-            </p>
-            
+            <p className="text-lg text-white/70 mb-10 max-w-xl mx-auto">आलमनगर के कार्यक्रमों, समाचारों और समुदाय की कहानियों की सीधी जानकारी अपने ईमेल पर पाएं।</p>
             <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto relative" onSubmit={handleNewsletterSubmit}>
-              <input 
-                type="email" 
-                value={newsletterEmail}
-                onChange={(e) => {
-                  setNewsletterEmail(e.target.value);
-                  if (newsletterStatus === "error") {
-                    setNewsletterStatus("idle");
-                    setErrorMessage("");
-                  }
-                }}
-                placeholder="अपना ईमेल दर्ज करें" 
-                className={`flex-1 px-8 py-5 rounded-full bg-white/10 backdrop-blur-md border text-white placeholder-white/50 focus:outline-none focus:ring-4 transition-all text-lg disabled:opacity-50 ${
-                  newsletterStatus === "error" 
-                    ? "border-red-500/50 focus:ring-red-500/30 focus:border-red-500" 
-                    : "border-white/20 focus:ring-amber-400/30 focus:border-amber-400"
-                }`} 
-                disabled={newsletterStatus === "success" || newsletterStatus === "loading"}
-                required
-              />
-              <button 
-                type="submit" 
-                disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-10 py-5 rounded-full transition-all duration-300 hover:scale-105 shadow-lg text-lg whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[180px]"
-              >
-                {newsletterStatus === "loading" ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> प्रोसेस हो रहा है...</>
-                ) : newsletterStatus === "success" ? (
-                  <><CheckCircle className="w-5 h-5" /> सफल!</>
-                ) : (
-                  "सदस्यता लें"
-                )}
+              <input type="email" value={newsletterEmail} onChange={(e) => { setNewsletterEmail(e.target.value); if (newsletterStatus === "error") { setNewsletterStatus("idle"); setErrorMessage(""); } }} placeholder="अपना ईमेल दर्ज करें" className={`flex-1 px-8 py-5 rounded-full bg-white/10 backdrop-blur-md border text-white placeholder-white/50 focus:outline-none focus:ring-4 transition-all text-lg disabled:opacity-50 ${newsletterStatus === "error" ? "border-red-500/50 focus:ring-red-500/30 focus:border-red-500" : "border-white/20 focus:ring-amber-400/30 focus:border-amber-400"}`} disabled={newsletterStatus === "success" || newsletterStatus === "loading"} required />
+              <button type="submit" disabled={newsletterStatus === "loading" || newsletterStatus === "success"} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-10 py-5 rounded-full transition-all duration-300 hover:scale-105 shadow-lg text-lg whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[180px]">
+                {newsletterStatus === "loading" ? (<><Loader2 className="w-5 h-5 animate-spin" /> प्रोसेस हो रहा है...</>) : newsletterStatus === "success" ? (<><CheckCircle className="w-5 h-5" /> सफल!</>) : ("सदस्यता लें")}
               </button>
             </form>
-            
             <AnimatePresence>
-              {newsletterStatus === "success" && (
-                <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-emerald-400 mt-6 font-bold flex items-center justify-center gap-2">
-                  <CheckCircle className="w-5 h-5" /> ✅ सफलतापूर्वक सदस्यता ले ली गई!
-                </motion.p>
-              )}
-              {newsletterStatus === "error" && (
-                <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2">
-                  <AlertTriangle className="w-5 h-5" /> ❌ {errorMessage}
-                </motion.p>
-              )}
+              {newsletterStatus === "success" && (<motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-emerald-400 mt-6 font-bold flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> ✅ सफलतापूर्वक सदस्यता ले ली गई!</motion.p>)}
+              {newsletterStatus === "error" && (<motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2"><AlertTriangle className="w-5 h-5" /> ❌ {errorMessage}</motion.p>)}
             </AnimatePresence>
           </motion.div>
         </section>
@@ -1030,19 +911,11 @@ export default function HomePage() {
 
             <div className="grid md:grid-cols-12 gap-12 mb-12 mt-8">
               <div className="md:col-span-4">
-                <div className="mb-6">
-                  <FooterBrandLogo />
-                </div>
-                <p className="text-base mb-8 leading-relaxed text-stone-400">
-                  मधेपुरा, बिहार, भारत का आधिकारिक डिजिटल प्लेटफॉर्म। हमारी विरासत, हमारा समुदाय, हमारा गौरव।
-                </p>
+                <div className="mb-6"><FooterBrandLogo /></div>
+                <p className="text-base mb-8 leading-relaxed text-stone-400">मधेपुरा, बिहार, भारत का आधिकारिक डिजिटल प्लेटफॉर्म। हमारी विरासत, हमारा समुदाय, हमारा गौरव।</p>
                 <div className="flex gap-4">
-                  <Link href="/community" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer">
-                    <Users className="w-5 h-5" />
-                  </Link>
-                  <Link href="/gallery" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer">
-                    <Camera className="w-5 h-5" />
-                  </Link>
+                  <Link href="/community" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer"><Users className="w-5 h-5" /></Link>
+                  <Link href="/gallery" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer"><Camera className="w-5 h-5" /></Link>
                 </div>
               </div>
 
@@ -1055,9 +928,7 @@ export default function HomePage() {
                   <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
                   <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
                   <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
-                  {isAdmin && (
-                    <li><Link href="/admin/reports" className="hover:text-red-400 transition-colors flex items-center gap-2 border-l-2 border-red-500/50 pl-2"><Shield className="w-3 h-3" /> Admin Dashboard</Link></li>
-                  )}
+                  {isAdmin && (<li><Link href="/admin/reports" className="hover:text-red-400 transition-colors flex items-center gap-2 border-l-2 border-red-500/50 pl-2"><Shield className="w-3 h-3" /> Admin Dashboard</Link></li>)}
                 </ul>
               </div>
 
@@ -1066,12 +937,7 @@ export default function HomePage() {
                   <Bot className="w-5 h-5 text-purple-500" /> युवा क्रिएटर टूल्स
                 </h4>
                 <div className="space-y-4">
-                  <Link 
-                    href="https://funnelsbuilder.netlify.app" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-purple-500/50 hover:bg-purple-500/10 transition-all"
-                  >
+                  <Link href="https://funnelsbuilder.netlify.app" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-purple-500/50 hover:bg-purple-500/10 transition-all">
                     <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-colors">
                       <LayoutTemplate className="w-5 h-5 text-purple-400 group-hover:text-white" />
                     </div>
@@ -1084,12 +950,7 @@ export default function HomePage() {
                     </div>
                   </Link>
 
-                  <Link 
-                    href="https://aipassivesystem.netlify.app" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all"
-                  >
+                  <Link href="https://aipassivesystem.netlify.app" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all">
                     <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center shrink-0 group-hover:bg-cyan-500 transition-colors">
                       <Bot className="w-5 h-5 text-cyan-400 group-hover:text-white" />
                     </div>
@@ -1102,18 +963,18 @@ export default function HomePage() {
                     </div>
                   </Link>
 
-                  <div className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 opacity-75 cursor-not-allowed">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
-                      <Gamepad2 className="w-5 h-5 text-amber-400" />
+                  <Link href="/games/bubble-pop" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-amber-500/50 hover:bg-amber-500/10 transition-all cursor-pointer">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0 group-hover:bg-amber-500 transition-colors">
+                      <Gamepad2 className="w-5 h-5 text-amber-400 group-hover:text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h5 className="font-bold text-white text-sm">Kids Learning Games</h5>
-                        <Lock className="w-3.5 h-3.5 text-amber-500" />
+                        <h5 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">Bubble Pop Game</h5>
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                       </div>
-                      <p className="text-xs text-stone-400 leading-relaxed">बच्चों के लिए एजुकेशनल गेम्स। जल्द ही लॉन्च होगा! 🚀</p>
+                      <p className="text-xs text-stone-400 leading-relaxed">बच्चों के लिए मज़ेदार game! Bubbles pop करो और stars जमा करो। </p>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -1130,11 +991,7 @@ export default function HomePage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#292524" vertical={false} />
                     <XAxis dataKey="name" stroke="#78716c" fontSize={11} tickLine={false} axisLine={false} />
                     <YAxis stroke="#78716c" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${(Number(value)/1000).toFixed(1)}k`} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1c1917', borderColor: '#44403c', color: '#fff', borderRadius: '8px' }}
-                      itemStyle={{ color: '#fff' }}
-                      formatter={(value: any) => [Number(value || 0).toLocaleString('hi-IN'), '']}
-                    />
+                    <Tooltip contentStyle={{ backgroundColor: '#1c1917', borderColor: '#44403c', color: '#fff', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} formatter={(value: any) => [Number(value || 0).toLocaleString('hi-IN'), '']} />
                     <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1500} />
                   </BarChart>
                 </ResponsiveContainer>
