@@ -15,47 +15,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, limit } from "firebase/firestore";
 
 // ═══════════════════════════════════════════════════════════
-// 🖼️ SMOOTH IMAGE SLIDER COMPONENT (World-Class Ken Burns Effect)
-// ═══════════════════════════════════════════════════════════
-const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    if (images.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 5000); // Smooth transition every 5 seconds
-    return () => clearInterval(timer);
-  }, [images.length]);
-
-  return (
-    <div className={`relative w-full h-full overflow-hidden bg-stone-200 ${className}`}>
-      {images.map((img, index) => (
-        <motion.div
-          key={img}
-          className="absolute inset-0 w-full h-full"
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ 
-            opacity: index === currentIndex ? 1 : 0,
-            scale: index === currentIndex ? 1 : 1.1
-          }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
-        >
-          <img 
-            src={img} 
-            alt={`Alamnagar Slide ${index + 1}`} 
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
-      ))}
-      {/* Subtle vignette overlay for premium feel */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
-    </div>
-  );
-};
-
-// ═══════════════════════════════════════════════════════════
-// 🌟 ANIMATED NUMBER COMPONENT
+//  ANIMATED NUMBER COMPONENT
 // ═══════════════════════════════════════════════════════════
 const AnimatedNumber = ({ value }: { value: number }) => {
   const [count, setCount] = useState(0);
@@ -84,8 +44,9 @@ const AnimatedNumber = ({ value }: { value: number }) => {
 
 // ═══════════════════════════════════════════════════════════
 // 📊 HERO TOWER CHART COMPONENT (REAL-TIME - SAME AS HOMEPAGE)
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
+  // ✅ ORIGINAL SEQUENCE: सदस्य, पोस्ट, व्यूज़, लाइक
   const data = [
     { name: 'सदस्य', value: Math.max(stats.totalUsers || 0, 10) },
     { name: 'पोस्ट', value: Math.max(stats.totalPosts || 0, 10) },
@@ -150,7 +111,7 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // 📖 READ MORE COMPONENT
 // ═══════════════════════════════════════════════════════════
 const ReadMore = ({ children, limit = 200 }: { children: string; limit?: number }) => {
@@ -258,23 +219,6 @@ export default function AboutPage() {
   const y = useTransform(scrollYProgress, [0, 1], [0, -30]);
   const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.8]);
 
-  // 🖼️ 5-Image Arrays for Each Section (Place these in public/images/)
-  const heroImages = [
-    '/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg', '/images/hero-4.jpg', '/images/hero-5.jpg'
-  ];
-  const storyImages = [
-    '/images/story-1.jpg', '/images/story-2.jpg', '/images/story-3.jpg', '/images/story-4.jpg', '/images/story-5.jpg'
-  ];
-  const economyImages = [
-    '/images/economy-1.jpg', '/images/economy-2.jpg', '/images/economy-3.jpg', '/images/economy-4.jpg', '/images/economy-5.jpg'
-  ];
-  const educationImages = [
-    '/images/education-1.jpg', '/images/education-2.jpg', '/images/education-3.jpg', '/images/education-4.jpg', '/images/education-5.jpg'
-  ];
-  const cultureImages = [
-    '/images/culture-1.jpg', '/images/culture-2.jpg', '/images/culture-3.jpg', '/images/culture-4.jpg', '/images/culture-5.jpg'
-  ];
-
   // ✅ REAL-TIME FIREBASE DATA
   const [liveStats, setLiveStats] = useState({
     totalUsers: 0,
@@ -289,11 +233,13 @@ export default function AboutPage() {
   const [chartData, setChartData] = useState<any[]>([]);
 
   useEffect(() => {
+    // Fetch Users Count
     const usersQuery = query(collection(db, "users"));
     const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
       setLiveStats(prev => ({ ...prev, totalUsers: snapshot.size }));
     });
 
+    // Fetch Spotlights Stats + Daily Chart Data
     const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(500));
     const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
       let totalViews = 0, totalLikes = 0, totalComments = 0, totalShares = 0;
@@ -361,14 +307,23 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-stone-50 overflow-x-hidden selection:bg-emerald-200 selection:text-emerald-900">
       
-      {/* 🌟 Cinematic Hero Section with REAL-TIME Tower Chart & Image Slider */}
+      {/* 🌟 Cinematic Hero Section with REAL-TIME Tower Chart */}
       <section className="relative h-[95vh] min-h-[700px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <SmoothImageSlider images={heroImages} className="w-full h-full" />
-          <div className="absolute inset-0 bg-stone-950/40" />
+        <motion.div style={{ y, opacity }} className="absolute inset-0 z-0">
+          <motion.div 
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ 
+              backgroundImage: "url('/images/mitti-anmol-rishta.jpg')",
+              filter: "brightness(0.65) contrast(1.1)"
+            }}
+          />
+          {/* ✅ REAL-TIME Tower Chart - ORIGINAL SEQUENCE */}
           <HeroTowerChart stats={liveStats} />
-          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/50 via-stone-900/30 to-stone-50" />
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-stone-900/25 to-stone-50" />
+        </motion.div>
 
         <div className="relative z-20 max-w-5xl mx-auto px-6 text-center text-white pt-20">
           <motion.div
@@ -393,6 +348,7 @@ export default function AboutPage() {
             </span>
           </motion.h1>
           
+          {/* ✅ UPDATED SUBTITLE WITH RELEVANT WORDS */}
           <motion.p 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -456,7 +412,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📜 Our Story Section with 5-Image Slider (FIXED OVERLAP) */}
+      {/*  Our Story Section */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -467,30 +423,35 @@ export default function AboutPage() {
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="relative">
-              <div className="absolute -top-8 -left-8 w-40 h-40 bg-amber-200/50 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-emerald-200/50 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-8 -left-8 w-40 h-40 bg-amber-200/50 rounded-full blur-3xl" />
+              <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-emerald-200/50 rounded-full blur-3xl" />
               
-              {/* ✅ EXPLICIT HEIGHT ADDED TO PREVENT OVERLAP */}
-              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white group h-[400px] md:h-[550px] w-full">
-                <SmoothImageSlider images={storyImages} className="w-full h-full" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                
-                {/* ✅ BADGE MOVED INSIDE THE IMAGE CONTAINER TO PREVENT TEXT OVERLAP */}
-                <motion.div 
-                  initial={{ y: 20, opacity: 0 }}
-                  whileInView={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.6 }}
-                  className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-stone-100 flex items-center gap-4 z-20"
-                >
-                  <div className="p-3 bg-emerald-100 rounded-full animate-pulse">
-                    <Heart className="w-6 h-6 text-emerald-600 fill-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-black text-stone-900">100%</p>
-                    <p className="text-xs text-stone-500 font-semibold">प्यार और अपनापन</p>
-                  </div>
-                </motion.div>
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white group">
+                <motion.img 
+                  initial={{ scale: 1.1 }}
+                  whileInView={{ scale: 1 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  src="/images/mitti-anmol-rishta.jpg"
+                  alt="Village Life" 
+                  className="w-full h-[400px] md:h-[550px] object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
+
+              <motion.div 
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="absolute -bottom-8 -right-4 md:-right-8 bg-white p-6 rounded-2xl shadow-2xl border border-stone-100 hidden md:flex items-center gap-4 z-10"
+              >
+                <div className="p-4 bg-emerald-100 rounded-full animate-pulse">
+                  <Heart className="w-8 h-8 text-emerald-600 fill-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-3xl font-black text-stone-900">100%</p>
+                  <p className="text-sm text-stone-500 font-semibold">प्यार और अपनापन</p>
+                </div>
+              </motion.div>
             </motion.div>
 
             <motion.div variants={fadeInUp} className="space-y-8">
@@ -521,7 +482,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📚 Detailed Info Sections with 5-Image Sliders */}
+      {/* 📚 Detailed Info Sections */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto space-y-32">
           
@@ -553,9 +514,8 @@ export default function AboutPage() {
               </div>
             </motion.div>
             <motion.div variants={fadeInUp} className="order-1 lg:order-2 relative">
-              {/* ✅ EXPLICIT HEIGHT ADDED */}
-              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full">
-                <SmoothImageSlider images={economyImages} className="w-full h-full" />
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+                <img src="/images/krishi-vikas.jpg" alt="Agriculture" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </motion.div>
           </motion.div>
@@ -569,9 +529,8 @@ export default function AboutPage() {
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="relative">
-              {/* ✅ EXPLICIT HEIGHT ADDED */}
-              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full">
-                <SmoothImageSlider images={educationImages} className="w-full h-full" />
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+                <img src="/images/bhavishya-ki-neev.jpg" alt="Education" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </motion.div>
             <motion.div variants={fadeInUp}>
@@ -601,7 +560,7 @@ export default function AboutPage() {
             </motion.div>
           </motion.div>
 
-          {/* Culture & Festivals with 5-Image Slider */}
+          {/* Culture & Festivals */}
           <motion.div 
             initial="hidden"
             whileInView="visible"
@@ -617,11 +576,6 @@ export default function AboutPage() {
               मिथिला-अंगिका की <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-emerald-600">अनूठी धरोहर</span>
             </motion.h2>
             
-            {/* Wide Culture Image Slider */}
-            <motion.div variants={fadeInUp} className="mb-12 rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[21/9] md:h-[400px] relative w-full">
-              <SmoothImageSlider images={cultureImages} className="w-full h-full" />
-            </motion.div>
-
             <div className="grid md:grid-cols-3 gap-8 text-left">
               <motion.div variants={fadeInUp} className="bg-stone-50 p-8 rounded-3xl border border-stone-200 hover:shadow-xl transition-all">
                 <Wheat className="w-10 h-10 text-amber-600 mb-4" />
