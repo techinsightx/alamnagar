@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { 
   MapPin, Users, Heart, Sprout, Sun, History, 
-  ArrowRight, Star, Home, Calendar, Award, Camera, Sparkles
+  ArrowRight, Star, Home, Calendar, Award, Camera, Sparkles,
+  BookOpen, Wheat, Music
 } from "lucide-react";
 import Link from "next/link";
 
@@ -60,60 +61,64 @@ const staggerContainer = {
 
 export default function AboutPage() {
   const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -30]);
+  const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.8]);
 
   const values = [
     {
-      icon: <Users className="w-8 h-8 text-emerald-600" />,
-      title: "एकता और भाईचारा",
-      desc: "आलमनगर सिर्फ एक गाँव नहीं, बल्कि एक बड़ा परिवार है। यहाँ सुख-दुख में हर कोई एक दूसरे के साथ खड़ा होता है।",
+      icon: <BookOpen className="w-8 h-8 text-emerald-600" />,
+      title: "मिथिला-कोसी की विरासत",
+      desc: "कोसी-गंगा के मैदानों में बसा आलमनगर, मुगल कालीन शाह आलमगीर से जुड़े अपने नाम और समृद्ध मिथिला-अंगिका संस्कृति का प्रतीक है।",
       gradient: "from-emerald-50 to-teal-50"
     },
     {
-      icon: <Sprout className="w-8 h-8 text-amber-600" />,
-      title: "प्रकृति से जुड़ाव",
-      desc: "हमारी मिट्टी, हमारे खेत और हमारा पर्यावरण हमारी असली दौलत है। हम प्रकृति के संरक्षक हैं।",
+      icon: <History className="w-8 h-8 text-amber-600" />,
+      title: "स्वतंत्रता का इतिहास",
+      desc: "1942 के Quit India आंदोलन में यहाँ के युवाओं ने जयप्रकाश नारायण के आह्वान पर तिरंगा फहराया और अंग्रेजी हुकूमत के खिलाफ डटकर संघर्ष किया।",
       gradient: "from-amber-50 to-orange-50"
     },
     {
-      icon: <History className="w-8 h-8 text-blue-600" />,
-      title: "गौरवशाली परंपरा",
-      desc: "पीढ़ियों से चली आ रही हमारी संस्कृति, त्योहार और रीति-रिवाज हमारी पहचान हैं, जिनका हम सम्मान करते हैं।",
+      icon: <Music className="w-8 h-8 text-blue-600" />,
+      title: "सामूहिक उत्सव और एकता",
+      desc: "छठ पूजा, समा-चकेवा, दुर्गा पूजा और प्रसिद्ध काली मेला यहाँ के त्योहार हैं, जहाँ सभी समुदाय मिलकर एक परिवार की तरह उत्सव मनाते हैं।",
       gradient: "from-blue-50 to-indigo-50"
     },
     {
-      icon: <Sun className="w-8 h-8 text-orange-600" />,
-      title: "प्रगति और शिक्षा",
-      desc: "परंपरा के साथ कदम मिलाकर चलते हुए, हम शिक्षा और तकनीक के माध्यम से गाँव को नई ऊंचाइयों पर ले जा रहे हैं।",
+      icon: <Wheat className="w-8 h-8 text-orange-600" />,
+      title: "कृषि और प्रकृति का सम्मान",
+      desc: "लिट्टी-चोकहा, सत्तू और मखाने की खीर यहाँ की पहचान है। हमारी मिट्टी और खेत हमारी असली दौलत हैं, जिनका हम सम्मान करते हैं।",
       gradient: "from-orange-50 to-red-50"
     }
   ];
 
   const stats = [
-    { icon: <Home className="w-6 h-6" />, value: "500+", label: "परिवार" },
-    { icon: <Calendar className="w-6 h-6" />, value: "100+", label: "वर्षों की विरासत" },
-    { icon: <Users className="w-6 h-6" />, value: "2000+", label: "निवासी" },
-    { icon: <Award className="w-6 h-6" />, value: "100", label: "% अटूट एकता", isPercent: true },
+    { icon: <MapPin className="w-6 h-6" />, value: "100+", label: "वर्षों की विरासत" },
+    { icon: <Users className="w-6 h-6" />, value: "2000+", label: "गर्वित निवासी" },
+    { icon: <Heart className="w-6 h-6" />, value: "100", label: "% सामुदायिक एकता", isPercent: true },
+    { icon: <Sun className="w-6 h-6" />, value: "365", label: "दिन संस्कृति का उत्सव", isPercent: false },
   ];
 
   return (
     <main className="min-h-screen bg-stone-50 overflow-x-hidden selection:bg-emerald-200 selection:text-emerald-900">
       
-      {/* 🌟 Cinematic Hero Section */}
-      <section className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+      {/* 🌟 Cinematic Hero Section (FIXED: Strong Visibility & Brightness) */}
+      <section className="relative h-[90vh] min-h-[650px] flex items-center justify-center overflow-hidden">
         <motion.div 
           style={{ y, opacity }}
           className="absolute inset-0 z-0"
         >
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110"
+          <motion.div 
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ 
               backgroundImage: "url('https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop')",
-              filter: "brightness(0.35)"
+              filter: "brightness(0.65) contrast(1.1)" // ✅ Increased brightness from 0.35 to 0.65 for strong visibility
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/70 via-stone-900/40 to-stone-50" />
+          {/* Enhanced Gradient Overlay for better text readability while keeping background visible */}
+          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/50 via-stone-900/30 to-stone-50" />
         </motion.div>
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
@@ -121,20 +126,20 @@ export default function AboutPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1 }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full mb-8 shadow-lg"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full mb-8 shadow-lg"
           >
             <MapPin className="w-4 h-4 text-amber-400" />
-            <span className="text-amber-300 text-sm font-bold uppercase tracking-widest">मधेपुरा, बिहार</span>
+            <span className="text-white text-sm font-bold uppercase tracking-widest">मधेपुरा, बिहार</span>
           </motion.div>
           
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-[1.1] tracking-tight"
+            className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-[1.1] tracking-tight drop-shadow-2xl"
           >
             आलमनगर: <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-amber-300 to-emerald-400 animate-pulse">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-amber-300 to-emerald-300">
               हमारी जड़ें, हमारी पहचान
             </span>
           </motion.h1>
@@ -143,10 +148,10 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg md:text-2xl text-stone-200 max-w-3xl mx-auto mb-12 leading-relaxed font-light"
+            className="text-lg md:text-2xl text-stone-100 max-w-3xl mx-auto mb-12 leading-relaxed font-medium drop-shadow-md"
           >
-            एक ऐसा गाँव जहाँ परंपरा और प्रगति का अनूठा संगम है। 
-            यहाँ की मिट्टी में खुशबू है, और लोगों के दिलों में अपार प्यार।
+            कोसी-गंगा के पवित्र मैदानों में बसा एक ऐसा गाँव, जहाँ मिथिला की समृद्ध संस्कृति, 
+            वीर इतिहास और आपसी भाईचारे का अनूठा संगम देखने को मिलता है।
           </motion.p>
 
           <motion.div 
@@ -157,23 +162,23 @@ export default function AboutPage() {
           >
             <Link 
               href="/community" 
-              className="group flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-2xl shadow-2xl shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all hover:scale-105"
+              className="group flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-2xl shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all hover:scale-105"
             >
               समुदाय से जुड़ें
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link 
               href="/gallery" 
-              className="flex items-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-xl border border-white/20 text-white font-bold rounded-2xl hover:bg-white/20 transition-all hover:scale-105"
+              className="flex items-center gap-2 px-8 py-4 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold rounded-2xl hover:bg-white/30 transition-all hover:scale-105"
             >
-              <Sparkles className="w-5 h-5 text-amber-400" />
+              <Sparkles className="w-5 h-5 text-amber-300" />
               विरासत देखें
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* 📜 Our Story Section */}
+      {/* 📜 Our Story Section (Updated with Real Facts) */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -195,7 +200,7 @@ export default function AboutPage() {
                   whileInView={{ scale: 1 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop" 
-                  alt="Village Life" 
+                  alt="Village Life in Alamnagar" 
                   className="w-full h-[400px] md:h-[550px] object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -229,15 +234,18 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-6 text-lg text-stone-600 leading-relaxed">
                 <p>
-                  आलमनगर सिर्फ एक भौगोलिक स्थान नहीं, बल्कि हम सबकी भावनाओं का केंद्र है। पीढ़ियों से यहाँ के लोग कृषि, संस्कृति और आपसी सहयोग के बल पर एक मिसाल कायम कर रहे हैं।
+                  आलमनगर का विकास कोसी-गंगा के मैदानों में एक छोटे नदी किनारे के बस्ती से शुरू हुआ, जो धीरे-धीरे उत्तर बिहार के प्राचीन व्यापार मार्गों का एक महत्वपूर्ण पड़ाव बन गया। स्थानीय इतिहास के अनुसार, इसका नाम मुगल कालीन शाह आलमगीर से जुड़ा है, जहाँ "आलम" का अर्थ है संसार और "नगर" का अर्थ है कस्बा।
                 </p>
                 <p>
-                  आज, जब दुनिया तेजी से बदल रही है, हमने ठान लिया है कि हम अपनी जड़ों को मजबूत रखते हुए, तकनीक के माध्यम से अपने गाँव को एक <strong className="text-stone-900">"डिजिटल विरासत"</strong> प्रदान करेंगे। ताकि दुनिया के किसी भी कोने में बैठे आलमनगरी को अपने गाँव की हर खबर और यादें मिलती रहें।
+                  स्वतंत्रता संग्राम के दौरान, यहाँ के युवाओं ने राजा रास बिहारी लाल मंडल और बी.एन. मंडल जैसे महान नेताओं से प्रेरणा ली। 1942 के 'Quit India' आंदोलन में, जयप्रकाश नारायण के आह्वान पर यहाँ के क्रांतिकारियों ने सरकारी दफ्तरों पर तिरंगा फहराया और अंग्रेजी हुकूमत के खिलाफ डटकर संघर्ष किया।
+                </p>
+                <p>
+                  आज, हम अपनी जड़ों को मजबूत रखते हुए, तकनीक के माध्यम से अपने गाँव को एक <strong className="text-stone-900">"डिजिटल विरासत"</strong> प्रदान कर रहे हैं, ताकि दुनिया के किसी भी कोने में बैठे आलमनगरी को अपने गाँव की हर खबर और यादें मिलती रहें।
                 </p>
               </div>
               
               <div className="pt-4 flex flex-wrap gap-6">
-                {["समृद्ध संस्कृति", "शिक्षा पर बल", "पर्यावरण प्रेम"].map((item, i) => (
+                {["समृद्ध मिथिला संस्कृति", "वीर इतिहास", "प्रकृति प्रेम"].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 text-stone-800 font-bold">
                     <div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-emerald-500' : 'bg-blue-500'}`} />
                     {item}
