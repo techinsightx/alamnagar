@@ -5,12 +5,15 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { 
   MapPin, Users, Heart, Sprout, Sun, History, 
   ArrowRight, Star, Home, Calendar, Award, Camera, Sparkles,
-  BookOpen, Wheat, Music
+  BookOpen, Wheat, Music, GraduationCap, Building2, TrendingUp,
+  Landmark, Droplets, Shield, ChevronDown, ChevronUp,
+  Stethoscope, Phone, Activity
 } from "lucide-react";
 import Link from "next/link";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell, AreaChart, Area } from "recharts";
 
 // ═══════════════════════════════════════════════════════════
-// 🌟 ANIMATED NUMBER COMPONENT (Dynamic Counting)
+// 🌟 ANIMATED NUMBER COMPONENT
 // ═══════════════════════════════════════════════════════════
 const AnimatedNumber = ({ value }: { value: string }) => {
   const [count, setCount] = useState(0);
@@ -40,23 +43,145 @@ const AnimatedNumber = ({ value }: { value: string }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
+// 📊 HERO TOWER CHART COMPONENT (Real Statistics)
+// ═══════════════════════════════════════════════════════════
+const HeroTowerChart = () => {
+  const data = [
+    { name: 'जनसंख्या', value: 175, color: '#10b981' },
+    { name: 'क्षेत्रफल', value: 186, color: '#f59e0b' },
+    { name: 'साक्षरता', value: 50, color: '#3b82f6' },
+    { name: 'पंचायत', value: 14, color: '#f43f5e' },
+  ];
+
+  return (
+    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-30">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="heroPop" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0.1}/>
+            </linearGradient>
+            <linearGradient id="heroArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.1}/>
+            </linearGradient>
+            <linearGradient id="heroLit" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1}/>
+            </linearGradient>
+            <linearGradient id="heroPanch" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.1}/>
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="name" stroke="#ffffff" fontSize={12} tickLine={false} axisLine={false} opacity={0.8} />
+          <Bar dataKey="value" radius={[8, 8, 0, 0]} animationDuration={2500} animationEasing="ease-out">
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={['url(#heroPop)', 'url(#heroArea)', 'url(#heroLit)', 'url(#heroPanch)'][index]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// 📖 READ MORE COMPONENT
+// ═══════════════════════════════════════════════════════════
+const ReadMore = ({ children, limit = 160 }: { children: string; limit?: number }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isLong = children.length > limit;
+  const displayText = isExpanded || !isLong ? children : children.slice(0, limit) + '...';
+
+  return (
+    <p className="text-stone-600 leading-relaxed text-lg">
+      {displayText}
+      {isLong && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="inline-flex items-center gap-1 text-emerald-600 font-bold ml-1 hover:text-emerald-700 transition-colors"
+        >
+          {isExpanded ? (
+            <><ChevronUp className="w-4 h-4" /> कम पढ़ें</>
+          ) : (
+            <><ChevronDown className="w-4 h-4" /> और पढ़ें</>
+          )}
+        </button>
+      )}
+    </p>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// 📈 BOTTOM SUMMARY CARD WITH LINE CHART
+// ═══════════════════════════════════════════════════════════
+const SummaryLineChartCard = () => {
+  const data = [
+    { year: '2010', growth: 20 },
+    { year: '2014', growth: 35 },
+    { year: '2018', growth: 55 },
+    { year: '2022', growth: 75 },
+    { year: '2026', growth: 95 },
+  ];
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="relative bg-gradient-to-br from-emerald-900 to-stone-900 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-2xl border border-emerald-500/20"
+    >
+      {/* Background Line Chart */}
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="lineGlow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <Area type="monotone" dataKey="growth" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#lineGlow)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="relative z-10 text-center">
+        <h3 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
+          आलमनगर: <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">एक उज्ज्वल भविष्य</span>
+        </h3>
+        <p className="text-stone-300 text-lg md:text-xl max-w-3xl mx-auto mb-8 leading-relaxed">
+          परंपरा और आधुनिकता का यह अनूठा संगम आलमनगर को केवल एक गाँव नहीं, बल्कि एक सजीव, विकासशील और गर्वित समुदाय बनाता है। 
+          हमारा डिजिटल मंच इसी गौरवशाली यात्रा को सहेजने और आगे बढ़ाने का एक छोटा सा प्रयास है।
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link href="/community" className="px-8 py-4 bg-white text-emerald-900 font-black rounded-2xl shadow-xl hover:bg-stone-100 transition-all hover:scale-105 flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            हमारे साथ जुड़ें
+          </Link>
+          <Link href="/contact" className="px-8 py-4 bg-emerald-800/40 backdrop-blur-md border border-emerald-500/30 text-white font-bold rounded-2xl hover:bg-emerald-800/60 transition-all hover:scale-105 flex items-center gap-2">
+            <Phone className="w-5 h-5" />
+            संपर्क करें
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
 // ANIMATION VARIANTS
 // ═══════════════════════════════════════════════════════════
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.8, ease: "easeOut" as const }
-  }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } }
 };
 
 const staggerContainer = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 }
-  }
+  visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
 };
 
 export default function AboutPage() {
@@ -64,49 +189,19 @@ export default function AboutPage() {
   const y = useTransform(scrollYProgress, [0, 1], [0, -30]);
   const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.8]);
 
-  const values = [
-    {
-      icon: <BookOpen className="w-8 h-8 text-emerald-600" />,
-      title: "मिथिला-कोसी की विरासत",
-      desc: "कोसी-गंगा के मैदानों में बसा आलमनगर, मुगल कालीन शाह आलमगीर से जुड़े अपने नाम और समृद्ध मिथिला-अंगिका संस्कृति का प्रतीक है।",
-      gradient: "from-emerald-50 to-teal-50"
-    },
-    {
-      icon: <History className="w-8 h-8 text-amber-600" />,
-      title: "स्वतंत्रता का इतिहास",
-      desc: "1942 के Quit India आंदोलन में यहाँ के युवाओं ने जयप्रकाश नारायण के आह्वान पर तिरंगा फहराया और अंग्रेजी हुकूमत के खिलाफ डटकर संघर्ष किया।",
-      gradient: "from-amber-50 to-orange-50"
-    },
-    {
-      icon: <Music className="w-8 h-8 text-blue-600" />,
-      title: "सामूहिक उत्सव और एकता",
-      desc: "छठ पूजा, समा-चकेवा, दुर्गा पूजा और प्रसिद्ध काली मेला यहाँ के त्योहार हैं, जहाँ सभी समुदाय मिलकर एक परिवार की तरह उत्सव मनाते हैं।",
-      gradient: "from-blue-50 to-indigo-50"
-    },
-    {
-      icon: <Wheat className="w-8 h-8 text-orange-600" />,
-      title: "कृषि और प्रकृति का सम्मान",
-      desc: "लिट्टी-चोकहा, सत्तू और मखाने की खीर यहाँ की पहचान है। हमारी मिट्टी और खेत हमारी असली दौलत हैं, जिनका हम सम्मान करते हैं।",
-      gradient: "from-orange-50 to-red-50"
-    }
-  ];
-
   const stats = [
-    { icon: <MapPin className="w-6 h-6" />, value: "100+", label: "वर्षों की विरासत" },
-    { icon: <Users className="w-6 h-6" />, value: "2000+", label: "गर्वित निवासी" },
-    { icon: <Heart className="w-6 h-6" />, value: "100", label: "% सामुदायिक एकता", isPercent: true },
-    { icon: <Sun className="w-6 h-6" />, value: "365", label: "दिन संस्कृति का उत्सव", isPercent: false },
+    { icon: <Users className="w-6 h-6" />, value: "1.75", label: "लाख+ जनसंख्या", suffix: "L+" },
+    { icon: <MapPin className="w-6 h-6" />, value: "186", label: "km² क्षेत्रफल", suffix: " km²" },
+    { icon: <GraduationCap className="w-6 h-6" />, value: "50", label: "% साक्षरता दर", suffix: "%" },
+    { icon: <Building2 className="w-6 h-6" />, value: "14", label: "पंचायतें", suffix: "+" },
   ];
 
   return (
     <main className="min-h-screen bg-stone-50 overflow-x-hidden selection:bg-emerald-200 selection:text-emerald-900">
       
-      {/* 🌟 Cinematic Hero Section (FIXED: Strong Visibility & Brightness) */}
-      <section className="relative h-[90vh] min-h-[650px] flex items-center justify-center overflow-hidden">
-        <motion.div 
-          style={{ y, opacity }}
-          className="absolute inset-0 z-0"
-        >
+      {/* 🌟 Cinematic Hero Section with Tower Chart */}
+      <section className="relative h-[95vh] min-h-[700px] flex items-center justify-center overflow-hidden">
+        <motion.div style={{ y, opacity }} className="absolute inset-0 z-0">
           <motion.div 
             initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
@@ -114,11 +209,12 @@ export default function AboutPage() {
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ 
               backgroundImage: "url('https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop')",
-              filter: "brightness(0.65) contrast(1.1)" // ✅ Increased brightness from 0.35 to 0.65 for strong visibility
+              filter: "brightness(0.65) contrast(1.1)"
             }}
           />
-          {/* Enhanced Gradient Overlay for better text readability while keeping background visible */}
-          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/50 via-stone-900/30 to-stone-50" />
+          {/* Tower Chart Overlay */}
+          <HeroTowerChart />
+          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-stone-900/25 to-stone-50" />
         </motion.div>
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
@@ -126,7 +222,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1 }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full mb-8 shadow-lg"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/25 backdrop-blur-xl border border-white/40 rounded-full mb-8 shadow-lg"
           >
             <MapPin className="w-4 h-4 text-amber-400" />
             <span className="text-white text-sm font-bold uppercase tracking-widest">मधेपुरा, बिहार</span>
@@ -148,10 +244,10 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg md:text-2xl text-stone-100 max-w-3xl mx-auto mb-12 leading-relaxed font-medium drop-shadow-md"
+            className="text-lg md:text-xl text-stone-100 max-w-3xl mx-auto mb-12 leading-relaxed font-medium drop-shadow-md"
           >
-            कोसी-गंगा के पवित्र मैदानों में बसा एक ऐसा गाँव, जहाँ मिथिला की समृद्ध संस्कृति, 
-            वीर इतिहास और आपसी भाईचारे का अनूठा संगम देखने को मिलता है।
+            कोसी-गंगा के पवित्र मैदानों में बसा एक ऐसा गाँव, जहाँ 1.75 लाख+ निवासी, 186 km² क्षेत्रफल, 
+            और 14+ पंचायतों की समृद्ध मिथिला-अंगिका विरासत है।
           </motion.p>
 
           <motion.div 
@@ -167,18 +263,48 @@ export default function AboutPage() {
               समुदाय से जुड़ें
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
+            {/* ✅ STRONG VISIBILITY BUTTON (Pure White, Dark Text, Bold) */}
             <Link 
               href="/gallery" 
-              className="flex items-center gap-2 px-8 py-4 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold rounded-2xl hover:bg-white/30 transition-all hover:scale-105"
+              className="flex items-center gap-2 px-8 py-4 bg-white text-emerald-800 font-black rounded-2xl shadow-xl hover:bg-stone-100 transition-all hover:scale-105"
             >
-              <Sparkles className="w-5 h-5 text-amber-300" />
+              <Sparkles className="w-5 h-5 text-amber-600" />
               विरासत देखें
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* 📜 Our Story Section (Updated with Real Facts) */}
+      {/* 📊 Quick Stats Section */}
+      <section className="py-16 px-6 bg-white relative z-10 -mt-20">
+        <div className="max-w-6xl mx-auto">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6"
+          >
+            {stats.map((stat, index) => (
+              <motion.div 
+                key={index} 
+                variants={fadeInUp}
+                className="bg-gradient-to-br from-emerald-50 to-amber-50 p-6 rounded-2xl border border-emerald-100 shadow-lg text-center group hover:shadow-xl transition-all hover:-translate-y-1"
+              >
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-white rounded-xl mb-3 text-emerald-600 group-hover:scale-110 transition-transform shadow-sm">
+                  {stat.icon}
+                </div>
+                <p className="text-3xl md:text-4xl font-black text-stone-900 mb-1">
+                  <AnimatedNumber value={stat.value} />{stat.suffix}
+                </p>
+                <p className="text-xs md:text-sm text-stone-600 font-bold">{stat.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 📜 Our Story Section */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -189,24 +315,21 @@ export default function AboutPage() {
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="relative">
-              {/* Decorative Blobs */}
               <div className="absolute -top-8 -left-8 w-40 h-40 bg-amber-200/50 rounded-full blur-3xl" />
               <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-emerald-200/50 rounded-full blur-3xl" />
               
-              {/* Main Image with Reveal */}
               <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white group">
                 <motion.img 
                   initial={{ scale: 1.1 }}
                   whileInView={{ scale: 1 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop" 
-                  alt="Village Life in Alamnagar" 
+                  alt="Village Life" 
                   className="w-full h-[400px] md:h-[550px] object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
 
-              {/* Floating Badge */}
               <motion.div 
                 initial={{ y: 20, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
@@ -232,16 +355,13 @@ export default function AboutPage() {
                 मिट्टी से जुड़ा एक <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-amber-600">अनमोल रिश्ता</span>
               </h2>
-              <div className="space-y-6 text-lg text-stone-600 leading-relaxed">
-                <p>
+              <div className="space-y-6">
+                <ReadMore limit={180}>
                   आलमनगर का विकास कोसी-गंगा के मैदानों में एक छोटे नदी किनारे के बस्ती से शुरू हुआ, जो धीरे-धीरे उत्तर बिहार के प्राचीन व्यापार मार्गों का एक महत्वपूर्ण पड़ाव बन गया। स्थानीय इतिहास के अनुसार, इसका नाम मुगल कालीन शाह आलमगीर से जुड़ा है, जहाँ "आलम" का अर्थ है संसार और "नगर" का अर्थ है कस्बा।
-                </p>
-                <p>
-                  स्वतंत्रता संग्राम के दौरान, यहाँ के युवाओं ने राजा रास बिहारी लाल मंडल और बी.एन. मंडल जैसे महान नेताओं से प्रेरणा ली। 1942 के 'Quit India' आंदोलन में, जयप्रकाश नारायण के आह्वान पर यहाँ के क्रांतिकारियों ने सरकारी दफ्तरों पर तिरंगा फहराया और अंग्रेजी हुकूमत के खिलाफ डटकर संघर्ष किया।
-                </p>
-                <p>
-                  आज, हम अपनी जड़ों को मजबूत रखते हुए, तकनीक के माध्यम से अपने गाँव को एक <strong className="text-stone-900">"डिजिटल विरासत"</strong> प्रदान कर रहे हैं, ताकि दुनिया के किसी भी कोने में बैठे आलमनगरी को अपने गाँव की हर खबर और यादें मिलती रहें।
-                </p>
+                </ReadMore>
+                <ReadMore limit={200}>
+                  स्वतंत्रता संग्राम के दौरान, यहाँ के युवाओं ने राजा रास बिहारी लाल मंडल और बी.एन. मंडल जैसे महान नेताओं से प्रेरणा ली। 1942 के 'Quit India' आंदोलन में, जयप्रकाश नारायण के आह्वान पर यहाँ के क्रांतिकारियों ने सरकारी दफ्तरों पर तिरंगा फहराया और शहीद चुल्हे मंडल जैसे वीरों ने अपने प्राण न्योछावर कर दिए। आज, हम अपनी जड़ों को मजबूत रखते हुए, तकनीक के माध्यम से अपने गाँव को एक "डिजिटल विरासत" प्रदान कर रहे हैं।
+                </ReadMore>
               </div>
               
               <div className="pt-4 flex flex-wrap gap-6">
@@ -257,144 +377,135 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 💎 Core Values Section */}
-      <section className="py-24 bg-stone-100 px-6 relative overflow-hidden">
-        {/* Subtle Background Pattern */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#444_1px,transparent_1px)] [background-size:20px_20px]" />
-        
-        <div className="max-w-7xl mx-auto relative z-10">
+      {/* 📚 Detailed Info Sections (Economy, Education, Health, Culture) */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-7xl mx-auto space-y-32">
+          
+          {/* Economy */}
           <motion.div 
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true }}
             variants={staggerContainer}
-            className="text-center mb-20"
+            className="grid lg:grid-cols-2 gap-16 items-center"
+          >
+            <motion.div variants={fadeInUp} className="order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded-full text-sm font-bold mb-6">
+                <TrendingUp className="w-4 h-4" />
+                अर्थव्यवस्था
+              </div>
+              <h3 className="text-3xl md:text-4xl font-black text-stone-900 mb-6">कृषि और विकास</h3>
+              <div className="space-y-4">
+                <ReadMore limit={160}>
+                  आलमनगर की अर्थव्यवस्था छोटे और सीमांत कृषि पर आधारित है। परिवार धान, मक्का और दलहन की खेती करते हैं। बाढ़ और बढ़ती लागत के कारण अब लोग डेयरी, मत्स्य पालन और बकरी पालन से आय को स्थिर करने का प्रयास कर रहे हैं।
+                </ReadMore>
+                <ReadMore limit={140}>
+                  आलमनगर के युवा पंजाब, दिल्ली और गुजरात जैसे राज्यों में रोजगार की तलाश में जाते हैं, जो स्थानीय अर्थव्यवस्था में महत्वपूर्ण योगदान देते हैं। हाल ही में सरकारी योजनाओं से किसानों को सीधा लाभ मिल रहा है।
+                </ReadMore>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {["धान", "मक्का", "डेयरी", "मत्स्य पालन", "मखाना"].map((tag, i) => (
+                  <span key={i} className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-sm font-bold border border-emerald-200">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+            <motion.div variants={fadeInUp} className="order-1 lg:order-2 relative">
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+                <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670" alt="Agriculture" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Education & Health */}
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid lg:grid-cols-2 gap-16 items-center"
+          >
+            <motion.div variants={fadeInUp} className="relative">
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+                <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2670" alt="Education" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+              </div>
+            </motion.div>
+            <motion.div variants={fadeInUp}>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-bold mb-6">
+                <GraduationCap className="w-4 h-4" />
+                शिक्षा और स्वास्थ्य
+              </div>
+              <h3 className="text-3xl md:text-4xl font-black text-stone-900 mb-6">भविष्य की नींव</h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-xl font-bold text-stone-900 mb-2 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-emerald-600" /> शिक्षा
+                  </h4>
+                  <ReadMore limit={150}>
+                    लगभग 50% साक्षरता दर के साथ, यहाँ सरकारी और निजी स्कूलों (जैसे N.K.M. High School) का एक घना नेटवर्क है। नए अंग्रेजी माध्यम स्कूल और कोचिंग सेंटर छात्रों को बोर्ड परीक्षाओं की तैयारी में मदद कर रहे हैं।
+                  </ReadMore>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-stone-900 mb-2 flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-rose-600" /> स्वास्थ्य
+                  </h4>
+                  <ReadMore limit={150}>
+                    आलमनगर में एक सामुदायिक स्वास्थ्य केंद्र (CHC) है जो आस-पास की पंचायतों के लिए मुख्य रेफरल पॉइंट है। बाढ़ प्रभावित कोसी गाँवों की सेवा के लिए प्राथमिक स्वास्थ्य केंद्र (PHC) सक्रिय हैं।
+                  </ReadMore>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Culture & Festivals */}
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="text-center"
           >
             <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 rounded-full text-sm font-bold mb-6">
-              <Star className="w-4 h-4 fill-amber-800" />
-              हमारे मूल्य
+              <Music className="w-4 h-4 fill-amber-800" />
+              संस्कृति और त्योहार
             </motion.div>
-            <motion.h2 variants={fadeInUp} className="text-4xl md:text-6xl font-black text-stone-900 tracking-tight">
-              वो सिद्धांत जो हमें <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-emerald-600">खास</span> बनाते हैं
+            <motion.h2 variants={fadeInUp} className="text-4xl md:text-5xl font-black text-stone-900 mb-12">
+              मिथिला-अंगिका की <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-emerald-600">अनूठी धरोहर</span>
             </motion.h2>
-          </motion.div>
-
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={staggerContainer}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {values.map((value, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                className={`group relative bg-white p-8 rounded-3xl border border-stone-200 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden`}
-              >
-                {/* Hover Gradient Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${value.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                
-                <div className="relative z-10">
-                  <div className="w-16 h-16 bg-stone-50 group-hover:bg-white rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-sm border border-stone-100">
-                    {value.icon}
-                  </div>
-                  <h3 className="text-xl font-black text-stone-900 mb-3 group-hover:text-stone-800">
-                    {value.title}
-                  </h3>
-                  <p className="text-stone-600 group-hover:text-stone-700 leading-relaxed text-sm">
-                    {value.desc}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 📊 Dynamic Stats Section */}
-      <section className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-stone-900 to-emerald-950" />
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/20 rounded-full blur-[120px]" />
-        
-        <div className="relative max-w-7xl mx-auto">
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-center"
-          >
-            {stats.map((stat, index) => (
-              <motion.div key={index} variants={fadeInUp} className="space-y-4 group">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl mb-2 text-amber-400 group-hover:bg-white/10 group-hover:scale-110 transition-all duration-300">
-                  {stat.icon}
-                </div>
-                <p className="text-4xl md:text-6xl font-black text-white tracking-tight">
-                  <AnimatedNumber value={stat.value} />
-                  {stat.isPercent && "%"}
-                </p>
-                <p className="text-stone-400 font-bold uppercase tracking-widest text-xs md:text-sm">
-                  {stat.label}
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 🚀 Call to Action Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-amber-700 rounded-[2.5rem] p-10 md:p-16 shadow-2xl shadow-emerald-900/20 overflow-hidden"
-          >
-            {/* Animated Background Glows */}
-            <motion.div 
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 6, repeat: Infinity }}
-              className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" 
-            />
-            <motion.div 
-              animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-              transition={{ duration: 8, repeat: Infinity, delay: 1 }}
-              className="absolute bottom-0 left-0 w-96 h-96 bg-black/20 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl" 
-            />
             
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight tracking-tight">
-                क्या आप भी इस विरासत का <br /> 
-                <span className="text-amber-300">हिस्सा बनना चाहते हैं?</span>
-              </h2>
-              <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-12 leading-relaxed">
-                चाहे आप गाँव में रहते हों या दुनिया के किसी कोने में, आलमनगर का यह डिजिटल मंच आपका ही है। 
-                अपनी तस्वीरें, यादें और विचार साझा करके इसे और भी खास बनाएं।
-              </p>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-                <Link 
-                  href="/auth" 
-                  className="w-full sm:w-auto px-10 py-5 bg-white text-emerald-800 font-black rounded-2xl shadow-xl hover:bg-stone-100 transition-all hover:scale-105 flex items-center justify-center gap-3 text-lg"
-                >
-                  <Users className="w-6 h-6" />
-                  समुदाय में शामिल हों
-                </Link>
-                <Link 
-                  href="/gallery" 
-                  className="w-full sm:w-auto px-10 py-5 bg-emerald-800/40 backdrop-blur-xl border border-white/20 text-white font-bold rounded-2xl hover:bg-emerald-800/60 transition-all hover:scale-105 flex items-center justify-center gap-3 text-lg"
-                >
-                  <Camera className="w-6 h-6" />
-                  गैलरी देखें
-                </Link>
-              </div>
+            <div className="grid md:grid-cols-3 gap-8 text-left">
+              <motion.div variants={fadeInUp} className="bg-stone-50 p-8 rounded-3xl border border-stone-200 hover:shadow-xl transition-all">
+                <Wheat className="w-10 h-10 text-amber-600 mb-4" />
+                <h4 className="text-xl font-black text-stone-900 mb-3">स्थानीय व्यंजन</h4>
+                <ReadMore limit={120}>
+                  कोसी बेल्ट की थाली: सरसों के तेल में बनी सब्ज़ी, दाल, चावल और नदी की मछली। लिट्टी-चोकहा, सत्तू पराठा और त्योहारों पर मखाने की खीर, मालपुआ और बलूशाही यहाँ की पहचान हैं।
+                </ReadMore>
+              </motion.div>
+              <motion.div variants={fadeInUp} className="bg-stone-50 p-8 rounded-3xl border border-stone-200 hover:shadow-xl transition-all">
+                <Music className="w-10 h-10 text-blue-600 mb-4" />
+                <h4 className="text-xl font-black text-stone-900 mb-3">भाषा और लोकगीत</h4>
+                <ReadMore limit={120}>
+                  यहाँ की बोली मैथिली, स्थानीय हिंदी और अंगिका का अनूठा मिश्रण है। शादियों, छठ और समा-चकेवा के दौरान महिलाओं द्वारा गाए जाने वाले लोकगीत इस क्षेत्र की आत्मा हैं।
+                </ReadMore>
+              </motion.div>
+              <motion.div variants={fadeInUp} className="bg-stone-50 p-8 rounded-3xl border border-stone-200 hover:shadow-xl transition-all">
+                <Sun className="w-10 h-10 text-orange-600 mb-4" />
+                <h4 className="text-xl font-black text-stone-900 mb-3">प्रमुख त्योहार</h4>
+                <ReadMore limit={120}>
+                  छठ पूजा यहाँ का सबसे शक्तिशाली त्योहार है। इसके अलावा समा-चकेवा, दुर्गा पूजा, राम नवमी, ईद और प्रसिद्ध 'काली मेला' आलमनगर को एक साझा सांस्कृतिक स्थान बनाते हैं।
+                </ReadMore>
+              </motion.div>
             </div>
           </motion.div>
+
+        </div>
+      </section>
+
+      {/* 📈 Bottom Summary Card with Line Chart (Replaces Footer for this page) */}
+      <section className="py-24 px-6 bg-stone-50">
+        <div className="max-w-5xl mx-auto">
+          <SummaryLineChartCard />
         </div>
       </section>
 
