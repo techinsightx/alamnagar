@@ -25,22 +25,42 @@ import {
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-// 🖼️ SMOOTH IMAGE SLIDER (5 Images - Cinematic, Light Overlay)
+// ️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
 // ═══════════════════════════════════════════════════════════
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop", // Sunrise/River
+  "https://images.unsplash.com/photo-1609766418204-94aae7d87817?q=80&w=2670&auto=format&fit=crop", // Village/Choupal
+  "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?q=80&w=2670&auto=format&fit=crop", // Festival
+  "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop", // Farming
+  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2670&auto=format&fit=crop", // Heritage/Temple
+];
+
 const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [resolvedImages, setResolvedImages] = useState<string[]>(images);
+
+  // ✅ Fallback mechanism: if local image fails, use fallback URL
+  const handleImageError = (index: number) => {
+    setResolvedImages(prev => {
+      const updated = [...prev];
+      if (!updated[index].startsWith('http')) {
+        updated[index] = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+      }
+      return updated;
+    });
+  };
 
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (resolvedImages.length <= 1) return;
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
+      setCurrentIndex((prev) => (prev + 1) % resolvedImages.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [images.length]);
+  }, [resolvedImages.length]);
 
   return (
     <div className={`relative w-full h-full overflow-hidden bg-stone-900 ${className}`}>
-      {images.map((img, index) => (
+      {resolvedImages.map((img, index) => (
         <motion.div
           key={img}
           className="absolute inset-0 w-full h-full"
@@ -58,15 +78,16 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
             src={img} 
             alt={`Alamnagar Hero ${index + 1}`} 
             className="w-full h-full object-cover"
+            onError={() => handleImageError(index)}
           />
         </motion.div>
       ))}
-      {/* ✅ Light overlay inside slider only */}
+      {/* Light overlay inside slider */}
       <div className="absolute inset-0 bg-gradient-to-t from-stone-950/40 via-transparent to-stone-950/20 pointer-events-none" />
       
       {/* Progress Dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-2">
-        {images.map((_, index) => (
+        {resolvedImages.map((_, index) => (
           <motion.button
             key={index}
             onClick={() => setCurrentIndex(index)}
@@ -122,7 +143,7 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
   return <span>{count.toLocaleString('hi-IN')}{suffix}</span>;
 };
 
-// ✅ REDUCED OPACITY: 65% → 20% (taaki slider dikhe)
+// ✅ REDUCED OPACITY for slider visibility
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
@@ -145,7 +166,6 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   );
 };
 
-// ✅ REDUCED OPACITY: 40% → 20% (taaki slider dikhe)
 const HeroTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
     { name: 'सदस्य', value: stats.totalUsers || 10 },
@@ -538,6 +558,7 @@ export default function HomePage() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [newReviewText, setNewReviewText] = useState("");
 
+  // ✅ Local images first, fallback URLs will auto-activate if local fails
   const heroImages = [
     '/images/hero-1.jpg',
     '/images/hero-2.jpg',
@@ -620,7 +641,7 @@ export default function HomePage() {
     } catch (error: any) {
       console.error("Newsletter error:", error);
       setNewsletterStatus("error");
-      setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई। कृपया पुन प्रयास करें।");
+      setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
     }
   };
 
@@ -671,18 +692,18 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION (FIXED: Slider Visible) ===== */}
+        {/* ===== 1. CINEMATIC HERO SECTION (With Fallback Images) ===== */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-900 text-white px-4 md:px-8 lg:px-12">
-          {/* ✅ Slider as BASE LAYER (z-0) */}
+          {/* ✅ Slider as BASE LAYER */}
           <div className="absolute inset-0 z-0">
             <SmoothImageSlider images={heroImages} className="w-full h-full" />
           </div>
           
-          {/* ✅ Charts with REDUCED opacity (taaki slider dikhe) */}
+          {/* ✅ Charts with reduced opacity */}
           <HeroBackgroundChart data={chartData} />
           <HeroTowerChart stats={liveStats} />
           
-          {/* ✅ Lighter gradient overlay (taaki slider dikhe) */}
+          {/* ✅ Lighter gradient overlay */}
           <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/30 via-stone-900/20 to-stone-950/40 pointer-events-none" />
           
           {isAdmin && (
