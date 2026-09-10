@@ -18,7 +18,7 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-// 📊 Recharts Imports
+//  Recharts Imports
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar 
 } from "recharts";
@@ -27,7 +27,7 @@ import {
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-// ️ SMOOTH IMAGE SLIDER COMPONENT (Same as About Page)
+// 🖼️ SMOOTH IMAGE SLIDER COMPONENT (5 Images - Cinematic)
 // ═══════════════════════════════════════════════════════════
 const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -36,7 +36,7 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
     if (images.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 3000); // ✅ Har 3 seconds par change
+    }, 4000); // ✅ Har 4 seconds par change
     return () => clearInterval(timer);
   }, [images.length]);
 
@@ -46,29 +46,44 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
         <motion.div
           key={img}
           className="absolute inset-0 w-full h-full"
-          initial={{ opacity: 0, scale: 1.1 }}
+          initial={{ opacity: 0, scale: 1.2 }}
           animate={{ 
             opacity: index === currentIndex ? 1 : 0,
-            scale: index === currentIndex ? 1 : 1.1
+            scale: index === currentIndex ? 1 : 1.15
           }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
+          transition={{ 
+            duration: 2, 
+            ease: "easeInOut" 
+          }}
         >
           <img 
             src={img} 
             alt={`Alamnagar Hero ${index + 1}`} 
             className="w-full h-full object-cover"
           />
+          {/* Cinematic Overlay Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-950/60 via-transparent to-stone-950/30" />
         </motion.div>
       ))}
-      {/* Subtle vignette overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+      {/* Progress Indicator Dots */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {images.map((_, index) => (
+          <motion.button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`h-2 rounded-full transition-all ${
+              index === currentIndex ? 'bg-amber-400 w-8' : 'bg-white/50 w-2'
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 };
 
 // ═══════════════════════════════════════════════════════════
-//  ADMIN UIDs
-// ═══════════════════════════════════════════════════════════
+// 🔥 ADMIN UIDs
+// ══════════════════════════════════════════════════════════
 const ADMIN_UIDS = ["5fPCK8mGRTaAvIBTzUn7MEMQ2id2"];
 
 // ═══════════════════════════════════════════════════════════
@@ -117,7 +132,7 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
   return <span>{count.toLocaleString('hi-IN')}{suffix}</span>;
 };
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // 🌈 HERO BACKGROUND AREA CHART (Strong 65% opacity)
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
@@ -143,8 +158,8 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// ️ HERO TOWER BAR CHART (Strong 40% opacity, overlaid)
-// ══════════════════════════════════════════════════════════
+// 🏗️ HERO TOWER BAR CHART (Strong 40% opacity, overlaid)
+// ═══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
     { name: 'सदस्य', value: stats.totalUsers || 10 },
@@ -191,7 +206,7 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
   );
 };
 
-// ══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 // 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART (Strong 50% opacity)
 // ═══════════════════════════════════════════════════════════
 const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
@@ -245,7 +260,7 @@ const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📊 CUSTOM CHART TOOLTIP
+//  CUSTOM CHART TOOLTIP
 // ═══════════════════════════════════════════════════════════
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -272,7 +287,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-//  COMMUNITY PULSE CHART COMPONENT
+// 📈 COMMUNITY PULSE CHART COMPONENT
 // ═══════════════════════════════════════════════════════════
 const CommunityPulseChart = ({ data }: { data: any[] }) => {
   return (
@@ -437,8 +452,8 @@ const LiveActivityTicker = () => {
   );
 };
 
-// ══════════════════════════════════════════════════════════
-// 📝 TESTIMONIAL INTERFACE
+// ═══════════════════════════════════════════════════════════
+//  TESTIMONIAL INTERFACE
 // ═══════════════════════════════════════════════════════════
 interface Testimonial {
   id: string;
@@ -451,9 +466,9 @@ interface Testimonial {
   createdAt: any;
 }
 
-// ═══════════════════════════════════════════════════════════
-//  CLEAN OG METADATA BANNER
 // ══════════════════════════════════════════════════════════
+// 🚀 CLEAN OG METADATA BANNER
+// ═══════════════════════════════════════════════════════════
 const CreateraOGBanner = () => {
   const [ogData, setOgData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -564,12 +579,14 @@ export default function HomePage() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [newReviewText, setNewReviewText] = useState("");
 
-  // ✅ HERO IMAGES ARRAY
+  // ✅ 5 HERO IMAGES - Including Working Culture & History
   const heroImages = [
-  'https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670', // Kosi River
-  'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670', // Village
-  'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2670'  // Festival
-];
+    '/images/hero-1.jpg', // Alamnagar Sunrise / Kosi River
+    '/images/hero-2.jpg', // Village Choupal / Banyan Tree
+    '/images/hero-3.jpg', // Festival / Kali Mela
+    '/images/hero-4.jpg', // Working Culture / Farming
+    '/images/hero-5.jpg'  // History / Heritage Temple
+  ];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -696,9 +713,9 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION (With Working Image Slider) ===== */}
+        {/* ===== 1. CINEMATIC HERO SECTION (5 Images Slider) ===== */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-900 text-white px-4 md:px-8 lg:px-12">
-          {/* ✅ WORKING IMAGE SLIDER */}
+          {/* ✅ 5 IMAGES SLIDER WITH CINEMATIC TRANSITIONS */}
           <div className="absolute inset-0 z-0">
             <SmoothImageSlider images={heroImages} className="w-full h-full" />
           </div>
@@ -1160,7 +1177,7 @@ export default function HomePage() {
           </div>
         </footer>
 
-        {/* 📝 ADD/UPDATE REVIEW MODAL */}
+        {/*  ADD/UPDATE REVIEW MODAL */}
         <AnimatePresence>
           {showReviewModal && currentUser && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowReviewModal(false)}>
