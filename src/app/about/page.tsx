@@ -44,7 +44,7 @@ const AnimatedNumber = ({ value }: { value: number }) => {
 
 // ═══════════════════════════════════════════════════════════
 // 📊 HERO TOWER CHART COMPONENT (FIXED: All 4 Towers Visible)
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
   // ✅ EXACT SEQUENCE AS HOMEPAGE: सदस्य, पोस्ट, व्यूज़, लाइक
   // ✅ NO DIVISION - Raw values for proper visibility
@@ -115,7 +115,7 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📖 READ MORE COMPONENT
+//  READ MORE COMPONENT
 // ═══════════════════════════════════════════════════════════
 const ReadMore = ({ children, limit = 200 }: { children: string; limit?: number }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -325,7 +325,7 @@ export default function AboutPage() {
             transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ 
-              backgroundImage: "url('https://images.unsplash.com/photo-1596522354195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop')",
+              backgroundImage: "url('/images/mitti-anmol-rishta.jpg')", // ✅ Local Image
               filter: "brightness(0.65) contrast(1.1)"
             }}
           />
@@ -423,7 +423,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📜 Our Story Section */}
+      {/*  Our Story Section */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -442,7 +442,7 @@ export default function AboutPage() {
                   initial={{ scale: 1.1 }}
                   whileInView={{ scale: 1 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
-                  src="https://images.unsplash.com/photo-1625246333195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop" 
+                  src="/images/mitti-anmol-rishta.jpg" // ✅ Local Image
                   alt="Village Life" 
                   className="w-full h-[400px] md:h-[550px] object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -493,7 +493,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📚 Detailed Info Sections */}
+      {/*  Detailed Info Sections */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto space-y-32">
           
@@ -526,7 +526,7 @@ export default function AboutPage() {
             </motion.div>
             <motion.div variants={fadeInUp} className="order-1 lg:order-2 relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-                <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670" alt="Agriculture" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <img src="/images/krishi-vikas.jpg" alt="Agriculture" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </motion.div>
           </motion.div>
@@ -541,7 +541,7 @@ export default function AboutPage() {
           >
             <motion.div variants={fadeInUp} className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-                <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2670" alt="Education" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <img src="/images/bhavishya-ki-neev.jpg" alt="Education" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </motion.div>
             <motion.div variants={fadeInUp}>
