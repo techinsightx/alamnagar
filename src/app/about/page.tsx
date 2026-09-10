@@ -456,7 +456,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📜 Our Story Section with 5-Image Slider */}
+      {/* 📜 Our Story Section with 5-Image Slider (FIXED OVERLAP) */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -467,28 +467,30 @@ export default function AboutPage() {
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="relative">
-              <div className="absolute -top-8 -left-8 w-40 h-40 bg-amber-200/50 rounded-full blur-3xl" />
-              <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-emerald-200/50 rounded-full blur-3xl" />
+              <div className="absolute -top-8 -left-8 w-40 h-40 bg-amber-200/50 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-emerald-200/50 rounded-full blur-3xl pointer-events-none" />
               
-              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white group aspect-[4/3] md:h-[550px]">
+              {/* ✅ EXPLICIT HEIGHT ADDED TO PREVENT OVERLAP */}
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white group h-[400px] md:h-[550px] w-full">
                 <SmoothImageSlider images={storyImages} className="w-full h-full" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                
+                {/* ✅ BADGE MOVED INSIDE THE IMAGE CONTAINER TO PREVENT TEXT OVERLAP */}
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-stone-100 flex items-center gap-4 z-20"
+                >
+                  <div className="p-3 bg-emerald-100 rounded-full animate-pulse">
+                    <Heart className="w-6 h-6 text-emerald-600 fill-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-stone-900">100%</p>
+                    <p className="text-xs text-stone-500 font-semibold">प्यार और अपनापन</p>
+                  </div>
+                </motion.div>
               </div>
-
-              <motion.div 
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="absolute -bottom-8 -right-4 md:-right-8 bg-white p-6 rounded-2xl shadow-2xl border border-stone-100 hidden md:flex items-center gap-4 z-10"
-              >
-                <div className="p-4 bg-emerald-100 rounded-full animate-pulse">
-                  <Heart className="w-8 h-8 text-emerald-600 fill-emerald-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-black text-stone-900">100%</p>
-                  <p className="text-sm text-stone-500 font-semibold">प्यार और अपनापन</p>
-                </div>
-              </motion.div>
             </motion.div>
 
             <motion.div variants={fadeInUp} className="space-y-8">
@@ -551,7 +553,8 @@ export default function AboutPage() {
               </div>
             </motion.div>
             <motion.div variants={fadeInUp} className="order-1 lg:order-2 relative">
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+              {/* ✅ EXPLICIT HEIGHT ADDED */}
+              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full">
                 <SmoothImageSlider images={economyImages} className="w-full h-full" />
               </div>
             </motion.div>
@@ -566,7 +569,8 @@ export default function AboutPage() {
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="relative">
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+              {/* ✅ EXPLICIT HEIGHT ADDED */}
+              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full">
                 <SmoothImageSlider images={educationImages} className="w-full h-full" />
               </div>
             </motion.div>
@@ -614,7 +618,7 @@ export default function AboutPage() {
             </motion.h2>
             
             {/* Wide Culture Image Slider */}
-            <motion.div variants={fadeInUp} className="mb-12 rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[21/9]">
+            <motion.div variants={fadeInUp} className="mb-12 rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[21/9] md:h-[400px] relative w-full">
               <SmoothImageSlider images={cultureImages} className="w-full h-full" />
             </motion.div>
 
