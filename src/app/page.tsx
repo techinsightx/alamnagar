@@ -78,19 +78,19 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 HERO BACKGROUND CHART (Adjusted to 40% opacity for half-visibility)
+// 🌈 HERO BACKGROUND CHART (Enhanced to 55% opacity for stronger visibility)
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-40">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-55">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
           <defs>
-            <linearGradient id="glowViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
-            <linearGradient id="glowLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
-            <linearGradient id="glowComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.2}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-            <linearGradient id="glowShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+            <linearGradient id="glowViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
+            <linearGradient id="glowLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.4}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+            <linearGradient id="glowComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+            <linearGradient id="glowShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.2}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
           </defs>
           <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={14} fillOpacity={1} fill="url(#glowViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
           <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={10} fillOpacity={1} fill="url(#glowLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
@@ -103,19 +103,19 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART (Adjusted to 30% opacity)
+// 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART (Enhanced to 45% opacity)
 // ═══════════════════════════════════════════════════════════
 const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-45">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="nlViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
-            <linearGradient id="nlLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
-            <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.2}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-            <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+            <linearGradient id="nlViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
+            <linearGradient id="nlLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.4}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+            <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+            <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.2}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
           </defs>
           <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={8} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
           <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={6} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
@@ -128,7 +128,7 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🏢 MARKETPLACE REAL-TIME TOWER CHART BACKGROUND (Adjusted to 30% opacity)
+// 🏢 MARKETPLACE REAL-TIME TOWER CHART BACKGROUND (Enhanced to 50% opacity)
 // ═══════════════════════════════════════════════════════════
 const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
@@ -139,14 +139,14 @@ const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   ], [stats]);
 
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-50">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="towerEmerald" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.1}/></linearGradient>
-            <linearGradient id="towerAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.1}/></linearGradient>
-            <linearGradient id="towerBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1}/></linearGradient>
-            <linearGradient id="towerRose" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.8}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.1}/></linearGradient>
+            <linearGradient id="towerEmerald" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/></linearGradient>
+            <linearGradient id="towerAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2}/></linearGradient>
+            <linearGradient id="towerBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/></linearGradient>
+            <linearGradient id="towerRose" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.9}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.2}/></linearGradient>
           </defs>
           <Bar dataKey="value" radius={[8, 8, 0, 0]} animationDuration={2000} />
         </BarChart>
@@ -615,17 +615,17 @@ export default function HomePage() {
           )}
           
           <div className="relative z-10 text-center w-full max-w-7xl mx-auto pt-20">
-            {/* 🌟 FULLY TRANSPARENT WELCOME CARD (No Background, Pure Content) */}
+            {/* 🌟 CENTERED WELCOME CARD (No Button, Pure Content) */}
             {currentUser ? (
               <motion.div 
                 initial={{ opacity: 0, y: 20, scale: 0.95 }} 
                 animate={{ opacity: 1, y: 0, scale: 1 }} 
                 transition={{ duration: 0.7, ease: "easeOut" }} 
-                className="relative w-full max-w-4xl mx-auto mb-12 p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6"
+                className="relative w-full max-w-3xl mx-auto mb-12 p-6 sm:p-8 flex flex-col items-center text-center gap-6"
               >
                 <div className="relative shrink-0">
                   <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-2xl opacity-40 animate-pulse" />
-                  <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 flex items-center justify-center shadow-2xl">
+                  <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 flex items-center justify-center shadow-2xl">
                     {currentUser.photoURL ? (
                       <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -636,23 +636,14 @@ export default function HomePage() {
                   </div>
                 </div>
                 
-                <div className="flex-1 text-center sm:text-left">
-                  <h3 className="text-3xl sm:text-4xl font-black text-white mb-2 tracking-tight drop-shadow-lg">
-                    स्वागत है, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span> 🙏
+                <div>
+                  <h3 className="text-3xl sm:text-4xl font-black text-white mb-3 tracking-tight drop-shadow-lg">
+                    प्रणाम, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span> 🙏
                   </h3>
-                  <p className="text-base sm:text-lg text-stone-200 leading-relaxed font-medium">
+                  <p className="text-base sm:text-lg text-stone-200 leading-relaxed font-medium max-w-2xl mx-auto">
                     आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका विशेष स्वागत है।
                   </p>
                 </div>
-
-                <Link 
-                  href="/community" 
-                  className="shrink-0 group px-8 py-4 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-500 hover:to-amber-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-2xl shadow-emerald-500/30 flex items-center gap-3 hover:scale-105 border border-white/10"
-                >
-                  <Zap className="w-5 h-5 fill-white group-hover:animate-pulse" />
-                  <span>चौपाल देखें</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
               </motion.div>
             ) : (
               <motion.div 
@@ -784,8 +775,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 5. MARKETPLACE TEASER (Soft Matte Slate Background) ===== */}
-        <section className="py-24 px-4 md:px-8 lg:px-12 bg-slate-800 text-white relative overflow-hidden">
+        {/* ===== 5. MARKETPLACE TEASER (NEW Warm Neutral Background - bg-neutral-900) ===== */}
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-neutral-900 text-white relative overflow-hidden">
           <MarketplaceTowerChart stats={liveStats} />
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10 max-w-7xl mx-auto">
@@ -1044,6 +1035,5 @@ export default function HomePage() {
         </AnimatePresence>
       </main>
     </>
-  )
-
+  );
 }
