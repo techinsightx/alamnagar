@@ -43,21 +43,22 @@ const AnimatedNumber = ({ value }: { value: number }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📊 HERO TOWER CHART COMPONENT (REAL-TIME - Same as HomePage)
+// 📊 HERO TOWER CHART COMPONENT (FIXED: All 4 Towers Visible)
 // ═══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
-  // ✅ SAME SEQUENCE AS HOMEPAGE: सदस्य, पोस्ट, व्यूज़, लाइक
+  // ✅ EXACT SEQUENCE AS HOMEPAGE: सदस्य, पोस्ट, व्यूज़, लाइक
+  // ✅ NO DIVISION - Raw values for proper visibility
   const data = [
-    { name: 'सदस्य', value: stats.totalUsers || 100 },
-    { name: 'पोस्ट', value: stats.totalPosts || 50 },
-    { name: 'व्यूज़', value: Math.round((stats.totalViews || 1000) / 100) },
-    { name: 'लाइक', value: Math.round((stats.totalLikes || 500) / 50) },
+    { name: 'सदस्य', value: Math.max(stats.totalUsers || 0, 10) },
+    { name: 'पोस्ट', value: Math.max(stats.totalPosts || 0, 10) },
+    { name: 'व्यूज़', value: Math.max(stats.totalViews || 0, 10) },
+    { name: 'लाइक', value: Math.max(stats.totalLikes || 0, 10) },
   ];
 
   return (
     <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-40">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
           <defs>
             {/* ✅ SAME COLORS AS HOMEPAGE: emerald, amber, blue, rose */}
             <linearGradient id="heroTowerEmerald" x1="0" y1="0" x2="0" y2="1">
@@ -77,8 +78,24 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
               <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.2}/>
             </linearGradient>
           </defs>
-          <XAxis dataKey="name" stroke="#ffffff" fontSize={14} tickLine={false} axisLine={false} opacity={0.9} />
-          <Bar dataKey="value" radius={[12, 12, 0, 0]} animationDuration={2500} animationEasing="ease-out">
+          {/* ✅ YAxis added for proper scaling */}
+          <YAxis hide />
+          <XAxis 
+            dataKey="name" 
+            stroke="#ffffff" 
+            fontSize={16} 
+            tickLine={false} 
+            axisLine={false} 
+            opacity={0.95}
+            fontWeight={700}
+          />
+          <Bar 
+            dataKey="value" 
+            radius={[12, 12, 0, 0]} 
+            animationDuration={2500} 
+            animationEasing="ease-out"
+            minPointSize={50}
+          >
             {data.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
@@ -312,7 +329,7 @@ export default function AboutPage() {
               filter: "brightness(0.65) contrast(1.1)"
             }}
           />
-          {/* ✅ REAL-TIME Tower Chart Overlay - SAME AS HOMEPAGE */}
+          {/* ✅ REAL-TIME Tower Chart Overlay - ALL 4 TOWERS VISIBLE */}
           <HeroTowerChart stats={liveStats} />
           <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-stone-900/25 to-stone-50" />
         </motion.div>
@@ -406,7 +423,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📜 Our Story Section - ORIGINAL CONTENT */}
+      {/* 📜 Our Story Section */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -425,7 +442,7 @@ export default function AboutPage() {
                   initial={{ scale: 1.1 }}
                   whileInView={{ scale: 1 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
-                  src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop" 
+                  src="https://images.unsplash.com/photo-1625246333195-e8448ea1642c?q=80&w=2670&auto=format&fit=crop" 
                   alt="Village Life" 
                   className="w-full h-[400px] md:h-[550px] object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -476,7 +493,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📚 Detailed Info Sections - ORIGINAL CONTENT */}
+      {/* 📚 Detailed Info Sections */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto space-y-32">
           
