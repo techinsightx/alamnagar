@@ -638,7 +638,7 @@ export default function HomePage() {
                 
                 <div className="flex-1 text-center sm:text-left">
                   <h3 className="text-3xl sm:text-4xl font-black text-white mb-2 tracking-tight drop-shadow-lg">
-                    स्वागत है, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span>! 🙏
+                    स्वागत है, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span> 🙏
                   </h3>
                   <p className="text-base sm:text-lg text-stone-200 leading-relaxed font-medium">
                     आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका विशेष स्वागत है।
@@ -1044,5 +1044,6 @@ export default function HomePage() {
         </AnimatePresence>
       </main>
     </>
-  );
+  )
+
 }
