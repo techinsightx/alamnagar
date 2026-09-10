@@ -43,15 +43,15 @@ const AnimatedNumber = ({ value }: { value: number }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📊 HERO TOWER CHART COMPONENT (Relevant About Page Stats)
-// ═══════════════════════════════════════════════════════════
-const HeroTowerChart = () => {
-  // ✅ RELEVANT WORDS FOR ABOUT PAGE: जनसंख्या, क्षेत्रफल, साक्षरता, पंचायत
+// 📊 HERO TOWER CHART COMPONENT (REAL-TIME - SAME AS HOMEPAGE)
+// ══════════════════════════════════════════════════════════
+const HeroTowerChart = ({ stats }: { stats: any }) => {
+  // ✅ ORIGINAL SEQUENCE: सदस्य, पोस्ट, व्यूज़, लाइक
   const data = [
-    { name: 'जनसंख्या', value: 175 },
-    { name: 'क्षेत्रफल', value: 186 },
-    { name: 'साक्षरता', value: 50 },
-    { name: 'पंचायत', value: 14 },
+    { name: 'सदस्य', value: Math.max(stats.totalUsers || 0, 10) },
+    { name: 'पोस्ट', value: Math.max(stats.totalPosts || 0, 10) },
+    { name: 'व्यूज़', value: Math.max(stats.totalViews || 0, 10) },
+    { name: 'लाइक', value: Math.max(stats.totalLikes || 0, 10) },
   ];
 
   return (
@@ -111,9 +111,9 @@ const HeroTowerChart = () => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// 📖 READ MORE COMPONENT
 // ══════════════════════════════════════════════════════════
+// 📖 READ MORE COMPONENT
+// ═══════════════════════════════════════════════════════════
 const ReadMore = ({ children, limit = 200 }: { children: string; limit?: number }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = children.length > limit;
@@ -219,7 +219,7 @@ export default function AboutPage() {
   const y = useTransform(scrollYProgress, [0, 1], [0, -30]);
   const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.8]);
 
-  // ✅ REAL-TIME FIREBASE DATA (For Stats Cards & Footer Chart Only)
+  // ✅ REAL-TIME FIREBASE DATA
   const [liveStats, setLiveStats] = useState({
     totalUsers: 0,
     totalPosts: 0,
@@ -320,7 +320,8 @@ export default function AboutPage() {
               filter: "brightness(0.65) contrast(1.1)"
             }}
           />
-          <HeroTowerChart />
+          {/* ✅ REAL-TIME Tower Chart - ORIGINAL SEQUENCE */}
+          <HeroTowerChart stats={liveStats} />
           <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-stone-900/25 to-stone-50" />
         </motion.div>
 
@@ -411,7 +412,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 📜 Our Story Section */}
+      {/*  Our Story Section */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
