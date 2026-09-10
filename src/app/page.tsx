@@ -7,7 +7,7 @@ import {
   Star, Quote, Mail, ChevronDown, Wheat, Sun, Music, Play,
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
-  CheckCircle, X, Globe, AlertTriangle
+  CheckCircle, X, Globe, AlertTriangle, Gamepad2, Bot, LayoutTemplate, ExternalLink
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -27,7 +27,7 @@ import {
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 ADMIN UIDs
+//  ADMIN UIDs
 // ═══════════════════════════════════════════════════════════
 const ADMIN_UIDS = ["5fPCK8mGRTaAvIBTzUn7MEMQ2id2"];
 
@@ -42,6 +42,53 @@ const fadeInUp = {
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🖼️ SMOOTH HERO IMAGE SLIDER (3 Images, 3s Interval)
+// ═══════════════════════════════════════════════════════════
+const HeroImageSlider = () => {
+  // 📂 Ye 3 images public/images/ folder mein daal dena bhai
+  const images = [
+    '/images/hero-1.jpg', // Alamnagar Sunrise / Kosi River
+    '/images/hero-2.jpg', // Village Choupal / Banyan Tree
+    '/images/hero-3.jpg'  // Paddy Fields / Aerial View
+  ];
+  
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 3000); // ✅ Har 3 seconds par change
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  return (
+    <div className="absolute inset-0 z-[-1] overflow-hidden">
+      {images.map((img, index) => (
+        <motion.div
+          key={img}
+          className="absolute inset-0 w-full h-full"
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ 
+            opacity: index === currentIndex ? 1 : 0,
+            scale: index === currentIndex ? 1 : 1.1
+          }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        >
+          <img 
+            src={img} 
+            alt={`Alamnagar Hero ${index + 1}`} 
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+      ))}
+      {/* Dark Overlay for Text Readability */}
+      <div className="absolute inset-0 bg-stone-950/60" />
+    </div>
+  );
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -103,8 +150,8 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🏗️ HERO TOWER BAR CHART (NEW - Strong 40% opacity, overlaid)
-// ═══════════════════════════════════════════════════════════
+// ️ HERO TOWER BAR CHART (NEW - Strong 40% opacity, overlaid)
+// ══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
     { name: 'सदस्य', value: stats.totalUsers || 10 },
@@ -176,7 +223,7 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // 🏢 MARKETPLACE REAL-TIME TOWER CHART (Strong 55% opacity)
 // ═══════════════════════════════════════════════════════════
 const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
@@ -386,7 +433,7 @@ const LiveActivityTicker = () => {
               <>
                 <UserPlus className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm text-stone-300">
-                  <span className="font-bold text-emerald-400">{item.userName}</span> आलमनगर परिवार से जुड़े! 🎉
+                  <span className="font-bold text-emerald-400">{item.userName}</span> आलमनगर परिवार से जुड़े! 
                 </span>
               </>
             )}
@@ -412,8 +459,8 @@ interface Testimonial {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🚀 CLEAN OG METADATA BANNER
-// ═══════════════════════════════════════════════════════════
+//  CLEAN OG METADATA BANNER
+// ══════════════════════════════════════════════════════════
 const CreateraOGBanner = () => {
   const [ogData, setOgData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -649,8 +696,11 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION (Dual Charts: Area + Tower) ===== */}
+        {/* ===== 1. CINEMATIC HERO SECTION (Dual Charts + Image Slider) ===== */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-900 text-white px-4 md:px-8 lg:px-12">
+          {/* ✅ NEW: Smooth Image Slider Background */}
+          <HeroImageSlider />
+          
           {/* Layer 1: Area Chart Background */}
           <HeroBackgroundChart data={chartData} />
           {/* Layer 2: Tower Bar Chart Overlay (NEW) */}
@@ -975,7 +1025,7 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        {/* ===== 8. PREMIUM FOOTER ===== */}
+        {/* ===== 8. PREMIUM FOOTER WITH INTEGRATED TOOLS ===== */}
         <footer className="bg-stone-950 text-stone-400 py-16 px-4 md:px-8 lg:px-12 border-t border-stone-900 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
           <div className="max-w-7xl mx-auto">
@@ -1014,36 +1064,94 @@ export default function HomePage() {
                 </ul>
               </div>
 
+              {/* ✅ NEW: Creator Tools Integration Section */}
               <div className="md:col-span-4">
                 <h4 className="text-white font-black mb-6 text-lg flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-emerald-500" /> लाइव प्लेटफॉर्म पल्स
+                  <Bot className="w-5 h-5 text-purple-500" /> युवा क्रिएटर टूल्स
                 </h4>
-                <div className="bg-stone-900/50 rounded-2xl p-4 border border-stone-800 h-64 flex flex-col justify-end">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { name: 'सदस्य', value: liveStats.totalUsers || 1, fill: '#10b981' },
-                      { name: 'पोस्ट', value: liveStats.totalPosts || 1, fill: '#f59e0b' },
-                      { name: 'व्यूज़', value: liveStats.totalViews || 1, fill: '#3b82f6' },
-                      { name: 'लाइक', value: liveStats.totalLikes || 1, fill: '#f43f5e' },
-                    ]}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#292524" vertical={false} />
-                      <XAxis dataKey="name" stroke="#78716c" fontSize={11} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#78716c" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${(Number(value)/1000).toFixed(1)}k`} />
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: '#1c1917', borderColor: '#44403c', color: '#fff', borderRadius: '8px' }}
-                        itemStyle={{ color: '#fff' }}
-                        formatter={(value: any) => [Number(value || 0).toLocaleString('hi-IN'), '']}
-                      />
-                      <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1500} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="space-y-4">
+                  {/* Tool 1: FunnelsBuilder */}
+                  <Link 
+                    href="https://funnelsbuilder.netlify.app" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-purple-500/50 hover:bg-purple-500/10 transition-all"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-colors">
+                      <LayoutTemplate className="w-5 h-5 text-purple-400 group-hover:text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h5 className="font-bold text-white text-sm group-hover:text-purple-400 transition-colors">FunnelsBuilder</h5>
+                        <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-purple-400" />
+                      </div>
+                      <p className="text-xs text-stone-400 leading-relaxed">मुफ्त में प्रोफेशनल वेबसाइट और लैंडिंग पेज बनाएं। युवाओं के लिए बेस्ट टूल!</p>
+                    </div>
+                  </Link>
+
+                  {/* Tool 2: AI Passive System */}
+                  <Link 
+                    href="https://aipassivesystem.netlify.app" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center shrink-0 group-hover:bg-cyan-500 transition-colors">
+                      <Bot className="w-5 h-5 text-cyan-400 group-hover:text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h5 className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors">AI Passive System</h5>
+                        <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-cyan-400" />
+                      </div>
+                      <p className="text-xs text-stone-400 leading-relaxed">ऑटोमेटेड AI टूल्स जो खुद काम करते हैं। पैसिव इनकम और स्मार्ट वर्क के लिए।</p>
+                    </div>
+                  </Link>
+
+                  {/* Tool 3: Kids Game (Coming Soon) */}
+                  <div className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 opacity-75 cursor-not-allowed">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+                      <Gamepad2 className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h5 className="font-bold text-white text-sm">Kids Learning Games</h5>
+                        <Lock className="w-3.5 h-3.5 text-amber-500" />
+                      </div>
+                      <p className="text-xs text-stone-400 leading-relaxed">बच्चों के लिए एजुकेशनल गेम्स। जल्द ही लॉन्च होगा! 🚀</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-stone-500">
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> कुल सदस्य</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500"></div> कुल पोस्ट</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500"></div> कुल व्यूज़</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-rose-500"></div> कुल लाइक</div>
-                </div>
+              </div>
+            </div>
+
+            {/* Platform Stats in Footer */}
+            <div className="mb-12">
+              <div className="bg-stone-900/50 rounded-2xl p-4 border border-stone-800 h-64 flex flex-col justify-end">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={[
+                    { name: 'सदस्य', value: liveStats.totalUsers || 1, fill: '#10b981' },
+                    { name: 'पोस्ट', value: liveStats.totalPosts || 1, fill: '#f59e0b' },
+                    { name: 'व्यूज़', value: liveStats.totalViews || 1, fill: '#3b82f6' },
+                    { name: 'लाइक', value: liveStats.totalLikes || 1, fill: '#f43f5e' },
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#292524" vertical={false} />
+                    <XAxis dataKey="name" stroke="#78716c" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#78716c" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${(Number(value)/1000).toFixed(1)}k`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1c1917', borderColor: '#44403c', color: '#fff', borderRadius: '8px' }}
+                      itemStyle={{ color: '#fff' }}
+                      formatter={(value: any) => [Number(value || 0).toLocaleString('hi-IN'), '']}
+                    />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1500} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-stone-500">
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> कुल सदस्य</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500"></div> कुल पोस्ट</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500"></div> कुल व्यूज़</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-rose-500"></div> कुल लाइक</div>
               </div>
             </div>
 
