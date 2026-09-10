@@ -18,7 +18,7 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-// 📊 Recharts Imports
+//  Recharts Imports
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar 
 } from "recharts";
@@ -27,7 +27,7 @@ import {
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-//  ADMIN UIDs
+// 🔥 ADMIN UIDs
 // ═══════════════════════════════════════════════════════════
 const ADMIN_UIDS = ["5fPCK8mGRTaAvIBTzUn7MEMQ2id2"];
 
@@ -45,28 +45,32 @@ const staggerContainer = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🖼️ SMOOTH HERO IMAGE SLIDER (3 Images, 3s Interval)
+// 🖼️ SMOOTH HERO IMAGE SLIDER (3 Images, 3s Interval) - FIXED
 // ═══════════════════════════════════════════════════════════
 const HeroImageSlider = () => {
-  // 📂 Ye 3 images public/images/ folder mein daal dena bhai
   const images = [
-    '/images/hero-1.jpg', // Alamnagar Sunrise / Kosi River
-    '/images/hero-2.jpg', // Village Choupal / Banyan Tree
-    '/images/hero-3.jpg'  // Paddy Fields / Aerial View
+    '/images/hero-1.jpg',
+    '/images/hero-2.jpg',
+    '/images/hero-3.jpg'
   ];
   
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (images.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 3000); // ✅ Har 3 seconds par change
+    }, 3000);
     return () => clearInterval(timer);
   }, [images.length]);
 
+  const handleImageLoad = (src: string) => {
+    setLoadedImages(prev => new Set(prev).add(src));
+  };
+
   return (
-    <div className="absolute inset-0 z-[-1] overflow-hidden">
+    <div className="absolute inset-0 z-0 overflow-hidden">
       {images.map((img, index) => (
         <motion.div
           key={img}
@@ -77,16 +81,28 @@ const HeroImageSlider = () => {
             scale: index === currentIndex ? 1 : 1.1
           }}
           transition={{ duration: 1.5, ease: "easeInOut" }}
+          style={{ zIndex: index === currentIndex ? 10 : 1 }}
         >
+          {/* Loading State */}
+          {!loadedImages.has(img) && (
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 via-stone-900 to-amber-900" />
+          )}
+          
+          {/* Actual Image */}
           <img 
             src={img} 
             alt={`Alamnagar Hero ${index + 1}`} 
             className="w-full h-full object-cover"
+            onLoad={() => handleImageLoad(img)}
+            onError={(e) => {
+              console.error(`Failed to load image: ${img}`);
+              handleImageLoad(img);
+            }}
           />
         </motion.div>
       ))}
-      {/* Dark Overlay for Text Readability */}
-      <div className="absolute inset-0 bg-stone-950/60" />
+      {/* Subtle Dark Overlay for Text Readability */}
+      <div className="absolute inset-0 bg-stone-950/40 z-20" />
     </div>
   );
 };
@@ -130,7 +146,7 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-65">
+    <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden opacity-65">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
           <defs>
@@ -149,8 +165,8 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════
-// ️ HERO TOWER BAR CHART (NEW - Strong 40% opacity, overlaid)
+// ══════════════════════════════════════════════════════════
+//  HERO TOWER BAR CHART (Strong 40% opacity, overlaid)
 // ══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
@@ -161,7 +177,7 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
   ], [stats]);
 
   return (
-    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-40">
+    <div className="absolute inset-0 z-[6] pointer-events-none overflow-hidden opacity-40">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
@@ -223,9 +239,9 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
   );
 };
 
-// ══════════════════════════════════════════════════════════
-// 🏢 MARKETPLACE REAL-TIME TOWER CHART (Strong 55% opacity)
 // ═══════════════════════════════════════════════════════════
+//  MARKETPLACE REAL-TIME TOWER CHART (Strong 55% opacity)
+// ══════════════════════════════════════════════════════════
 const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
     { name: 'सदस्य', value: stats.totalUsers || 10, fill: 'url(#towerEmerald)' },
@@ -252,8 +268,8 @@ const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📊 CUSTOM CHART TOOLTIP
-// ═══════════════════════════════════════════════════════════
+//  CUSTOM CHART TOOLTIP
+// ══════════════════════════════════════════════════════════
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -345,7 +361,7 @@ const MadhubaniPattern = () => (
 );
 
 // ═══════════════════════════════════════════════════════════
-// 🚀 LIVE ACTIVITY TICKER COMPONENT
+//  LIVE ACTIVITY TICKER COMPONENT
 // ═══════════════════════════════════════════════════════════
 interface TickerItem {
   id: string;
@@ -445,7 +461,7 @@ const LiveActivityTicker = () => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📝 TESTIMONIAL INTERFACE
+//  TESTIMONIAL INTERFACE
 // ═══════════════════════════════════════════════════════════
 interface Testimonial {
   id: string;
@@ -522,7 +538,7 @@ const CreateraOGBanner = () => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌟 EXACT NAVBAR GLOBE LOGO ADAPTED FOR FOOTER
+//  EXACT NAVBAR GLOBE LOGO ADAPTED FOR FOOTER
 // ═══════════════════════════════════════════════════════════
 const FooterBrandLogo = () => {
   return (
@@ -645,7 +661,7 @@ export default function HomePage() {
     } catch (error: any) {
       console.error("Newsletter error:", error);
       setNewsletterStatus("error");
-      setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
+      setErrorMessage(error.message || "सदस्यता लेने में त्रुटि हुई। कृपया पुन प्रयास करें।");
     }
   };
 
@@ -696,20 +712,20 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION (Dual Charts + Image Slider) ===== */}
+        {/* ===== 1. CINEMATIC HERO SECTION (Fixed: Images Visible) ===== */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-900 text-white px-4 md:px-8 lg:px-12">
-          {/* ✅ NEW: Smooth Image Slider Background */}
+          {/* ✅ FIXED: Image Slider with proper z-index */}
           <HeroImageSlider />
           
-          {/* Layer 1: Area Chart Background */}
+          {/* Layer 1: Area Chart Background (z-index: 5) */}
           <HeroBackgroundChart data={chartData} />
-          {/* Layer 2: Tower Bar Chart Overlay (NEW) */}
+          {/* Layer 2: Tower Bar Chart Overlay (z-index: 6) */}
           <HeroTowerChart stats={liveStats} />
-          {/* Layer 3: Gradient Overlay to blend charts with content */}
-          <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-900/70 via-stone-800/50 to-stone-900/70" />
+          {/* Layer 3: Gradient Overlay (z-index: 20) - Lighter for visibility */}
+          <div className="absolute inset-0 z-[20] bg-gradient-to-br from-stone-950/30 via-stone-900/20 to-stone-950/40 pointer-events-none" />
           
           {isAdmin && (
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-24 right-6 z-20">
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-24 right-6 z-[30]">
               <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-5 py-2.5 hover:bg-red-500/30 transition-all group shadow-lg">
                 <Shield className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
                 <span className="text-sm font-bold text-red-300">Admin Panel</span>
@@ -717,8 +733,8 @@ export default function HomePage() {
             </motion.div>
           )}
           
-          <div className="relative z-10 text-center w-full max-w-7xl mx-auto pt-20">
-            {/* 🌟 CENTERED WELCOME CARD (No Button, Pure Content) */}
+          <div className="relative z-[30] text-center w-full max-w-7xl mx-auto pt-20">
+            {/* 🌟 CENTERED WELCOME CARD */}
             {currentUser ? (
               <motion.div 
                 initial={{ opacity: 0, y: 20, scale: 0.95 }} 
@@ -762,13 +778,13 @@ export default function HomePage() {
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight tiranga-shimmer drop-shadow-2xl pt-2">आलमनगर</motion.h1>
             <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-2xl md:text-4xl mb-6 font-medium italic golden-shimmer drop-shadow-md leading-relaxed py-1">"जड़ों से जुड़ा, मिथिला की धरती का गौरव"</motion.p>
-            <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।</motion.p>
+            <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="text-base md:text-lg text-white/90 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">हमारी विरासत, हमारे लोग, हमारा गौरव। आलमनगर से जुड़े हर व्यक्ति के लिए एक डिजिटल 'चौपाल'।</motion.p>
             
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12">
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Users className="w-4 h-4 text-emerald-400" /><span className="text-xs text-white/70">सदस्य</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span></div>
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Star className="w-4 h-4 text-amber-400" /><span className="text-xs text-white/70">पोस्ट</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span></div>
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Eye className="w-4 h-4 text-blue-400" /><span className="text-xs text-white/70">व्यूज़</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span></div>
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2"><Heart className="w-4 h-4 text-red-400" /><span className="text-xs text-white/70">लाइक</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span></div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Users className="w-4 h-4 text-emerald-400" /><span className="text-xs text-white/80">सदस्य</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalUsers} /></span></div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Star className="w-4 h-4 text-amber-400" /><span className="text-xs text-white/80">पोस्ट</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalPosts} /></span></div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Eye className="w-4 h-4 text-blue-400" /><span className="text-xs text-white/80">व्यूज़</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalViews} /></span></div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"><Heart className="w-4 h-4 text-red-400" /><span className="text-xs text-white/80">लाइक</span><span className="text-sm font-bold text-white"><AnimatedNumber value={liveStats.totalLikes} /></span></div>
             </motion.div>
             
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }} className="flex flex-col sm:flex-row gap-5 justify-center mb-16">
@@ -777,9 +793,9 @@ export default function HomePage() {
               <Link href="/marketplace" className="group bg-emerald-600/80 hover:bg-emerald-500/80 backdrop-blur-md border border-emerald-400/30 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 text-lg"><ShoppingBag className="w-5 h-5" /> गाँव का हाट</Link>
             </motion.div>
             
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-              <span className="text-xs text-white/50 uppercase tracking-widest">स्क्रॉल करें</span>
-              <ChevronDown className="w-8 h-8 text-white/50" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-[30]">
+              <span className="text-xs text-white/70 uppercase tracking-widest">स्क्रॉल करें</span>
+              <ChevronDown className="w-8 h-8 text-white/70" />
             </motion.div>
           </div>
         </section>
@@ -878,7 +894,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 5. MARKETPLACE TEASER (Warm Neutral bg-neutral-900) ===== */}
+        {/* ===== 5. MARKETPLACE TEASER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-neutral-900 text-white relative overflow-hidden">
           <MarketplaceTowerChart stats={liveStats} />
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
@@ -963,7 +979,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 7. WORKING NEWSLETTER (Soft Matte Zinc Background) ===== */}
+        {/* ===== 7. WORKING NEWSLETTER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-zinc-800 text-white relative overflow-hidden">
           <NewsletterRealtimeChart data={chartData} />
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
@@ -1064,7 +1080,7 @@ export default function HomePage() {
                 </ul>
               </div>
 
-              {/* ✅ NEW: Creator Tools Integration Section */}
+              {/* ✅ Creator Tools Integration Section */}
               <div className="md:col-span-4">
                 <h4 className="text-white font-black mb-6 text-lg flex items-center gap-2">
                   <Bot className="w-5 h-5 text-purple-500" /> युवा क्रिएटर टूल्स
