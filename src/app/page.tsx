@@ -615,17 +615,17 @@ export default function HomePage() {
           )}
           
           <div className="relative z-10 text-center w-full max-w-7xl mx-auto pt-20">
-            {/* 🌟 FULLY TRANSPARENT WELCOME CARD (No Border) */}
+            {/* 🌟 FULLY TRANSPARENT WELCOME CARD (No Background, Pure Content) */}
             {currentUser ? (
               <motion.div 
                 initial={{ opacity: 0, y: 20, scale: 0.95 }} 
                 animate={{ opacity: 1, y: 0, scale: 1 }} 
                 transition={{ duration: 0.7, ease: "easeOut" }} 
-                className="relative w-full max-w-3xl mx-auto mb-10 rounded-3xl bg-white/5 backdrop-blur-md p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6"
+                className="relative w-full max-w-4xl mx-auto mb-12 p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6"
               >
                 <div className="relative shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-xl opacity-30" />
-                  <div className="relative w-20 h-20 rounded-full overflow-hidden bg-stone-900/50 flex items-center justify-center backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-2xl opacity-40 animate-pulse" />
+                  <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 flex items-center justify-center shadow-2xl">
                     {currentUser.photoURL ? (
                       <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -637,17 +637,17 @@ export default function HomePage() {
                 </div>
                 
                 <div className="flex-1 text-center sm:text-left">
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">
+                  <h3 className="text-3xl sm:text-4xl font-black text-white mb-2 tracking-tight drop-shadow-lg">
                     स्वागत है, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">{currentUser.displayName?.split(" ")[0] || "मित्र"}</span>! 🙏
                   </h3>
-                  <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
+                  <p className="text-base sm:text-lg text-stone-200 leading-relaxed font-medium">
                     आपका प्रीमियम अनुभव शुरू हो चुका है। आलमनगर की डिजिटल चौपाल में आपका विशेष स्वागत है।
                   </p>
                 </div>
 
                 <Link 
                   href="/community" 
-                  className="shrink-0 group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-500 hover:to-amber-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-xl shadow-emerald-500/20 flex items-center gap-3 hover:scale-105"
+                  className="shrink-0 group px-8 py-4 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-500 hover:to-amber-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-2xl shadow-emerald-500/30 flex items-center gap-3 hover:scale-105 border border-white/10"
                 >
                   <Zap className="w-5 h-5 fill-white group-hover:animate-pulse" />
                   <span>चौपाल देखें</span>
