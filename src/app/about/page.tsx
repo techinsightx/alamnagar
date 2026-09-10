@@ -15,7 +15,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, limit } from "firebase/firestore";
 
 // ═══════════════════════════════════════════════════════════
-// 🌟 ANIMATED NUMBER COMPONENT
+//  ANIMATED NUMBER COMPONENT
 // ═══════════════════════════════════════════════════════════
 const AnimatedNumber = ({ value }: { value: number }) => {
   const [count, setCount] = useState(0);
@@ -43,16 +43,15 @@ const AnimatedNumber = ({ value }: { value: number }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📊 HERO TOWER CHART COMPONENT (FIXED: All 4 Towers Visible)
-// ══════════════════════════════════════════════════════════
-const HeroTowerChart = ({ stats }: { stats: any }) => {
-  // ✅ EXACT SEQUENCE AS HOMEPAGE: सदस्य, पोस्ट, व्यूज़, लाइक
-  // ✅ NO DIVISION - Raw values for proper visibility
+// 📊 HERO TOWER CHART COMPONENT (Relevant About Page Stats)
+// ═══════════════════════════════════════════════════════════
+const HeroTowerChart = () => {
+  // ✅ RELEVANT WORDS FOR ABOUT PAGE: जनसंख्या, क्षेत्रफल, साक्षरता, पंचायत
   const data = [
-    { name: 'सदस्य', value: Math.max(stats.totalUsers || 0, 10) },
-    { name: 'पोस्ट', value: Math.max(stats.totalPosts || 0, 10) },
-    { name: 'व्यूज़', value: Math.max(stats.totalViews || 0, 10) },
-    { name: 'लाइक', value: Math.max(stats.totalLikes || 0, 10) },
+    { name: 'जनसंख्या', value: 175 },
+    { name: 'क्षेत्रफल', value: 186 },
+    { name: 'साक्षरता', value: 50 },
+    { name: 'पंचायत', value: 14 },
   ];
 
   return (
@@ -60,7 +59,6 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
           <defs>
-            {/* ✅ SAME COLORS AS HOMEPAGE: emerald, amber, blue, rose */}
             <linearGradient id="heroTowerEmerald" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
               <stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/>
@@ -78,7 +76,6 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
               <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.2}/>
             </linearGradient>
           </defs>
-          {/* ✅ YAxis added for proper scaling */}
           <YAxis hide />
           <XAxis 
             dataKey="name" 
@@ -115,8 +112,8 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-//  READ MORE COMPONENT
-// ═══════════════════════════════════════════════════════════
+// 📖 READ MORE COMPONENT
+// ══════════════════════════════════════════════════════════
 const ReadMore = ({ children, limit = 200 }: { children: string; limit?: number }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = children.length > limit;
@@ -152,12 +149,10 @@ const SummaryLineChartCard = ({ chartData }: { chartData: any[] }) => {
       viewport={{ once: true }}
       className="relative bg-gradient-to-br from-emerald-900 to-stone-900 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-2xl border border-emerald-500/20"
     >
-      {/* ✅ REAL-TIME 4-LINE RAINBOW CHART (Same as HomePage) */}
       <div className="absolute inset-0 z-0 opacity-35 pointer-events-none">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData}>
             <defs>
-              {/* ✅ RAINBOW COLORS: blue, rose, amber, emerald */}
               <linearGradient id="footerViews" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8}/>
                 <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1}/>
@@ -175,7 +170,6 @@ const SummaryLineChartCard = ({ chartData }: { chartData: any[] }) => {
                 <stop offset="100%" stopColor="#10b981" stopOpacity={0.1}/>
               </linearGradient>
             </defs>
-            {/* ✅ 4 LINES: Views, Likes, Comments, Shares */}
             <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#footerViews)" />
             <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#footerLikes)" />
             <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#footerComments)" />
@@ -225,7 +219,7 @@ export default function AboutPage() {
   const y = useTransform(scrollYProgress, [0, 1], [0, -30]);
   const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.8]);
 
-  // ✅ REAL-TIME FIREBASE DATA
+  // ✅ REAL-TIME FIREBASE DATA (For Stats Cards & Footer Chart Only)
   const [liveStats, setLiveStats] = useState({
     totalUsers: 0,
     totalPosts: 0,
@@ -250,7 +244,6 @@ export default function AboutPage() {
     const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
       let totalViews = 0, totalLikes = 0, totalComments = 0, totalShares = 0;
       
-      // Calculate last 7 days
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
@@ -269,7 +262,6 @@ export default function AboutPage() {
         totalComments += data.comments || 0;
         totalShares += data.shares || 0;
 
-        // Daily breakdown
         if (data.createdAt?.toDate) {
           const dateStr = data.createdAt.toDate().toISOString().split('T')[0];
           if (dailyStats[dateStr]) {
@@ -290,7 +282,6 @@ export default function AboutPage() {
         totalShares,
       }));
 
-      // Set chart data for last 7 days
       setChartData(last7Days.map(day => ({
         day: new Date(day).toLocaleDateString('hi-IN', { weekday: 'short' }),
         Views: dailyStats[day].Views,
@@ -325,16 +316,14 @@ export default function AboutPage() {
             transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ 
-              backgroundImage: "url('/images/mitti-anmol-rishta.jpg')", // ✅ Local Image
+              backgroundImage: "url('/images/mitti-anmol-rishta.jpg')",
               filter: "brightness(0.65) contrast(1.1)"
             }}
           />
-          {/* ✅ REAL-TIME Tower Chart Overlay - ALL 4 TOWERS VISIBLE */}
-          <HeroTowerChart stats={liveStats} />
+          <HeroTowerChart />
           <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-stone-900/25 to-stone-50" />
         </motion.div>
 
-        {/* ✅ FIXED: Button container with proper z-index and padding */}
         <div className="relative z-20 max-w-5xl mx-auto px-6 text-center text-white pt-20">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -358,17 +347,17 @@ export default function AboutPage() {
             </span>
           </motion.h1>
           
+          {/* ✅ UPDATED SUBTITLE WITH RELEVANT WORDS */}
           <motion.p 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-lg md:text-xl text-stone-100 max-w-3xl mx-auto mb-12 leading-relaxed font-medium drop-shadow-md"
           >
-            कोसी-गंगा के पवित्र मैदानों में बसा एक ऐसा गाँव, जहाँ {liveStats.totalUsers}+ सक्रिय सदस्य, 
-            {liveStats.totalPosts}+ पोस्ट, और {liveStats.totalViews}+ व्यूज़ की समृद्ध मिथिला-अंगिका विरासत है।
+            कोसी-गंगा के पवित्र मैदानों में बसा एक ऐसा गाँव, जहाँ 1.75 लाख+ जनसंख्या, 
+            ~50% साक्षरता, और समृद्ध शिक्षा की मिथिला-अंगिका विरासत है।
           </motion.p>
 
-          {/* ✅ FIXED: Buttons with proper spacing and visibility */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -382,7 +371,6 @@ export default function AboutPage() {
               समुदाय से जुड़ें
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Link>
-            {/* ✅ STRONG VISIBILITY BUTTON */}
             <Link 
               href="/gallery" 
               className="flex items-center gap-2 px-10 py-5 bg-white text-emerald-800 font-black text-lg rounded-2xl shadow-2xl hover:bg-stone-100 transition-all hover:scale-105"
@@ -423,7 +411,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/*  Our Story Section */}
+      {/* 📜 Our Story Section */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -442,7 +430,7 @@ export default function AboutPage() {
                   initial={{ scale: 1.1 }}
                   whileInView={{ scale: 1 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
-                  src="/images/mitti-anmol-rishta.jpg" // ✅ Local Image
+                  src="/images/mitti-anmol-rishta.jpg"
                   alt="Village Life" 
                   className="w-full h-[400px] md:h-[550px] object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -493,7 +481,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/*  Detailed Info Sections */}
+      {/* 📚 Detailed Info Sections */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto space-y-32">
           
