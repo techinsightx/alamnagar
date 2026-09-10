@@ -78,24 +78,24 @@ const AnimatedNumber = ({ value, suffix = "" }: { value: number; suffix?: string
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 HERO BACKGROUND CHART (Enhanced to 55% opacity for stronger visibility)
+// 🌈 HERO BACKGROUND AREA CHART (Strong 65% opacity)
 // ═══════════════════════════════════════════════════════════
 const HeroBackgroundChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-55">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-65">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 20 }}>
           <defs>
-            <linearGradient id="glowViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
-            <linearGradient id="glowLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.4}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
-            <linearGradient id="glowComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-            <linearGradient id="glowShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.2}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+            <linearGradient id="glowViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.6}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="glowLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.5}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="glowComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="glowShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/></linearGradient>
           </defs>
-          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={14} fillOpacity={1} fill="url(#glowViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={10} fillOpacity={1} fill="url(#glowLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={7} fillOpacity={1} fill="url(#glowComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#glowShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={16} fillOpacity={1} fill="url(#glowViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={12} fillOpacity={1} fill="url(#glowLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={8} fillOpacity={1} fill="url(#glowComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={5} fillOpacity={1} fill="url(#glowShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -103,24 +103,73 @@ const HeroBackgroundChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART (Enhanced to 45% opacity)
+// 🏗️ HERO TOWER BAR CHART (NEW - Strong 40% opacity, overlaid)
+// ═══════════════════════════════════════════════════════════
+const HeroTowerChart = ({ stats }: { stats: any }) => {
+  const data = useMemo(() => [
+    { name: 'सदस्य', value: stats.totalUsers || 10 },
+    { name: 'पोस्ट', value: stats.totalPosts || 10 },
+    { name: 'व्यूज़', value: stats.totalViews || 10 },
+    { name: 'लाइक', value: stats.totalLikes || 10 },
+  ], [stats]);
+
+  return (
+    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-40">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="heroTowerEmerald" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
+              <stop offset="50%" stopColor="#10b981" stopOpacity={0.5}/>
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/>
+            </linearGradient>
+            <linearGradient id="heroTowerAmber" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={1}/>
+              <stop offset="50%" stopColor="#f59e0b" stopOpacity={0.5}/>
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05}/>
+            </linearGradient>
+            <linearGradient id="heroTowerBlue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/>
+              <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.5}/>
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/>
+            </linearGradient>
+            <linearGradient id="heroTowerRose" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/>
+              <stop offset="50%" stopColor="#f43f5e" stopOpacity={0.5}/>
+              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05}/>
+            </linearGradient>
+          </defs>
+          <Bar dataKey="value" radius={[12, 12, 0, 0]} animationDuration={2500} animationEasing="ease-out">
+            {data.map((entry, index) => {
+              const fills = ['url(#heroTowerEmerald)', 'url(#heroTowerAmber)', 'url(#heroTowerBlue)', 'url(#heroTowerRose)'];
+              return <rect key={`cell-${index}`} fill={fills[index]} />;
+            })}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🌈 NEWSLETTER REAL-TIME BACKGROUND CHART (Strong 50% opacity)
 // ═══════════════════════════════════════════════════════════
 const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
   if (data.length === 0) return null;
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-45">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-50">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="nlViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
-            <linearGradient id="nlLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.4}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
-            <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-            <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.2}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+            <linearGradient id="nlViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.6}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="nlLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.5}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05}/></linearGradient>
+            <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/></linearGradient>
           </defs>
-          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={8} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={6} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={4} fillOpacity={1} fill="url(#nlComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
-          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#nlShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={10} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={7} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={5} fillOpacity={1} fill="url(#nlComments)" isAnimationActive={true} animationDuration={9000} animationEasing="ease-in-out" />
+          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#nlShares)" isAnimationActive={true} animationDuration={10500} animationEasing="ease-in-out" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -128,7 +177,7 @@ const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🏢 MARKETPLACE REAL-TIME TOWER CHART BACKGROUND (Enhanced to 50% opacity)
+// 🏢 MARKETPLACE REAL-TIME TOWER CHART (Strong 55% opacity)
 // ═══════════════════════════════════════════════════════════
 const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   const data = useMemo(() => [
@@ -139,14 +188,14 @@ const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
   ], [stats]);
 
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-50">
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-55">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="towerEmerald" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/></linearGradient>
-            <linearGradient id="towerAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2}/></linearGradient>
-            <linearGradient id="towerBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/></linearGradient>
-            <linearGradient id="towerRose" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.9}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.2}/></linearGradient>
+            <linearGradient id="towerEmerald" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={1}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/></linearGradient>
+            <linearGradient id="towerAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={1}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2}/></linearGradient>
+            <linearGradient id="towerBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/></linearGradient>
+            <linearGradient id="towerRose" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.2}/></linearGradient>
           </defs>
           <Bar dataKey="value" radius={[8, 8, 0, 0]} animationDuration={2000} />
         </BarChart>
@@ -600,10 +649,14 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION (Soft Matte Dark Background) ===== */}
+        {/* ===== 1. CINEMATIC HERO SECTION (Dual Charts: Area + Tower) ===== */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-900 text-white px-4 md:px-8 lg:px-12">
+          {/* Layer 1: Area Chart Background */}
           <HeroBackgroundChart data={chartData} />
-          <div className="absolute inset-0 z-0 bg-gradient-to-br from-stone-900/85 via-stone-800/75 to-stone-900/85" />
+          {/* Layer 2: Tower Bar Chart Overlay (NEW) */}
+          <HeroTowerChart stats={liveStats} />
+          {/* Layer 3: Gradient Overlay to blend charts with content */}
+          <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-900/70 via-stone-800/50 to-stone-900/70" />
           
           {isAdmin && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute top-24 right-6 z-20">
@@ -775,7 +828,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 5. MARKETPLACE TEASER (NEW Warm Neutral Background - bg-neutral-900) ===== */}
+        {/* ===== 5. MARKETPLACE TEASER (Warm Neutral bg-neutral-900) ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-neutral-900 text-white relative overflow-hidden">
           <MarketplaceTowerChart stats={liveStats} />
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
