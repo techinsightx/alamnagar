@@ -8,7 +8,8 @@ import {
   Sparkles, TrendingUp, SlidersHorizontal, Users, Camera
 } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+// ✅ FIXED: 'limit' added to imports
+import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell } from "recharts";
@@ -266,7 +267,7 @@ export default function MarketplacePage() {
         </div>
       </section>
 
-      {/* 🎛️ Sticky Glassmorphic Filters */}
+      {/* ️ Sticky Glassmorphic Filters */}
       <section className="sticky top-20 z-30 bg-stone-50/80 backdrop-blur-xl border-b border-stone-200/60">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
