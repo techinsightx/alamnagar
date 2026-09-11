@@ -15,6 +15,76 @@ import {
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
+// ═══════════════════════════════════════════════════════════
+// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES (16:9 Ratio)
+// ═══════════════════════════════════════════════════════════
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1609766418204-94aae7d87817?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2670&auto=format&fit=crop",
+];
+
+const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [resolvedImages, setResolvedImages] = useState<string[]>(images);
+
+  const handleImageError = (index: number) => {
+    setResolvedImages(prev => {
+      const updated = [...prev];
+      if (!updated[index].startsWith('http')) {
+        updated[index] = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+      }
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    if (resolvedImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % resolvedImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [resolvedImages.length]);
+
+  return (
+    <div className={`relative w-full h-full overflow-hidden bg-stone-900 ${className}`}>
+      {resolvedImages.map((img, index) => (
+        <motion.div
+          key={img}
+          className="absolute inset-0 w-full h-full"
+          initial={{ opacity: 0, scale: 1.15 }}
+          animate={{ 
+            opacity: index === currentIndex ? 1 : 0,
+            scale: index === currentIndex ? 1 : 1.15
+          }}
+          transition={{ duration: 2.5, ease: "easeInOut" }}
+        >
+          <img 
+            src={img} 
+            alt={`Gallery Hero ${index + 1}`} 
+            className="w-full h-full object-cover"
+            onError={() => handleImageError(index)}
+          />
+        </motion.div>
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/40 via-transparent to-stone-950/20 pointer-events-none" />
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {resolvedImages.map((_, index) => (
+          <motion.button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`h-2 rounded-full transition-all ${
+              index === currentIndex ? 'bg-amber-400 w-8' : 'bg-white/50 w-2'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ══════════════════════════════════════════════════════════
 // 🍞 CUSTOM TOAST NOTIFICATION COMPONENT
 // ══════════════════════════════════════════════════════════
@@ -93,6 +163,15 @@ export default function GalleryPage() {
   const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 5 Hero Images for Slider
+  const heroImages = [
+    '/images/hero-1.jpg',
+    '/images/hero-2.jpg',
+    '/images/hero-3.jpg',
+    '/images/hero-4.jpg',
+    '/images/hero-5.jpg'
+  ];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -329,39 +408,48 @@ export default function GalleryPage() {
         )}
       </AnimatePresence>
 
-      {/* 🌟 Cinematic Hero Section */}
-      <section className="relative bg-stone-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518176258769-f227c798150e?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-stone-900/50 via-stone-900/80 to-stone-50" />
-        
-        <div className="relative max-w-5xl mx-auto px-6 py-24 md:py-32 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 border border-amber-500/30 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-300 text-sm font-bold uppercase tracking-wider">आलमनगर की डिजिटल विरासत</span>
+      {/* 🌟 Cinematic Hero Section with 16:9 Ratio & Slider */}
+      <section className="relative w-full bg-stone-900 text-white overflow-hidden">
+        <div className="relative w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px] aspect-video md:aspect-[21/9]">
+          <div className="absolute inset-0 z-0">
+            <SmoothImageSlider images={heroImages} className="w-full h-full" />
+          </div>
+          <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/50 via-stone-900/30 to-stone-950/60 pointer-events-none" />
+          
+          <div className="relative z-[10] h-full flex items-center justify-center px-6 py-12 md:py-16 lg:py-20">
+            <div className="text-center w-full max-w-5xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 border border-amber-500/30 rounded-full mb-6 backdrop-blur-md">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span className="text-amber-300 text-sm font-bold uppercase tracking-wider">आलमनगर की डिजिटल विरासत</span>
+                </div>
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight drop-shadow-2xl">
+                  हमारा गाँव, <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">
+                    हमारी कहानियाँ
+                  </span>
+                </h1>
+                <p className="text-lg md:text-xl text-stone-200 max-w-2xl mx-auto mb-10 leading-relaxed drop-shadow-md">
+                  अपने सर्वश्रेष्ठ क्षणों, सुंदर स्थानों और रोमांचक अनुभवों को साझा करें। 
+                  आपकी हर तस्वीर आलमनगर की अमिट विरासत का एक नया पन्ना है।
+                </p>
+                
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => user ? setShowUploadModal(true) : router.push("/auth")}
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-2xl shadow-2xl shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all text-lg"
+                >
+                  <UploadCloud className="w-5 h-5" />
+                  अपनी तस्वीर से विरासत रचें
+                </motion.button>
+              </motion.div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
-              हमारा गाँव, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">हमारी कहानियाँ</span>
-            </h1>
-            <p className="text-lg md:text-xl text-stone-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-              अपने सर्वश्रेष्ठ क्षणों, सुंदर स्थानों और रोमांचक अनुभवों को साझा करें। 
-              आपकी हर तस्वीर आलमनगर की अमिट विरासत का एक नया पन्ना है।
-            </p>
-            
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => user ? setShowUploadModal(true) : router.push("/auth")}
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-2xl shadow-2xl shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all"
-            >
-              <UploadCloud className="w-5 h-5" />
-              अपनी तस्वीर से विरासत रचें
-            </motion.button>
-          </motion.div>
+          </div>
         </div>
       </section>
 
