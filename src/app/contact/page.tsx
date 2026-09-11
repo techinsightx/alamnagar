@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Mail, Send, ArrowLeft, CheckCircle, Loader2, User, AlertCircle, 
-  ShieldCheck, Navigation
+  ShieldCheck, Navigation, MessageCircle, Sparkles, Laptop
 } from "lucide-react";
 import Link from "next/link";
 
@@ -64,32 +64,88 @@ export default function ContactPage() {
 
   return (
     <main className="min-h-screen bg-stone-50 text-stone-900 pb-20 selection:bg-emerald-200 selection:text-emerald-900">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-stone-950 via-emerald-950 to-stone-900 text-white py-20 md:py-28 px-6 relative overflow-hidden">
+      
+      {/* 🌟 Premium Hero Section with 16:9 Cinematic Reveal */}
+      <div className="bg-gradient-to-br from-stone-950 via-emerald-950 to-stone-900 text-white py-16 md:py-24 px-6 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-        <div className="max-w-4xl mx-auto relative z-10">
-          <Link href="/" className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 mb-8 transition-colors font-semibold group">
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> वापस होम पेज पर जाएं
-          </Link>
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-black mb-6 tracking-tight"
+        
+        {/* Subtle glowing orb for cinematic depth */}
+        <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/4 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto relative z-10 grid md:grid-cols-2 gap-12 items-center">
+          
+          {/* Left: Text Content */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
           >
-            हमसे <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-emerald-400">संपर्क करें</span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-stone-300 text-lg max-w-2xl leading-relaxed"
+            <Link href="/" className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 mb-8 transition-colors font-semibold group">
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> वापस होम पेज पर जाएं
+            </Link>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tight leading-tight">
+              हमसे <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-emerald-400">संपर्क करें</span>
+            </h1>
+            <p className="text-stone-300 text-lg md:text-xl max-w-xl leading-relaxed">
+              आलमनगर समुदाय से जुड़े कोई भी प्रश्न, सुझाव या सहयोग के लिए हमसे बेझिझक संपर्क करें। हम आपकी सहायता के लिए हमेशा तत्पर हैं।
+            </p>
+          </motion.div>
+
+          {/* Right: 16:9 Cinematic Founder Photo Reveal */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative w-full"
           >
-            आलमनगर समुदाय से जुड़े कोई भी प्रश्न, सुझाव या सहयोग के लिए हमसे बेझिझक संपर्क करें। हम आपकी सहायता के लिए हमेशा तत्पर हैं।
-          </motion.p>
+            {/* 16:9 Aspect Ratio Container */}
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-emerald-900/50 group">
+              
+              {/* Cinematic Slow Zoom Animation */}
+              <motion.img 
+                src="/images/founder-photo.jpg" 
+                alt="आलमनगर संस्थापक एवं डेवलपर" 
+                className="w-full h-full object-cover"
+                initial={{ scale: 1.1, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 2, ease: "easeOut" }}
+                onError={(e) => {
+                  // Fallback image if founder-photo.jpg is not found
+                  (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1200&auto=format&fit=crop";
+                }}
+              />
+              
+              {/* Cinematic Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/20 to-transparent" />
+              
+              {/* ✅ UPDATED: Founder & Developer Badge */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+                className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 flex items-center gap-4"
+              >
+                <div className="p-3 bg-gradient-to-br from-amber-500 to-emerald-500 rounded-full shadow-lg shadow-amber-500/20">
+                  <Laptop className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm md:text-base flex items-center gap-2">
+                    संस्थापक एवं डेवलपर
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                  </p>
+                  <p className="text-stone-300 text-xs md:text-sm">इस डिजिटल मंच के निर्माता</p>
+                </div>
+              </motion.div>
+            </div>
+            
+            {/* Decorative border element behind image for depth */}
+            <div className="absolute -z-10 -bottom-4 -right-4 w-full h-full border-2 border-amber-500/20 rounded-2xl" />
+          </motion.div>
+
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* 📬 Main Content */}
       <div className="max-w-7xl mx-auto px-6 -mt-12 relative z-20">
         <div className="grid lg:grid-cols-5 gap-8">
           
@@ -97,6 +153,7 @@ export default function ContactPage() {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
             className="lg:col-span-3 bg-white rounded-3xl shadow-xl border border-stone-100 p-6 md:p-8"
           >
             <div className="flex items-center gap-3 mb-8">
@@ -153,7 +210,7 @@ export default function ContactPage() {
 
                 <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2 flex items-center gap-2">
-                    <Send className="w-4 h-4" /> विषय *
+                    <MessageCircle className="w-4 h-4" /> विषय *
                   </label>
                   <input type="text" name="subject" required placeholder="जैसे: Marketplace लिस्टिंग में समस्या"
                     className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
