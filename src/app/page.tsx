@@ -590,9 +590,8 @@ export default function HomePage() {
 
         <motion.div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 z-[100] origin-left" style={{ scaleX }} />
 
-        {/* ===== 1. CINEMATIC HERO SECTION - FIXED: Profile Photo Fully Visible ===== */}
+        {/* ===== 1. CINEMATIC HERO SECTION ===== */}
         <section className="relative w-full bg-stone-900 text-white overflow-hidden">
-          {/* ✅ FIXED: Added min-height and proper padding for content */}
           <div className="relative w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
             <div className="absolute inset-0 z-0">
               <SmoothImageSlider images={heroImages} className="w-full h-full" />
@@ -610,14 +609,12 @@ export default function HomePage() {
               </motion.div>
             )}
             
-            {/* ✅ FIXED: Content container with proper padding */}
             <div className="relative z-[10] h-full flex items-center justify-center px-4 md:px-8 lg:px-12 py-12 md:py-16 lg:py-20">
               <div className="text-center w-full max-w-6xl mx-auto">
                 {currentUser ? (
                   <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, ease: "easeOut" }} className="relative w-full max-w-2xl mx-auto mb-6 md:mb-8 p-4 md:p-6 flex flex-col items-center text-center gap-4">
                     <div className="relative shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full blur-2xl opacity-40 animate-pulse" />
-                      {/* ✅ FIXED: Profile photo with proper size and no clipping */}
                       <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white/30 flex items-center justify-center shadow-2xl">
                         {currentUser.photoURL ? <img src={currentUser.photoURL} alt="" className="w-full h-full object-cover" /> : <span className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-amber-400">{currentUser.displayName?.[0] || "U"}</span>}
                       </div>
@@ -836,7 +833,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== NEW: KIDS ZONE SECTION ===== */}
+        {/* ===== NEW: KIDS ZONE SECTION (UPGRADED WITH 2 GAMES) ===== */}
         <section className="relative py-24 px-4 md:px-8 lg:px-12 overflow-hidden bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <FloatingBubble delay={0} size={80} left={10} duration={12} />
@@ -849,35 +846,53 @@ export default function HomePage() {
 
           <div className="relative z-10 max-w-6xl mx-auto text-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-              <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }} className="inline-block text-7xl md:text-8xl mb-4">🎈</motion.div>
+              <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }} className="inline-block text-7xl md:text-8xl mb-4">🎮</motion.div>
               <span className="inline-block px-6 py-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-white font-black text-sm tracking-widest uppercase mb-6">✨ Kids Zone ✨</span>
               <h2 className="text-5xl md:text-7xl font-black text-white mb-6 drop-shadow-2xl">बच्चों की <span className="text-yellow-300">मस्ती की दुनिया</span></h2>
-              <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">आलमनगर के बच्चों के लिए एक खास जगह! यहाँ खेलो, सीखो, और मज़े करो।</p>
+              <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">आलमनगर के बच्चों के लिए खास गेम्स! यहाँ खेलो, सीखो, और मज़े करो।</p>
             </motion.div>
 
-            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-6 mb-12">
+            {/* ✅ UPGRADED: 2 Game Cards Side by Side */}
+            <div className="grid md:grid-cols-2 gap-6 mb-12 max-w-4xl mx-auto">
+              <Link href="/games/bubble-pop" className="group relative bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-white/50 hover:scale-105 transition-all duration-300 overflow-hidden text-left">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-yellow-400/40 transition-all" />
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">🎈</div>
+                  <h3 className="text-2xl font-black text-stone-900 mb-2">Bubble Pop</h3>
+                  <p className="text-stone-600 text-sm mb-4">Balloons ko pop karo aur magical items collect karo!</p>
+                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold px-6 py-2 rounded-full group-hover:shadow-lg transition-all">
+                    Play Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </Link>
+
+              <Link href="/games/magical-catch" className="group relative bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-white/50 hover:scale-105 transition-all duration-300 overflow-hidden text-left">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-indigo-400/40 transition-all" />
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">🧺</div>
+                  <h3 className="text-2xl font-black text-stone-900 mb-2">Jadui Tokri</h3>
+                  <p className="text-stone-600 text-sm mb-4">Girte hue stars aur gifts pakdo, bombs se bacho!</p>
+                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold px-6 py-2 rounded-full group-hover:shadow-lg transition-all">
+                    Play Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </Link>
+            </div>
+
+            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
               {[
                 { icon: Smile, title: "Fun & Safe", desc: "बच्चों के लिए 100% सुरक्षित और मज़ेदार", color: "from-yellow-400 to-orange-400" },
                 { icon: Palette, title: "Colorful World", desc: "रंग-बिरंगी दुनिया में खो जाओ", color: "from-pink-400 to-purple-400" },
                 { icon: Trophy, title: "Win Stars", desc: "हर game में stars जमा करो", color: "from-blue-400 to-cyan-400" }
               ].map((feature, i) => (
-                <motion.div key={i} variants={fadeInUp} whileHover={{ y: -10, rotate: 2 }} className="bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border-4 border-white/50">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                    <feature.icon className="w-8 h-8 text-white" />
+                <motion.div key={i} variants={fadeInUp} whileHover={{ y: -10, rotate: 2 }} className="bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-2xl border-4 border-white/50">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mx-auto mb-3 shadow-lg`}>
+                    <feature.icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-black text-stone-900 mb-2">{feature.title}</h3>
-                  <p className="text-stone-600 text-sm">{feature.desc}</p>
+                  <h3 className="text-lg font-black text-stone-900 mb-1">{feature.title}</h3>
+                  <p className="text-stone-600 text-xs">{feature.desc}</p>
                 </motion.div>
               ))}
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.4 }}>
-              <Link href="/games/bubble-pop" className="group inline-flex items-center gap-4 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white font-black text-2xl px-12 py-6 rounded-full shadow-2xl hover:shadow-yellow-500/50 transition-all hover:scale-110 border-4 border-white/30">
-                <Gamepad2 className="w-8 h-8 group-hover:rotate-12 transition-transform" />
-                Bubble Pop Game खेलो!
-                <Sparkles className="w-8 h-8 group-hover:rotate-180 transition-transform duration-500" />
-              </Link>
-              <p className="text-white/80 text-sm mt-6 font-medium">🎮 Free • No Login Required • Mobile Friendly</p>
             </motion.div>
           </div>
         </section>
@@ -935,7 +950,7 @@ export default function HomePage() {
 
               <div className="md:col-span-4">
                 <h4 className="text-white font-black mb-6 text-lg flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-purple-500" /> युवा क्रिएटर टूल्स
+                  <Bot className="w-5 h-5 text-purple-500" /> Tools & Games
                 </h4>
                 <div className="space-y-4">
                   <Link href="https://funnelsbuilder.netlify.app" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-purple-500/50 hover:bg-purple-500/10 transition-all">
@@ -947,7 +962,7 @@ export default function HomePage() {
                         <h5 className="font-bold text-white text-sm group-hover:text-purple-400 transition-colors">FunnelsBuilder</h5>
                         <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-purple-400" />
                       </div>
-                      <p className="text-xs text-stone-400 leading-relaxed">मुफ्त में प्रोफेशनल वेबसाइट और लैंडिंग पेज बनाएं। युवाओं के लिए बेस्ट टूल!</p>
+                      <p className="text-xs text-stone-400 leading-relaxed">मुफ्त में प्रोफेशनल वेबसाइट और लैंडिंग पेज बनाएं।</p>
                     </div>
                   </Link>
 
@@ -960,10 +975,11 @@ export default function HomePage() {
                         <h5 className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors">AI Passive System</h5>
                         <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-cyan-400" />
                       </div>
-                      <p className="text-xs text-stone-400 leading-relaxed">ऑटोमेटेड AI टूल्स जो खुद काम करते हैं। पैसिव इनकम और स्मार्ट वर्क के लिए।</p>
+                      <p className="text-xs text-stone-400 leading-relaxed">ऑटोमेटेड AI टूल्स जो खुद काम करते हैं।</p>
                     </div>
                   </Link>
 
+                  {/* ✅ Game 1: Bubble Pop */}
                   <Link href="/games/bubble-pop" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-amber-500/50 hover:bg-amber-500/10 transition-all cursor-pointer">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0 group-hover:bg-amber-500 transition-colors">
                       <Gamepad2 className="w-5 h-5 text-amber-400 group-hover:text-white" />
@@ -973,7 +989,21 @@ export default function HomePage() {
                         <h5 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">Bubble Pop Game</h5>
                         <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                       </div>
-                      <p className="text-xs text-stone-400 leading-relaxed">बच्चों के लिए मज़ेदार game! Bubbles pop करो और stars जमा करो। </p>
+                      <p className="text-xs text-stone-400 leading-relaxed">Bubbles pop करो और stars जमा करो।</p>
+                    </div>
+                  </Link>
+
+                  {/* ✅ Game 2: Jadui Tokri (NEW) */}
+                  <Link href="/games/magical-catch" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-indigo-500/50 hover:bg-indigo-500/10 transition-all cursor-pointer">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0 group-hover:bg-indigo-500 transition-colors">
+                      <Gamepad2 className="w-5 h-5 text-indigo-400 group-hover:text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h5 className="font-bold text-white text-sm group-hover:text-indigo-400 transition-colors">Jadui Tokri Game</h5>
+                        <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                      </div>
+                      <p className="text-xs text-stone-400 leading-relaxed">Stars aur gifts pakdo, bombs se bacho!</p>
                     </div>
                   </Link>
                 </div>
