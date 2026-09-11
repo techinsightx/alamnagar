@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 
-// 11+ Vibrant Balloon Gradients for a premium look
+// 11+ Vibrant Balloon Gradients for a premium 3D look
 const BALLOON_STYLES = [
   "bg-gradient-to-br from-pink-400 via-pink-500 to-rose-600",
   "bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600",
@@ -20,7 +20,7 @@ const BALLOON_STYLES = [
   "bg-gradient-to-br from-amber-300 via-amber-400 to-yellow-500",
 ];
 
-const POP_EMOJIS = ["🌟", "🍬", "🧸", "🎈", "🍭", "🎁", "🦋", "💎", "🍉", "🎀"];
+const POP_EMOJIS = ["🌟", "🍬", "🧸", "🎈", "🍭", "🎁", "🦋", "💎", "🍉", "🎀", "🍕", "🚀"];
 
 interface Balloon {
   id: number;
@@ -28,7 +28,6 @@ interface Balloon {
   size: number;
   style: string;
   duration: number;
-  swayOffset: number;
 }
 
 interface Particle {
@@ -36,9 +35,8 @@ interface Particle {
   x: number;
   y: number;
   emoji: string;
-  color: string;
-  tx: number; // target x
-  ty: number; // target y
+  tx: number;
+  ty: number;
   rotate: number;
 }
 
@@ -49,6 +47,13 @@ interface FloatingText {
   text: string;
 }
 
+interface Shockwave {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+}
+
 export default function BubblePopGame() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -56,10 +61,10 @@ export default function BubblePopGame() {
   const [balloons, setBalloons] = useState<Balloon[]>([]);
   const [particles, setParticles] = useState<Particle[]>([]);
   const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
+  const [shockwaves, setShockwaves] = useState<Shockwave[]>([]);
   const [nextId, setNextId] = useState(0);
   const [highScore, setHighScore] = useState(0);
 
-  // Load high score
   useEffect(() => {
     const saved = localStorage.getItem("bubblePopHighScore");
     if (saved) setHighScore(parseInt(saved));
@@ -71,6 +76,7 @@ export default function BubblePopGame() {
     setBalloons([]);
     setParticles([]);
     setFloatingTexts([]);
+    setShockwaves([]);
     setIsPlaying(true);
   };
 
@@ -89,65 +95,67 @@ export default function BubblePopGame() {
     return () => clearInterval(timer);
   }, [isPlaying, timeLeft, score, highScore]);
 
-  // Unlimited Spawning Logic (Max 15 on screen)
+  // ✅ FIXED: Balanced Spawn Rate (800ms, max 8 balloons)
   useEffect(() => {
     if (!isPlaying) return;
     const spawnInterval = setInterval(() => {
       setBalloons((prev) => {
-        if (prev.length >= 15) return prev;
+        if (prev.length >= 8) return prev; // Reduced max from 15 to 8
         const newBalloon: Balloon = {
           id: nextId,
-          x: Math.random() * 85 + 5, // 5% to 90% screen width
-          size: Math.random() * 50 + 70, // 70px to 120px
+          x: Math.random() * 80 + 10, // 10% to 90% screen width
+          size: Math.random() * 50 + 80, // 80px to 130px (slightly bigger)
           style: BALLOON_STYLES[Math.floor(Math.random() * BALLOON_STYLES.length)],
-          duration: Math.random() * 3 + 4, // 4 to 7 seconds to cross screen
-          swayOffset: Math.random() * 1000, // Random starting phase for sway
+          duration: Math.random() * 3 + 5, // 5 to 8 seconds (slightly slower for better tracking)
         };
         setNextId((id) => id + 1);
         return [...prev, newBalloon];
       });
-    }, 400); // Spawn every 400ms for continuous action
+    }, 800); // Increased from 400ms to 800ms
     return () => clearInterval(spawnInterval);
   }, [isPlaying, nextId]);
 
-  // Advanced Pop Logic with Rich Explosion
+  // ✅ FIXED: Ultra Explosive Burst with Shockwave + 16 Particles
   const popBalloon = useCallback((id: number, x: number, size: number) => {
     setScore((s) => s + 10);
-    
-    // Remove balloon
     setBalloons((prev) => prev.filter((b) => b.id !== id));
 
-    // Calculate center of balloon for explosion origin
-    const centerX = x; 
-    const centerY = 50; // Approximate middle of screen vertically for simplicity, or track Y
+    const centerX = x;
+    const centerY = 50; 
 
-    // 1. Create Rich Particle Explosion (8-12 particles)
+    // 1. Shockwave Ring Effect
+    const waveId = Date.now();
+    setShockwaves((prev) => [...prev, { id: waveId, x: centerX, y: centerY, size }]);
+    setTimeout(() => {
+      setShockwaves((prev) => prev.filter((w) => w.id !== waveId));
+    }, 500);
+
+    // 2. Rich Particle Explosion (16 particles)
     const newParticles: Particle[] = [];
-    const particleCount = 10;
+    const particleCount = 16;
     for (let i = 0; i < particleCount; i++) {
       const angle = (Math.PI * 2 * i) / particleCount;
-      const velocity = 100 + Math.random() * 150; // Explosion radius
+      const velocity = 120 + Math.random() * 180; // Wider explosion radius
       newParticles.push({
         id: Date.now() + i,
         x: centerX,
         y: centerY,
         emoji: POP_EMOJIS[Math.floor(Math.random() * POP_EMOJIS.length)],
-        color: `hsl(${Math.random() * 360}, 80%, 60%)`,
         tx: Math.cos(angle) * velocity,
-        ty: Math.sin(angle) * velocity - 50, // Slight upward bias
-        rotate: Math.random() * 360 - 180,
+        ty: Math.sin(angle) * velocity - 80, // Upward bias for gravity feel
+        rotate: Math.random() * 720 - 360,
       });
     }
     setParticles((prev) => [...prev, ...newParticles]);
 
-    // 2. Create Floating "+10" Text
+    // 3. Floating "+10" Text
     const textId = Date.now() + 999;
     setFloatingTexts((prev) => [...prev, { id: textId, x: centerX, y: centerY, text: "+10" }]);
     setTimeout(() => {
       setFloatingTexts((prev) => prev.filter((t) => t.id !== textId));
     }, 800);
 
-    // Cleanup particles after animation
+    // Cleanup particles
     setTimeout(() => {
       setParticles((prev) => prev.filter((p) => !newParticles.find(np => np.id === p.id)));
     }, 1000);
@@ -156,41 +164,30 @@ export default function BubblePopGame() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-400 to-indigo-500 relative overflow-hidden select-none font-sans">
       {/* Animated Background Clouds */}
-      <motion.div 
-        animate={{ x: [0, 50, 0] }} 
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute top-10 left-10 w-40 h-20 bg-white/30 rounded-full blur-2xl" 
-      />
-      <motion.div 
-        animate={{ x: [0, -70, 0] }} 
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute top-20 right-20 w-60 h-32 bg-white/20 rounded-full blur-3xl" 
-      />
-      <motion.div 
-        animate={{ x: [0, 30, 0] }} 
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-        className="absolute top-1/2 left-1/4 w-48 h-24 bg-white/25 rounded-full blur-2xl" 
-      />
+      <motion.div animate={{ x: [0, 50, 0] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute top-10 left-10 w-40 h-20 bg-white/30 rounded-full blur-2xl" />
+      <motion.div animate={{ x: [0, -70, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }} className="absolute top-20 right-20 w-60 h-32 bg-white/20 rounded-full blur-3xl" />
+      <motion.div animate={{ x: [0, 30, 0] }} transition={{ duration: 18, repeat: Infinity, ease: "linear" }} className="absolute top-1/2 left-1/4 w-48 h-24 bg-white/25 rounded-full blur-2xl" />
 
       {/* Top Bar */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 text-white font-bold hover:bg-white/20 px-4 py-2 rounded-full transition bg-black/20 backdrop-blur-md border border-white/20 shadow-lg">
+        <Link href="/" className="flex items-center gap-2 text-white font-bold hover:bg-white/20 px-4 py-2 rounded-full transition bg-black/30 backdrop-blur-md border border-white/30 shadow-lg">
           <ArrowLeft className="w-5 h-5" /> Home
         </Link>
         
         {isPlaying && (
           <div className="flex gap-3">
+            {/* ✅ FIXED: High Contrast Score Display */}
             <motion.div 
               key={score}
-              initial={{ scale: 1.5, color: "#fbbf24" }}
-              animate={{ scale: 1, color: "#ffffff" }}
-              className="bg-white/90 text-sky-600 px-5 py-2 rounded-full font-black text-xl shadow-lg flex items-center gap-2 border-2 border-yellow-400"
+              initial={{ scale: 1.3 }}
+              animate={{ scale: 1 }}
+              className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-black px-5 py-2 rounded-full font-black text-2xl shadow-2xl flex items-center gap-2 border-4 border-white"
             >
-              <Sparkles className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+              <Sparkles className="w-6 h-6 text-white fill-white" />
               {score}
             </motion.div>
-            <div className="bg-white/90 text-rose-500 px-5 py-2 rounded-full font-black text-xl shadow-lg border-2 border-rose-400 flex items-center gap-2">
-              <span className="animate-pulse">⏰</span> {timeLeft}s
+            <div className="bg-black/40 backdrop-blur-md text-white px-5 py-2 rounded-full font-black text-xl shadow-lg border-2 border-white/50 flex items-center gap-2">
+              <span className="animate-pulse text-yellow-400">⏰</span> {timeLeft}s
             </div>
           </div>
         )}
@@ -198,7 +195,6 @@ export default function BubblePopGame() {
 
       {/* Game Area */}
       <div className="absolute inset-0 z-10 pointer-events-none">
-        {/* Balloons (pointer-events-auto so they can be clicked) */}
         <AnimatePresence>
           {balloons.map((balloon) => (
             <motion.div
@@ -209,14 +205,14 @@ export default function BubblePopGame() {
                 opacity: 1,
                 x: [
                   `${balloon.x}vw`,
-                  `${balloon.x + 3}vw`,
-                  `${balloon.x - 3}vw`,
+                  `${balloon.x + 4}vw`,
+                  `${balloon.x - 4}vw`,
                   `${balloon.x}vw`
                 ]
               }}
               transition={{ 
                 y: { duration: balloon.duration, ease: "linear" },
-                x: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                x: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
               }}
               onClick={() => popBalloon(balloon.id, balloon.x, balloon.size)}
               className="absolute pointer-events-auto cursor-pointer flex flex-col items-center"
@@ -225,20 +221,39 @@ export default function BubblePopGame() {
               whileTap={{ scale: 0.9 }}
             >
               {/* Glossy Balloon Body */}
-              <div className={`relative w-full h-5/6 rounded-[50%] ${balloon.style} shadow-2xl border-2 border-white/30`}>
-                {/* Highlight/Shine */}
+              <div className={`relative w-full h-5/6 rounded-[50%] ${balloon.style} shadow-2xl border-2 border-white/40`}>
                 <div className="absolute top-3 left-4 w-1/3 h-1/3 bg-white/50 rounded-full blur-md transform -rotate-12" />
                 <div className="absolute top-6 left-7 w-1/5 h-1/5 bg-white/80 rounded-full" />
-                {/* Knot */}
-                <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 ${balloon.style} rotate-45 border border-white/20`} />
+                <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 ${balloon.style} rotate-45 border border-white/30`} />
               </div>
-              {/* String */}
-              <div className="w-0.5 h-16 bg-white/60 mt-1 rounded-full" />
+              <div className="w-0.5 h-16 bg-white/70 mt-1 rounded-full" />
             </motion.div>
           ))}
         </AnimatePresence>
 
-        {/* Rich Particle Explosions */}
+        {/* ✅ FIXED: Shockwave Ring Effect */}
+        <AnimatePresence>
+          {shockwaves.map((wave) => (
+            <motion.div
+              key={wave.id}
+              initial={{ scale: 0.5, opacity: 1, borderWidth: 6 }}
+              animate={{ scale: 4, opacity: 0, borderWidth: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="absolute rounded-full border-white pointer-events-none shadow-[0_0_20px_rgba(255,255,255,0.8)]"
+              style={{ 
+                width: wave.size, 
+                height: wave.size, 
+                left: `${wave.x}vw`, 
+                top: `${wave.y}%`, 
+                marginLeft: -(wave.size / 2), 
+                marginTop: -(wave.size / 2) 
+              }}
+            />
+          ))}
+        </AnimatePresence>
+
+        {/* ✅ FIXED: Rich Particle Explosions */}
         <AnimatePresence>
           {particles.map((p) => (
             <motion.div
@@ -248,12 +263,12 @@ export default function BubblePopGame() {
                 x: p.tx, 
                 y: p.ty, 
                 opacity: 0, 
-                scale: 1.5, 
+                scale: 1.8, 
                 rotate: p.rotate 
               }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="absolute pointer-events-none text-3xl md:text-4xl flex items-center justify-center"
+              transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }} // Custom bezier for snappy explosion
+              className="absolute pointer-events-none text-3xl md:text-5xl flex items-center justify-center drop-shadow-lg"
               style={{ left: `${p.x}vw`, top: `${p.y}%` }}
             >
               {p.emoji}
@@ -267,11 +282,11 @@ export default function BubblePopGame() {
             <motion.div
               key={ft.id}
               initial={{ y: 0, opacity: 1, scale: 0.5 }}
-              animate={{ y: -80, opacity: 0, scale: 1.5 }}
+              animate={{ y: -100, opacity: 0, scale: 1.5 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="absolute pointer-events-none font-black text-3xl text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] stroke-black"
-              style={{ left: `${ft.x}vw`, top: `${ft.y}%`, WebkitTextStroke: "1px black" }}
+              className="absolute pointer-events-none font-black text-4xl text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]"
+              style={{ left: `${ft.x}vw`, top: `${ft.y}%`, WebkitTextStroke: "2px black" }}
             >
               {ft.text}
             </motion.div>
