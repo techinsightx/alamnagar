@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   MapPin, Users, Heart, Sprout, Sun, History, 
   ArrowRight, Star, Home, Calendar, Award, Camera, Sparkles,
@@ -15,7 +15,77 @@ import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, limit } from "firebase/firestore";
 
 // ═══════════════════════════════════════════════════════════
-//  ANIMATED NUMBER COMPONENT
+// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
+// ═══════════════════════════════════════════════════════════
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1609766418204-94aae7d87817?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2670&auto=format&fit=crop",
+];
+
+const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [resolvedImages, setResolvedImages] = useState<string[]>(images);
+
+  const handleImageError = (index: number) => {
+    setResolvedImages(prev => {
+      const updated = [...prev];
+      if (!updated[index].startsWith('http')) {
+        updated[index] = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+      }
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    if (resolvedImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % resolvedImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [resolvedImages.length]);
+
+  return (
+    <div className={`relative w-full h-full overflow-hidden bg-stone-900 ${className}`}>
+      {resolvedImages.map((img, index) => (
+        <motion.div
+          key={img}
+          className="absolute inset-0 w-full h-full"
+          initial={{ opacity: 0, scale: 1.15 }}
+          animate={{ 
+            opacity: index === currentIndex ? 1 : 0,
+            scale: index === currentIndex ? 1 : 1.15
+          }}
+          transition={{ duration: 2.5, ease: "easeInOut" }}
+        >
+          <img 
+            src={img} 
+            alt={`Alamnagar Hero ${index + 1}`} 
+            className="w-full h-full object-cover"
+            onError={() => handleImageError(index)}
+          />
+        </motion.div>
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/40 via-transparent to-stone-950/20 pointer-events-none" />
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {resolvedImages.map((_, index) => (
+          <motion.button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`h-2 rounded-full transition-all ${
+              index === currentIndex ? 'bg-amber-400 w-8' : 'bg-white/50 w-2'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🌟 ANIMATED NUMBER COMPONENT
 // ═══════════════════════════════════════════════════════════
 const AnimatedNumber = ({ value }: { value: number }) => {
   const [count, setCount] = useState(0);
@@ -46,7 +116,6 @@ const AnimatedNumber = ({ value }: { value: number }) => {
 // 📊 HERO TOWER CHART COMPONENT (REAL-TIME - SAME AS HOMEPAGE)
 // ══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
-  // ✅ ORIGINAL SEQUENCE: सदस्य, पोस्ट, व्यूज़, लाइक
   const data = [
     { name: 'सदस्य', value: Math.max(stats.totalUsers || 0, 10) },
     { name: 'पोस्ट', value: Math.max(stats.totalPosts || 0, 10) },
@@ -55,7 +124,7 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
   ];
 
   return (
-    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-40">
+    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-20">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
           <defs>
@@ -215,10 +284,6 @@ const staggerContainer = {
 };
 
 export default function AboutPage() {
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, -30]);
-  const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.8]);
-
   // ✅ REAL-TIME FIREBASE DATA
   const [liveStats, setLiveStats] = useState({
     totalUsers: 0,
@@ -231,6 +296,15 @@ export default function AboutPage() {
 
   // ✅ REAL-TIME CHART DATA (Last 7 Days)
   const [chartData, setChartData] = useState<any[]>([]);
+
+  // ✅ 5 HERO IMAGES FOR SLIDER
+  const heroImages = [
+    '/images/hero-1.jpg',
+    '/images/hero-2.jpg',
+    '/images/hero-3.jpg',
+    '/images/hero-4.jpg',
+    '/images/hero-5.jpg'
+  ];
 
   useEffect(() => {
     // Fetch Users Count
@@ -307,79 +381,74 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-stone-50 overflow-x-hidden selection:bg-emerald-200 selection:text-emerald-900">
       
-      {/* 🌟 Cinematic Hero Section with REAL-TIME Tower Chart */}
-      <section className="relative h-[95vh] min-h-[700px] flex items-center justify-center overflow-hidden">
-        <motion.div style={{ y, opacity }} className="absolute inset-0 z-0">
-          <motion.div 
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ 
-              backgroundImage: "url('/images/mitti-anmol-rishta.jpg')",
-              filter: "brightness(0.65) contrast(1.1)"
-            }}
-          />
+      {/* 🌟 Cinematic Hero Section with 16:9 Wide Ratio & REAL-TIME Tower Chart */}
+      <section className="relative w-full bg-stone-900 text-white overflow-hidden">
+        <div className="relative w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
+          <div className="absolute inset-0 z-0">
+            <SmoothImageSlider images={heroImages} className="w-full h-full" />
+          </div>
+          
           {/* ✅ REAL-TIME Tower Chart - ORIGINAL SEQUENCE */}
           <HeroTowerChart stats={liveStats} />
-          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/40 via-stone-900/25 to-stone-50" />
-        </motion.div>
+          <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/40 via-stone-900/25 to-stone-950/50 pointer-events-none" />
 
-        <div className="relative z-20 max-w-5xl mx-auto px-6 text-center text-white pt-20">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1 }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/25 backdrop-blur-xl border border-white/40 rounded-full mb-8 shadow-lg"
-          >
-            <MapPin className="w-4 h-4 text-amber-400" />
-            <span className="text-white text-sm font-bold uppercase tracking-widest">मधेपुरा, बिहार</span>
-          </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-[1.1] tracking-tight drop-shadow-2xl"
-          >
-            आलमनगर: <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-amber-300 to-emerald-300">
-              हमारी जड़ें, हमारी पहचान
-            </span>
-          </motion.h1>
-          
-          {/* ✅ UPDATED SUBTITLE WITH RELEVANT WORDS */}
-          <motion.p 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg md:text-xl text-stone-100 max-w-3xl mx-auto mb-12 leading-relaxed font-medium drop-shadow-md"
-          >
-            कोसी-गंगा के पवित्र मैदानों में बसा एक ऐसा गाँव, जहाँ 1.75 लाख+ जनसंख्या, 
-            ~50% साक्षरता, और समृद्ध शिक्षा की मिथिला-अंगिका विरासत है।
-          </motion.p>
+          <div className="relative z-[10] h-full flex items-center justify-center px-4 md:px-8 lg:px-12 py-12 md:py-16 lg:py-20">
+            <div className="text-center w-full max-w-6xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1 }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/25 backdrop-blur-xl border border-white/40 rounded-full mb-8 shadow-lg"
+              >
+                <MapPin className="w-4 h-4 text-amber-400" />
+                <span className="text-white text-sm font-bold uppercase tracking-widest">मधेपुरा, बिहार</span>
+              </motion.div>
+              
+              <motion.h1 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="text-4xl md:text-6xl lg:text-8xl font-black mb-3 md:mb-4 leading-[1.1] tracking-tight drop-shadow-2xl"
+              >
+                आलमनगर: <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-amber-300 to-emerald-300">
+                  हमारी जड़ें, हमारी पहचान
+                </span>
+              </motion.h1>
+              
+              <motion.p 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="text-sm md:text-base lg:text-xl text-white/90 max-w-3xl mx-auto mb-6 md:mb-8 leading-relaxed font-medium drop-shadow-lg"
+              >
+                कोसी-गंगा के पवित्र मैदानों में बसा एक ऐसा गाँव, जहाँ 1.75 लाख+ जनसंख्या, 
+                ~50% साक्षरता, और समृद्ध शिक्षा की मिथिला-अंगिका विरासत है।
+              </motion.p>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16"
-          >
-            <Link 
-              href="/community" 
-              className="group flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold text-lg rounded-2xl shadow-2xl shadow-emerald-500/40 hover:shadow-emerald-500/60 transition-all hover:scale-105"
-            >
-              समुदाय से जुड़ें
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link 
-              href="/gallery" 
-              className="flex items-center gap-2 px-10 py-5 bg-white text-emerald-800 font-black text-lg rounded-2xl shadow-2xl hover:bg-stone-100 transition-all hover:scale-105"
-            >
-              <Sparkles className="w-6 h-6 text-amber-600" />
-              विरासत देखें
-            </Link>
-          </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6"
+              >
+                <Link 
+                  href="/community" 
+                  className="group flex items-center gap-2 px-6 md:px-10 py-3 md:py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold text-base md:text-lg rounded-full shadow-2xl shadow-emerald-500/40 hover:shadow-emerald-500/60 transition-all hover:scale-105"
+                >
+                  समुदाय से जुड़ें
+                  <ArrowRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link 
+                  href="/gallery" 
+                  className="flex items-center gap-2 px-6 md:px-10 py-3 md:py-4 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white font-black text-base md:text-lg rounded-full shadow-2xl transition-all hover:scale-105"
+                >
+                  <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />
+                  विरासत देखें
+                </Link>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -412,7 +481,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/*  Our Story Section */}
+      {/* 📜 Our Story Section */}
       <section className="py-24 md:py-32 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -423,35 +492,35 @@ export default function AboutPage() {
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="relative">
-              <div className="absolute -top-8 -left-8 w-40 h-40 bg-amber-200/50 rounded-full blur-3xl" />
-              <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-emerald-200/50 rounded-full blur-3xl" />
+              <div className="absolute -top-8 -left-8 w-40 h-40 bg-amber-200/50 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-emerald-200/50 rounded-full blur-3xl pointer-events-none" />
               
-              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white group">
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white group h-[400px] md:h-[550px] w-full">
                 <motion.img 
                   initial={{ scale: 1.1 }}
                   whileInView={{ scale: 1 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   src="/images/mitti-anmol-rishta.jpg"
                   alt="Village Life" 
-                  className="w-full h-[400px] md:h-[550px] object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-stone-100 flex items-center gap-4 z-10"
+                >
+                  <div className="p-3 bg-emerald-100 rounded-full animate-pulse">
+                    <Heart className="w-6 h-6 text-emerald-600 fill-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-stone-900">100%</p>
+                    <p className="text-xs text-stone-500 font-semibold">प्यार और अपनापन</p>
+                  </div>
+                </motion.div>
               </div>
-
-              <motion.div 
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="absolute -bottom-8 -right-4 md:-right-8 bg-white p-6 rounded-2xl shadow-2xl border border-stone-100 hidden md:flex items-center gap-4 z-10"
-              >
-                <div className="p-4 bg-emerald-100 rounded-full animate-pulse">
-                  <Heart className="w-8 h-8 text-emerald-600 fill-emerald-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-black text-stone-900">100%</p>
-                  <p className="text-sm text-stone-500 font-semibold">प्यार और अपनापन</p>
-                </div>
-              </motion.div>
             </motion.div>
 
             <motion.div variants={fadeInUp} className="space-y-8">
@@ -514,7 +583,7 @@ export default function AboutPage() {
               </div>
             </motion.div>
             <motion.div variants={fadeInUp} className="order-1 lg:order-2 relative">
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full">
                 <img src="/images/krishi-vikas.jpg" alt="Agriculture" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </motion.div>
@@ -529,7 +598,7 @@ export default function AboutPage() {
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="relative">
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full">
                 <img src="/images/bhavishya-ki-neev.jpg" alt="Education" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </motion.div>

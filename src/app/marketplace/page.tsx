@@ -8,7 +8,6 @@ import {
   Sparkles, TrendingUp, SlidersHorizontal, Users, Camera
 } from "lucide-react";
 import { db } from "@/lib/firebase";
-// ✅ FIXED: 'limit' added to imports
 import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -31,6 +30,76 @@ interface Listing {
   createdAt: any;
   views: number;
 }
+
+// ═══════════════════════════════════════════════════════════
+// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
+// ═══════════════════════════════════════════════════════════
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1609766418204-94aae7d87817?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2670&auto=format&fit=crop",
+];
+
+const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [resolvedImages, setResolvedImages] = useState<string[]>(images);
+
+  const handleImageError = (index: number) => {
+    setResolvedImages(prev => {
+      const updated = [...prev];
+      if (!updated[index].startsWith('http')) {
+        updated[index] = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+      }
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    if (resolvedImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % resolvedImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [resolvedImages.length]);
+
+  return (
+    <div className={`relative w-full h-full overflow-hidden bg-stone-900 ${className}`}>
+      {resolvedImages.map((img, index) => (
+        <motion.div
+          key={img}
+          className="absolute inset-0 w-full h-full"
+          initial={{ opacity: 0, scale: 1.15 }}
+          animate={{ 
+            opacity: index === currentIndex ? 1 : 0,
+            scale: index === currentIndex ? 1 : 1.15
+          }}
+          transition={{ duration: 2.5, ease: "easeInOut" }}
+        >
+          <img 
+            src={img} 
+            alt={`Marketplace Hero ${index + 1}`} 
+            className="w-full h-full object-cover"
+            onError={() => handleImageError(index)}
+          />
+        </motion.div>
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/40 via-transparent to-stone-950/20 pointer-events-none" />
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {resolvedImages.map((_, index) => (
+          <motion.button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`h-2 rounded-full transition-all ${
+              index === currentIndex ? 'bg-amber-400 w-8' : 'bg-white/50 w-2'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // 🦴 Premium Skeleton Loader
 const ListingSkeleton = () => (
@@ -61,7 +130,7 @@ const MarketplaceHeroTowerChart = ({ stats }: { stats: any }) => {
   ];
 
   return (
-    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-35">
+    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-20">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
           <defs>
@@ -134,6 +203,15 @@ export default function MarketplacePage() {
     totalLikes: 0,
   });
 
+  // ✅ 5 HERO IMAGES FOR SLIDER
+  const heroImages = [
+    '/images/hero-1.jpg',
+    '/images/hero-2.jpg',
+    '/images/hero-3.jpg',
+    '/images/hero-4.jpg',
+    '/images/hero-5.jpg'
+  ];
+
   useEffect(() => {
     // Fetch Listings
     const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
@@ -202,72 +280,67 @@ export default function MarketplacePage() {
 
   return (
     <main className="min-h-screen bg-stone-50 pb-24">
-      {/* 🌟 Cinematic Hero Section with Tower Chart */}
-      <section className="relative bg-stone-900 text-white overflow-hidden">
-        {/* Background Image (Local Path) */}
-        <div className="absolute inset-0 z-0">
-          <motion.div 
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ 
-              backgroundImage: "url('/images/marketplace-hero.jpg')", // ✅ Local Image Placeholder
-              filter: "brightness(0.4) contrast(1.1)"
-            }}
-          />
+      {/* 🌟 Cinematic Hero Section with 16:9 Wide Ratio & REAL-TIME Tower Chart */}
+      <section className="relative w-full bg-stone-900 text-white overflow-hidden">
+        <div className="relative w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
+          <div className="absolute inset-0 z-0">
+            <SmoothImageSlider images={heroImages} className="w-full h-full" />
+          </div>
+          
           {/* ✅ REAL-TIME Tower Chart Overlay */}
           <MarketplaceHeroTowerChart stats={liveStats} />
-          <div className="absolute inset-0 bg-gradient-to-b from-stone-950/60 via-stone-900/40 to-stone-900/80" />
-        </div>
-        
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 md:py-28">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-300 text-sm font-bold uppercase tracking-wider">आलमनगर का अपना हाट</span>
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-[1.1] drop-shadow-2xl">
-              अपना गाँव, <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-emerald-300 to-amber-300">
-                अपना बाज़ार
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-stone-200 max-w-2xl mb-10 leading-relaxed drop-shadow-md">
-              अपने गाँव के किसानों, कारीगरों और स्थानीय व्यवसायों से सीधे जुड़ें। 
-              हर खरीदारी स्थानीय अर्थव्यवस्था को मज़बूत बनाती है।
-            </p>
+          <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/40 via-stone-900/25 to-stone-950/50 pointer-events-none" />
 
-            <div className="flex flex-col md:flex-row gap-4 max-w-3xl">
-              <Link 
-                href="/marketplace/create"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-2xl hover:from-emerald-500 hover:to-amber-500 transition-all shadow-xl shadow-emerald-900/20 hover:shadow-emerald-900/40 hover:-translate-y-0.5"
+          <div className="relative z-[10] h-full flex items-center justify-center px-4 md:px-8 lg:px-12 py-12 md:py-16 lg:py-20">
+            <div className="text-center w-full max-w-6xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
               >
-                <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-                अपनी लिस्टिंग बनाएं
-              </Link>
-              
-              <div className="flex-1 relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-emerald-500 transition-colors" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="उत्पाद, सेवा या स्थान खोजें..."
-                  className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:bg-white/15 transition-all"
-                />
-              </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full mb-6">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span className="text-amber-300 text-sm font-bold uppercase tracking-wider">आलमनगर का अपना हाट</span>
+                </div>
+                
+                <h1 className="text-4xl md:text-6xl lg:text-8xl font-extrabold mb-3 md:mb-4 leading-[1.1] drop-shadow-2xl">
+                  अपना गाँव, <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-emerald-300 to-amber-300">
+                    अपना बाज़ार
+                  </span>
+                </h1>
+                <p className="text-sm md:text-base lg:text-xl text-white/90 max-w-2xl mx-auto mb-6 md:mb-8 leading-relaxed drop-shadow-lg">
+                  अपने गाँव के किसानों, कारीगरों और स्थानीय व्यवसायों से सीधे जुड़ें। 
+                  हर खरीदारी स्थानीय अर्थव्यवस्था को मज़बूत बनाती है।
+                </p>
+
+                <div className="flex flex-col md:flex-row gap-4 max-w-3xl mx-auto">
+                  <Link 
+                    href="/marketplace/create"
+                    className="group inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-full hover:from-emerald-500 hover:to-amber-500 transition-all shadow-xl shadow-emerald-900/20 hover:shadow-emerald-900/40 hover:-translate-y-0.5 text-base md:text-lg"
+                  >
+                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                    अपनी लिस्टिंग बनाएं
+                  </Link>
+                  
+                  <div className="flex-1 relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-emerald-500 transition-colors" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="उत्पाद, सेवा या स्थान खोजें..."
+                      className="w-full pl-12 pr-4 py-3 md:py-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:bg-white/15 transition-all text-base"
+                    />
+                  </div>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ️ Sticky Glassmorphic Filters */}
+      {/* 🎛️ Sticky Glassmorphic Filters */}
       <section className="sticky top-20 z-30 bg-stone-50/80 backdrop-blur-xl border-b border-stone-200/60">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
