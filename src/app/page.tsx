@@ -475,8 +475,9 @@ export default function HomePage() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [newReviewText, setNewReviewText] = useState("");
   
-  // ✅ State for expendable footer section
+  // ✅ States for expendable footer sections
   const [isToolsExpanded, setIsToolsExpanded] = useState(false);
+  const [isLinksExpanded, setIsLinksExpanded] = useState(false);
 
   const heroImages = [
     '/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg',
@@ -918,7 +919,7 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        {/* ===== 8. PREMIUM FOOTER WITH EXPENDABLE TOOLS & GAMES ===== */}
+        {/* ===== 8. PREMIUM FOOTER WITH EXPENDABLE TOOLS, GAMES & LINKS ===== */}
         <footer className="bg-stone-950 text-stone-400 py-16 px-4 md:px-8 lg:px-12 border-t border-stone-900 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
           <div className="max-w-7xl mx-auto">
@@ -934,18 +935,51 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* ✅ EXPENDABLE QUICK LINKS SECTION */}
               <div className="md:col-span-4">
-                <h4 className="text-white font-black mb-6 text-lg">त्वरित लिंक</h4>
-                <ul className="space-y-3 text-base">
-                  <li><Link href="/about" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> हमारे बारे में</Link></li>
-                  <li><Link href="/gallery" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> गैलरी</Link></li>
-                  <li><Link href="/community" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> समुदाय</Link></li>
-                  <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
-                  <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
-                  <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
-                  {isAdmin && (<li><Link href="/admin/reports" className="hover:text-red-400 transition-colors flex items-center gap-2 border-l-2 border-red-500/50 pl-2"><Shield className="w-3 h-3" /> Admin Dashboard</Link></li>)}
-                </ul>
+                <button 
+                  onClick={() => setIsLinksExpanded(!isLinksExpanded)}
+                  className="w-full flex items-center justify-between text-white font-black mb-6 text-lg hover:text-amber-400 transition-colors group"
+                >
+                  <div className="flex items-center gap-2">
+                    <ArrowRight className="w-5 h-5 text-amber-500" /> त्वरित लिंक
+                  </div>
+                  <motion.div animate={{ rotate: isLinksExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                    <ChevronDownIcon className="w-5 h-5 text-stone-500 group-hover:text-amber-400" />
+                  </motion.div>
+                </button>
+
+                <AnimatePresence>
+                  {isLinksExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <ul className="space-y-3 text-base pt-2">
+                        <li><Link href="/about" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> हमारे बारे में</Link></li>
+                        <li><Link href="/gallery" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> गैलरी</Link></li>
+                        <li><Link href="/community" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> समुदाय</Link></li>
+                        <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
+                        <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
+                        <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
+
+              {/* ✅ ALWAYS VISIBLE ADMIN DASHBOARD (Only for Admin) */}
+              {isAdmin && (
+                <div className="md:col-span-4 mb-6">
+                   <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-4 py-2 hover:bg-red-500/30 transition-all group shadow-lg w-fit">
+                    <Shield className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-bold text-red-300">Admin Dashboard</span>
+                  </Link>
+                </div>
+              )}
 
               {/* ✅ EXPENDABLE TOOLS & GAMES SECTION */}
               <div className="md:col-span-4">
