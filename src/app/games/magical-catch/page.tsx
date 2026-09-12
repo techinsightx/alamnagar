@@ -2,16 +2,18 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Trophy, Play, RotateCcw, Heart, Sparkles, Info } from "lucide-react";
+import { ArrowLeft, Trophy, Play, RotateCcw, Heart, Sparkles, Info, Zap } from "lucide-react";
 import Link from "next/link";
 
 const ITEM_TYPES = {
-  star: { emoji: "⭐", score: 10, color: "text-yellow-400", particle: "✨", weight: 40, type: "good" },
-  candy: { emoji: "🍬", score: 15, color: "text-pink-400", particle: "🍭", weight: 25, type: "good" },
-  gift: { emoji: "🎁", score: 25, color: "text-purple-500", particle: "🎉", weight: 15, type: "good" },
-  potion: { emoji: "🧪", score: 30, color: "text-cyan-400", particle: "🌟", weight: 10, type: "good" },
-  diamond: { emoji: "💎", score: 50, color: "text-blue-400", particle: "💠", weight: 5, type: "good" },
-  bomb: { emoji: "💣", score: 0, color: "text-gray-800", particle: "💥", weight: 5, type: "bad" },
+  star: { emoji: "⭐", score: 10, particle: "✨", weight: 35, type: "good" },
+  candy: { emoji: "🍬", score: 15, particle: "🍭", weight: 25, type: "good" },
+  gift: { emoji: "🎁", score: 25, particle: "🎉", weight: 15, type: "good" },
+  potion: { emoji: "🧪", score: 30, particle: "🌟", weight: 10, type: "good" },
+  diamond: { emoji: "💎", score: 50, particle: "💠", weight: 5, type: "good" },
+  bomb: { emoji: "💣", score: 0, particle: "💥", weight: 8, type: "bad" },
+  slowmo: { emoji: "⏰", score: 0, particle: "⏳", weight: 1, type: "powerup", effect: "slowmo" },
+  double: { emoji: "✨", score: 0, particle: "💫", weight: 1, type: "powerup", effect: "double" },
 } as const;
 
 type ItemType = keyof typeof ITEM_TYPES;
@@ -46,13 +48,17 @@ export default function MagicalCatchGame() {
   const [highScore, setHighScore] = useState(0);
   const [screenShake, setScreenShake] = useState(false);
   const [basketState, setBasketState] = useState<"idle" | "catch" | "hit">("idle");
+  const [combo, setCombo] = useState(0);
+  const [activePowerUp, setActivePowerUp] = useState<string | null>(null);
+  const [powerUpTimer, setPowerUpTimer] = useState(0);
 
-  // ✅ 2D Movement refs and state (Basket can move ANYWHERE)
   const playerXRef = useRef(50);
   const playerYRef = useRef(80);
   const [playerX, setPlayerX] = useState(50);
   const [playerY, setPlayerY] = useState(80);
   const isPlayingRef = useRef(false);
+  const comboRef = useRef(0);
+  const powerUpRef = useRef<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("magicalCatchHighScore");
@@ -70,6 +76,10 @@ export default function MagicalCatchGame() {
     setItems([]);
     setParticles([]);
     setBasketState("idle");
+    setCombo(0);
+    comboRef.current = 0;
+    setActivePowerUp(null);
+    powerUpRef.current = null;
     setIsPlaying(true);
   };
 
@@ -88,6 +98,21 @@ export default function MagicalCatchGame() {
     return () => clearInterval(timer);
   }, [isPlaying]);
 
+  // Power-up Timer
+  useEffect(() => {
+    if (!activePowerUp || powerUpTimer <= 0) {
+      if (powerUpTimer === 0 && activePowerUp) {
+        setActivePowerUp(null);
+        powerUpRef.current = null;
+      }
+      return;
+    }
+    const timer = setInterval(() => {
+      setPowerUpTimer((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [activePowerUp, powerUpTimer]);
+
   // Save High Score
   useEffect(() => {
     if (!isPlaying && score > 0) {
@@ -101,6 +126,7 @@ export default function MagicalCatchGame() {
   // Spawner
   useEffect(() => {
     if (!isPlaying) return;
+    const spawnRate = activePowerUp === "slowmo" ? 900 : 600;
     const spawner = setInterval(() => {
       const rand = Math.random() * 100;
       let type: ItemType = "star";
@@ -125,13 +151,14 @@ export default function MagicalCatchGame() {
           rotation: Math.random() * 360,
         },
       ]);
-    }, 600);
+    }, spawnRate);
     return () => clearInterval(spawner);
-  }, [isPlaying]);
+  }, [isPlaying, activePowerUp]);
 
-  // Game Loop (Collision & Movement)
+  // Game Loop
   useEffect(() => {
     if (!isPlaying) return;
+    const speedMultiplier = activePowerUp === "slowmo" ? 0.5 : 1;
     const loop = setInterval(() => {
       setItems((prevItems) => {
         const nextItems: GameItem[] = [];
@@ -140,12 +167,11 @@ export default function MagicalCatchGame() {
         const newParticles: Particle[] = [];
 
         prevItems.forEach((item) => {
-          const newY = item.y + item.speed;
+          const newY = item.y + item.speed * speedMultiplier;
           
-          // ✅ 2D Collision Logic: Checks distance in both X and Y
           const distX = Math.abs(item.x - playerXRef.current);
           const distY = Math.abs(newY - playerYRef.current);
-          const isCaught = distX < 7 && distY < 7; // Generous catch radius
+          const isCaught = distX < 7 && distY < 7;
 
           if (isCaught) {
             const data = ITEM_TYPES[item.type];
@@ -153,6 +179,8 @@ export default function MagicalCatchGame() {
               livesLost += 1;
               setBasketState("hit");
               setScreenShake(true);
+              setCombo(0);
+              comboRef.current = 0;
               setTimeout(() => { setScreenShake(false); setBasketState("idle"); }, 400);
               newParticles.push({ 
                 id: Date.now() + Math.random(), 
@@ -162,8 +190,44 @@ export default function MagicalCatchGame() {
                 tx: 0, 
                 ty: 0 
               });
+            } else if (data.type === "powerup") {
+              setActivePowerUp(data.effect || null);
+              powerUpRef.current = data.effect || null;
+              setPowerUpTimer(10);
+              setBasketState("catch");
+              setTimeout(() => setBasketState("idle"), 300);
+              
+              for (let i = 0; i < 12; i++) {
+                const angle = (Math.PI * 2 * i) / 12;
+                newParticles.push({
+                  id: Date.now() + Math.random() + i,
+                  x: item.x,
+                  y: newY,
+                  emoji: data.particle,
+                  tx: Math.cos(angle) * 150,
+                  ty: Math.sin(angle) * 150 - 30,
+                });
+              }
+              newParticles.push({
+                id: Date.now() + 999,
+                x: item.x,
+                y: newY,
+                isText: true,
+                text: data.effect === "slowmo" ? "SLOW MOTION!" : "DOUBLE POINTS!",
+                tx: 0,
+                ty: -50,
+              });
             } else {
-              scoreGained += data.score;
+              const comboMultiplier = Math.min(Math.floor(comboRef.current / 5) + 1, 5);
+              const baseScore = data.score;
+              const finalScore = activePowerUp === "double" ? baseScore * 2 * comboMultiplier : baseScore * comboMultiplier;
+              
+              scoreGained += finalScore;
+              setCombo((c) => {
+                const newCombo = c + 1;
+                comboRef.current = newCombo;
+                return newCombo;
+              });
               setBasketState("catch");
               setTimeout(() => setBasketState("idle"), 300);
               
@@ -183,18 +247,23 @@ export default function MagicalCatchGame() {
                 });
               }
               
+              const comboText = comboMultiplier > 1 ? ` x${comboMultiplier}` : "";
               newParticles.push({
                 id: Date.now() + 999,
                 x: item.x,
                 y: newY,
                 isText: true,
-                text: isSpecial ? "MAGICAL! ✨" : `+${data.score}`,
+                text: isSpecial ? "MAGICAL! ✨" : `+${finalScore}${comboText}`,
                 tx: 0,
                 ty: isSpecial ? -50 : -30,
               });
             }
           } else if (newY > 105) {
             // Missed
+            if (item.type !== "bomb" && ITEM_TYPES[item.type].type !== "powerup") {
+              setCombo(0);
+              comboRef.current = 0;
+            }
           } else {
             nextItems.push({ ...item, y: newY, rotation: item.rotation + 2 });
           }
@@ -219,9 +288,8 @@ export default function MagicalCatchGame() {
       });
     }, 30);
     return () => clearInterval(loop);
-  }, [isPlaying]);
+  }, [isPlaying, activePowerUp]);
 
-  // ✅ 2D Movement Handler (Follows mouse/touch ANYWHERE on screen)
   const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!isPlayingRef.current) return;
     const clientX = "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
@@ -231,7 +299,7 @@ export default function MagicalCatchGame() {
     const y = (clientY / window.innerHeight) * 100;
     
     const clampedX = Math.max(5, Math.min(95, x));
-    const clampedY = Math.max(5, Math.min(95, y)); // Full screen freedom
+    const clampedY = Math.max(5, Math.min(95, y));
     
     playerXRef.current = clampedX;
     playerYRef.current = clampedY;
@@ -240,9 +308,8 @@ export default function MagicalCatchGame() {
   }, []);
 
   return (
-    // ✅ Smooth, Transparent, Colored Glassmorphic Background
     <div 
-      className={`min-h-screen bg-gradient-to-br from-sky-200/60 via-purple-200/60 to-pink-200/60 backdrop-blur-md relative overflow-hidden select-none font-sans ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
+      className={`min-h-screen bg-gradient-to-br from-indigo-600 via-purple-700 to-pink-600 relative overflow-hidden select-none font-sans ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
       onMouseMove={handleMove}
       onTouchMove={handleMove}
     >
@@ -254,22 +321,22 @@ export default function MagicalCatchGame() {
         }
       `}</style>
 
-      {/* Animated Soft Background Orbs for Depth */}
-      {[...Array(12)].map((_, i) => (
+      {/* Animated Background Orbs */}
+      {[...Array(10)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute rounded-full blur-3xl"
           style={{
-            width: Math.random() * 150 + 100,
-            height: Math.random() * 150 + 100,
+            width: Math.random() * 200 + 100,
+            height: Math.random() * 200 + 100,
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
-            background: `radial-gradient(circle, ${i % 2 === 0 ? 'rgba(168, 85, 247, 0.25)' : 'rgba(236, 72, 153, 0.25)'} 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${i % 2 === 0 ? 'rgba(251, 191, 36, 0.3)' : 'rgba(168, 85, 247, 0.3)'} 0%, transparent 70%)`,
           }}
           animate={{ 
             y: [0, -40, 0], 
             x: [0, 30, 0],
-            opacity: [0.3, 0.6, 0.3] 
+            opacity: [0.3, 0.5, 0.3] 
           }}
           transition={{ duration: Math.random() * 6 + 6, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -277,7 +344,7 @@ export default function MagicalCatchGame() {
 
       {/* Top Bar */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 text-stone-800 font-bold hover:bg-white/40 px-4 py-2 rounded-full transition bg-white/30 backdrop-blur-md border border-white/40 shadow-lg">
+        <Link href="/" className="flex items-center gap-2 text-white font-bold hover:bg-white/20 px-4 py-2 rounded-full transition bg-black/30 backdrop-blur-md border border-white/20 shadow-lg">
           <ArrowLeft className="w-5 h-5" /> Home
         </Link>
         
@@ -290,26 +357,44 @@ export default function MagicalCatchGame() {
             >
               <Sparkles className="w-6 h-6 fill-white" /> {score}
             </motion.div>
-            <div className="flex gap-1 bg-white/40 backdrop-blur-md px-4 py-2 rounded-full border-2 border-white/50 shadow-lg">
+            {combo >= 5 && (
+              <motion.div
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full font-black text-lg shadow-2xl flex items-center gap-2 border-4 border-white"
+              >
+                <Zap className="w-5 h-5 fill-white" /> x{Math.min(Math.floor(combo / 5) + 1, 5)}
+              </motion.div>
+            )}
+            <div className="flex gap-1 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border-2 border-white/30">
               {[...Array(3)].map((_, i) => (
                 <motion.div
                   key={i}
                   animate={lives <= i ? { scale: 0.8, opacity: 0.3 } : { scale: 1, opacity: 1 }}
                 >
-                  <Heart className={`w-6 h-6 ${lives > i ? "text-red-500 fill-red-500" : "text-stone-400"}`} />
+                  <Heart className={`w-6 h-6 ${lives > i ? "text-red-500 fill-red-500" : "text-gray-600"}`} />
                 </motion.div>
               ))}
             </div>
-            <div className="bg-white/40 backdrop-blur-md text-stone-900 px-4 py-2 rounded-full font-black text-xl border-2 border-white/50 shadow-lg flex items-center gap-2">
+            <div className="bg-black/40 backdrop-blur-md text-white px-4 py-2 rounded-full font-black text-xl border-2 border-white/30 flex items-center gap-2">
               ⏰ {timeLeft}s
             </div>
           </div>
         )}
       </div>
 
+      {/* Power-up Indicator */}
+      {activePowerUp && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+          className="absolute top-24 left-1/2 -translate-x-1/2 z-30 bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-6 py-3 rounded-full font-black text-lg shadow-2xl border-4 border-white flex items-center gap-2"
+        >
+          {activePowerUp === "slowmo" ? "⏰ SLOW MOTION" : "✨ DOUBLE POINTS"} - {powerUpTimer}s
+        </motion.div>
+      )}
+
       {/* Game Area */}
       <div className="absolute inset-0 z-10 pointer-events-none">
-        {/* Falling Items with Strong Drop Shadows for Maximum Visibility */}
+        {/* Falling Items */}
         <AnimatePresence>
           {items.map((item) => {
             const data = ITEM_TYPES[item.type];
@@ -322,7 +407,7 @@ export default function MagicalCatchGame() {
                 className="absolute pointer-events-auto cursor-pointer"
                 style={{ left: 0, top: 0, rotate: item.rotation }}
               >
-                <span className="text-5xl md:text-6xl filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.4)]">{data.emoji}</span>
+                <span className="text-5xl md:text-6xl filter drop-shadow-[0_6px_8px_rgba(0,0,0,0.6)]">{data.emoji}</span>
               </motion.div>
             );
           })}
@@ -337,7 +422,7 @@ export default function MagicalCatchGame() {
               animate={{ x: p.tx, y: p.ty, opacity: 0, scale: p.isText ? 1.5 : 2 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className={`absolute pointer-events-none flex items-center justify-center ${p.isText ? "text-3xl md:text-4xl font-black text-purple-700 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)]" : "text-4xl md:text-5xl"}`}
+              className={`absolute pointer-events-none flex items-center justify-center ${p.isText ? "text-3xl md:text-4xl font-black text-white drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)]" : "text-4xl md:text-5xl"}`}
               style={{ left: `${p.x}vw`, top: `${p.y}%` }}
             >
               {p.isText ? p.text : p.emoji}
@@ -345,33 +430,53 @@ export default function MagicalCatchGame() {
           ))}
         </AnimatePresence>
 
-        {/* ✅ Player Basket: Moves ANYWHERE, Rural Bamboo Feel with Magical Glow */}
+        {/* ✅ Custom Bamboo Basket (No Handle) */}
         {isPlaying && (
           <motion.div
             className="absolute pointer-events-none z-20"
             style={{ left: `${playerX}%`, top: `${playerY}%` }}
-            animate={{ x: "-50%", y: "-50%" }} // Centers the basket exactly on cursor/touch
+            animate={{ x: "-50%", y: "-50%" }}
           >
             <div className="relative">
-              {/* Magical Bamboo Glow */}
+              {/* Magical Glow */}
               <motion.div 
-                animate={basketState === "catch" ? { scale: 1.5, opacity: 0.8 } : basketState === "hit" ? { scale: 1.2, opacity: 0.6 } : { scale: 1, opacity: 0.4 }}
-                className="absolute inset-0 bg-amber-400/50 rounded-full blur-2xl transition-all duration-300" 
+                animate={basketState === "catch" ? { scale: 1.8, opacity: 0.9 } : basketState === "hit" ? { scale: 1.3, opacity: 0.7 } : { scale: 1, opacity: 0.4 }}
+                className="absolute inset-0 bg-amber-400/60 rounded-full blur-3xl transition-all duration-300" 
               />
               
-              {/* Basket Emoji with Dynamic Spring Animation */}
+              {/* Custom Basket SVG (No Handle) */}
               <motion.div
                 animate={
                   basketState === "catch" 
-                    ? { scale: [1, 1.25, 0.95, 1], filter: "drop-shadow(0 0 25px rgba(251, 191, 36, 1))" }
+                    ? { scale: [1, 1.3, 0.95, 1], filter: "drop-shadow(0 0 30px rgba(251, 191, 36, 1))" }
                     : basketState === "hit"
-                    ? { scale: [1, 0.9, 1.05, 1], x: [-8, 8, -8, 8, 0], filter: "drop-shadow(0 0 20px rgba(239, 68, 68, 0.9)) brightness(0.8)" }
-                    : { y: [0, -6, 0], filter: "drop-shadow(0 8px 12px rgba(0,0,0,0.2))" }
+                    ? { scale: [1, 0.9, 1.05, 1], x: [-8, 8, -8, 8, 0], filter: "drop-shadow(0 0 25px rgba(239, 68, 68, 0.9)) brightness(0.8)" }
+                    : { y: [0, -6, 0], filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.3))" }
                 }
                 transition={{ duration: basketState === "idle" ? 2 : 0.4, type: "spring", bounce: 0.6 }}
-                className="text-7xl md:text-8xl relative z-10"
+                className="relative z-10"
               >
-                🧺
+                <svg width="100" height="80" viewBox="0 0 100 80" className="w-24 h-20 md:w-32 md:h-24">
+                  {/* Basket Body */}
+                  <ellipse cx="50" cy="50" rx="45" ry="25" fill="url(#basketGradient)" stroke="#92400e" strokeWidth="3"/>
+                  {/* Basket Rim */}
+                  <ellipse cx="50" cy="30" rx="45" ry="10" fill="url(#rimGradient)" stroke="#92400e" strokeWidth="3"/>
+                  {/* Bamboo Texture Lines */}
+                  <path d="M 10 40 Q 50 45 90 40" stroke="#78350f" strokeWidth="2" fill="none" opacity="0.5"/>
+                  <path d="M 15 50 Q 50 55 85 50" stroke="#78350f" strokeWidth="2" fill="none" opacity="0.5"/>
+                  <path d="M 20 60 Q 50 65 80 60" stroke="#78350f" strokeWidth="2" fill="none" opacity="0.5"/>
+                  <defs>
+                    <linearGradient id="basketGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#fbbf24"/>
+                      <stop offset="50%" stopColor="#d97706"/>
+                      <stop offset="100%" stopColor="#92400e"/>
+                    </linearGradient>
+                    <linearGradient id="rimGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#fcd34d"/>
+                      <stop offset="100%" stopColor="#f59e0b"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
               </motion.div>
             </div>
           </motion.div>
@@ -380,8 +485,8 @@ export default function MagicalCatchGame() {
 
       {/* Start Screen */}
       {!isPlaying && timeLeft === 60 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm p-4">
-          <motion.div initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white/90 p-6 md:p-10 rounded-[3rem] shadow-2xl text-center max-w-md w-full border-4 border-purple-200">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+          <motion.div initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl text-center max-w-md w-full border-4 border-purple-300">
             <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="text-8xl mb-4 drop-shadow-lg">
               🧺
             </motion.div>
@@ -389,10 +494,9 @@ export default function MagicalCatchGame() {
               Jadui Tokri!
             </h1>
             
-            {/* ✅ Clear Game Logic for Kids */}
             <div className="bg-purple-50/80 border-2 border-purple-200 rounded-2xl p-4 mb-6 text-left">
               <div className="flex items-center gap-2 mb-3 text-purple-900 font-bold text-sm">
-                <Info className="w-4 h-4" /> Kaise Khelen (How to Play):
+                <Info className="w-4 h-4" /> Kaise Khelen:
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm">
@@ -408,8 +512,8 @@ export default function MagicalCatchGame() {
                   <span className="font-semibold text-red-600">Bomb se bacho!</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm">
-                  <span className="text-2xl">❤️</span> 
-                  <span className="font-semibold text-stone-700">Sirf 3 Jaan (Lives)</span>
+                  <span className="text-2xl">⚡</span> 
+                  <span className="font-semibold text-stone-700">Combo banao!</span>
                 </div>
               </div>
             </div>
@@ -425,14 +529,14 @@ export default function MagicalCatchGame() {
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startGame} className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 text-white font-black text-xl md:text-2xl px-10 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 border-2 border-white/30">
               <Play className="w-7 h-7 fill-white" /> Play Game
             </motion.button>
-            <p className="text-stone-500 text-xs mt-4 font-medium">⏱️ 60 seconds • Mouse ya Touch se kahin bhi move karo!</p>
+            <p className="text-stone-500 text-xs mt-4 font-medium">⏱️ 60 seconds • Lagatar catch karo, combo banao!</p>
           </motion.div>
         </motion.div>
       )}
 
       {/* Game Over Screen */}
       {!isPlaying && timeLeft < 60 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/30 backdrop-blur-md p-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md p-4">
           <motion.div initial={{ scale: 0.8, rotate: -5 }} animate={{ scale: 1, rotate: 0 }} className="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl text-center max-w-md w-full border-4 border-yellow-300">
             <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
               <Trophy className="w-24 h-24 md:w-28 md:h-28 text-yellow-500 mx-auto mb-4 drop-shadow-lg" />
