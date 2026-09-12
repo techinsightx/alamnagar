@@ -152,7 +152,6 @@ export default function MagicalCatchGame() {
   const [smokeParticles, setSmokeParticles] = useState<SmokeParticle[]>([]);
   const [highScore, setHighScore] = useState(0);
   const [screenShake, setScreenShake] = useState(false);
-  // ✅ FIXED: Initial value "idle" instead of "basket"
   const [basketState, setBasketState] = useState<"idle" | "catch" | "hit">("idle");
   const [combo, setCombo] = useState(0);
   const [activePowerUp, setActivePowerUp] = useState<string | null>(null);
@@ -227,7 +226,6 @@ export default function MagicalCatchGame() {
     return () => clearInterval(spawner);
   }, [isPlaying, activePowerUp]);
 
-  // ✅ Magical Smoke Particles
   useEffect(() => {
     if (!isPlaying) return;
     const smokeSpawner = setInterval(() => {
@@ -332,7 +330,6 @@ export default function MagicalCatchGame() {
     setPlayerX(clampedX); setPlayerY(clampedY);
   }, []);
 
-  // ✅ Progressive Color Logic (Violet -> Red)
   const getMagicalColor = () => {
     const progress = 1 - (timeLeft / 60);
     const r = Math.round(139 + (239 - 139) * progress);
@@ -343,26 +340,26 @@ export default function MagicalCatchGame() {
 
   return (
     <div 
-      className={`min-h-screen bg-[#030305] relative overflow-hidden select-none font-sans ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
+      className={`min-h-screen bg-[#0a0a0e] relative overflow-hidden select-none font-sans ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
       onMouseMove={handleMove} onTouchMove={handleMove}
     >
       <style>{`
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px) rotate(-1deg); } 75% { transform: translateX(8px) rotate(1deg); } }
-        @keyframes magicalPulse { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 0.25; transform: scale(1.05); } }
+        @keyframes magicalPulse { 0%, 100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.05); } }
         @keyframes timerGlow { 0%, 100% { text-shadow: 0 0 10px currentColor; } 50% { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; } }
       `}</style>
 
-      {/* ✅ DEEP DARK BACKGROUND */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#1e1b4b_0%,#000000_80%)] pointer-events-none" />
+      {/* ✅ DARK MATTE BACKGROUND WITH SUBTLE DEPTH */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#151520_0%,#0a0a0e_100%)] pointer-events-none" />
       
-      {/* ✅ Magical Smoke/Mist Particles */}
+      {/* ✅ Very Subtle Smoke/Mist (Won't distract from objects) */}
       <AnimatePresence>
         {smokeParticles.map((smoke) => (
           <motion.div
             key={smoke.id}
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ 
-              opacity: [0, 0.2, 0.1, 0],
+              opacity: [0, 0.15, 0.05, 0],
               scale: [0.5, 1.2, 1.5, 2],
               y: [0, -100, -200, -300],
               x: [0, 30, -20, 50]
@@ -373,21 +370,21 @@ export default function MagicalCatchGame() {
             style={{
               width: smoke.size, height: smoke.size,
               left: `${smoke.x}%`, top: `${smoke.y}%`,
-              background: `radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.1) 50%, transparent 70%)`,
+              background: `radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%)`,
             }}
           />
         ))}
       </AnimatePresence>
 
-      {/* Floating Magical Orbs */}
-      {[...Array(6)].map((_, i) => (
+      {/* Floating Matte Orbs */}
+      {[...Array(5)].map((_, i) => (
         <motion.div
           key={i} className="absolute rounded-full pointer-events-none"
           style={{
             width: Math.random() * 150 + 100, height: Math.random() * 150 + 100,
             left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`,
-            background: `radial-gradient(circle, ${i % 2 === 0 ? 'rgba(168, 85, 247, 0.15)' : 'rgba(236, 72, 153, 0.15)'} 0%, transparent 70%)`,
-            animation: `magicalPulse ${Math.random() * 5 + 5}s ease-in-out infinite`,
+            background: `radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%)`,
+            animation: `magicalPulse ${Math.random() * 6 + 6}s ease-in-out infinite`,
           }}
         />
       ))}
@@ -478,7 +475,7 @@ export default function MagicalCatchGame() {
         </motion.div>
       )}
 
-      {/* ✅ Game Area */}
+      {/* ✅ Game Area - MAXIMUM VISIBILITY ON DARK MATTE */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         <AnimatePresence>
           {items.map((item) => {
@@ -496,10 +493,10 @@ export default function MagicalCatchGame() {
                     className="absolute inset-0 bg-yellow-400/90 rounded-full blur-xl" />
                 )}
                 
-                {/* ✅ CRYSTAL CLEAR OBJECTS */}
+                {/* ✅ CRYSTAL CLEAR OBJECTS: Strong white glow + deep shadow for max pop on dark matte */}
                 <span className="text-6xl md:text-7xl relative z-10"
                   style={{
-                    filter: "drop-shadow(0 0 15px rgba(255,255,255,0.9)) drop-shadow(0 0 30px rgba(255,255,255,0.6)) drop-shadow(0 4px 10px rgba(0,0,0,1))",
+                    filter: "drop-shadow(0 0 12px rgba(255,255,255,0.9)) drop-shadow(0 0 24px rgba(255,255,255,0.5)) drop-shadow(0 8px 16px rgba(0,0,0,1))",
                   }}>
                   {data.emoji}
                 </span>
