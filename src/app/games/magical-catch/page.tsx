@@ -2,20 +2,20 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Info, Flame } from "lucide-react";
+import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Info, Flame, Zap, Target } from "lucide-react";
 import Link from "next/link";
 
 const ITEM_TYPES = {
   star: { emoji: "⭐", score: 10, particle: "✨", weight: 30, type: "good", rarity: "common" },
-  candy: { emoji: "", score: 15, particle: "", weight: 22, type: "good", rarity: "common" },
-  gift: { emoji: "", score: 25, particle: "", weight: 15, type: "good", rarity: "uncommon" },
-  potion: { emoji: "🧪", score: 30, particle: "", weight: 10, type: "good", rarity: "uncommon" },
+  candy: { emoji: "🍬", score: 15, particle: "🍭", weight: 22, type: "good", rarity: "common" },
+  gift: { emoji: "🎁", score: 25, particle: "🎉", weight: 15, type: "good", rarity: "uncommon" },
+  potion: { emoji: "🧪", score: 30, particle: "🌟", weight: 10, type: "good", rarity: "uncommon" },
   diamond: { emoji: "💎", score: 50, particle: "💠", weight: 6, type: "good", rarity: "rare" },
-  goldenStar: { emoji: "", score: 100, particle: "⭐", weight: 2, type: "good", rarity: "legendary" },
+  goldenStar: { emoji: "🌟", score: 100, particle: "⭐", weight: 2, type: "good", rarity: "legendary" },
   bomb: { emoji: "💣", score: 0, particle: "💥", weight: 10, type: "bad", rarity: "common" },
   slowmo: { emoji: "⏰", score: 0, particle: "⏳", weight: 2, type: "powerup", effect: "slowmo", rarity: "rare" },
-  double: { emoji: "✨", score: 0, particle: "", weight: 2, type: "powerup", effect: "double", rarity: "rare" },
-  magnet: { emoji: "", score: 0, particle: "", weight: 1, type: "powerup", effect: "magnet", rarity: "legendary" },
+  double: { emoji: "✨", score: 0, particle: "💫", weight: 2, type: "powerup", effect: "double", rarity: "rare" },
+  magnet: { emoji: "🧲", score: 0, particle: "⚡", weight: 1, type: "powerup", effect: "magnet", rarity: "legendary" },
 } as const;
 
 type ItemType = keyof typeof ITEM_TYPES;
@@ -40,6 +40,14 @@ interface Particle {
   isText?: boolean;
   text?: string;
   color?: string;
+}
+
+interface SmokeParticle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  duration: number;
 }
 
 // ✅ EXPLOSIVE & MAGICAL SOUND EFFECTS
@@ -141,9 +149,11 @@ export default function MagicalCatchGame() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [items, setItems] = useState<GameItem[]>([]);
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [smokeParticles, setSmokeParticles] = useState<SmokeParticle[]>([]);
   const [highScore, setHighScore] = useState(0);
   const [screenShake, setScreenShake] = useState(false);
-  const [basketState, setBasketState] = useState<"idle" | "catch" | "hit">("basket");
+  // ✅ FIXED: Initial value "idle" instead of "basket"
+  const [basketState, setBasketState] = useState<"idle" | "catch" | "hit">("idle");
   const [combo, setCombo] = useState(0);
   const [activePowerUp, setActivePowerUp] = useState<string | null>(null);
   const [powerUpTimer, setPowerUpTimer] = useState(0);
@@ -168,7 +178,7 @@ export default function MagicalCatchGame() {
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
   const startGame = () => {
-    setScore(0); setLives(3); setTimeLeft(60); setItems([]); setParticles([]);
+    setScore(0); setLives(3); setTimeLeft(60); setItems([]); setParticles([]); setSmokeParticles([]);
     setBasketState("idle"); setCombo(0); comboRef.current = 0;
     setActivePowerUp(null); powerUpRef.current = null; setMilestone(0); setIsPlaying(true);
   };
@@ -217,6 +227,20 @@ export default function MagicalCatchGame() {
     return () => clearInterval(spawner);
   }, [isPlaying, activePowerUp]);
 
+  // ✅ Magical Smoke Particles
+  useEffect(() => {
+    if (!isPlaying) return;
+    const smokeSpawner = setInterval(() => {
+      const newSmoke: SmokeParticle = {
+        id: Date.now() + Math.random(),
+        x: Math.random() * 100, y: Math.random() * 100,
+        size: Math.random() * 150 + 100, duration: Math.random() * 8 + 6,
+      };
+      setSmokeParticles((prev) => [...prev.slice(-8), newSmoke]);
+    }, 2000);
+    return () => clearInterval(smokeSpawner);
+  }, [isPlaying]);
+
   useEffect(() => {
     if (!isPlaying) return;
     const speedMultiplier = activePowerUp === "slowmo" ? 0.5 : 1;
@@ -247,7 +271,7 @@ export default function MagicalCatchGame() {
                 const angle = (Math.PI * 2 * i) / 16;
                 newParticles.push({ id: Date.now() + Math.random() + i, x: item.x, y: newY, emoji: data.particle, tx: Math.cos(angle) * 180, ty: Math.sin(angle) * 180 - 30 });
               }
-              newParticles.push({ id: Date.now() + 999, x: item.x, y: newY, isText: true, text: data.effect === "slowmo" ? " SLOW MOTION!" : data.effect === "double" ? "✨ DOUBLE POINTS!" : " MAGNET!", tx: 0, ty: -60, color: "cyan" });
+              newParticles.push({ id: Date.now() + 999, x: item.x, y: newY, isText: true, text: data.effect === "slowmo" ? "⏰ SLOW MOTION!" : data.effect === "double" ? "✨ DOUBLE POINTS!" : "🧲 MAGNET!", tx: 0, ty: -60, color: "cyan" });
             } else {
               const comboMultiplier = Math.min(Math.floor(comboRef.current / 5) + 1, 5);
               const baseScore = data.score;
@@ -311,7 +335,6 @@ export default function MagicalCatchGame() {
   // ✅ Progressive Color Logic (Violet -> Red)
   const getMagicalColor = () => {
     const progress = 1 - (timeLeft / 60);
-    // Violet: rgb(139, 92, 246) -> Red: rgb(239, 68, 68)
     const r = Math.round(139 + (239 - 139) * progress);
     const g = Math.round(92 + (68 - 92) * progress);
     const b = Math.round(246 + (68 - 246) * progress);
@@ -325,21 +348,45 @@ export default function MagicalCatchGame() {
     >
       <style>{`
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px) rotate(-1deg); } 75% { transform: translateX(8px) rotate(1deg); } }
-        @keyframes magicalPulse { 0%, 100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.05); } }
+        @keyframes magicalPulse { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 0.25; transform: scale(1.05); } }
         @keyframes timerGlow { 0%, 100% { text-shadow: 0 0 10px currentColor; } 50% { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; } }
       `}</style>
 
-      {/* ✅ DEEP DARK BACKGROUND FOR MAXIMUM CONTRAST */}
+      {/* ✅ DEEP DARK BACKGROUND */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#1e1b4b_0%,#000000_80%)] pointer-events-none" />
       
-      {/* Very Subtle Floating Orbs (Deep Dark) */}
-      {[...Array(5)].map((_, i) => (
+      {/* ✅ Magical Smoke/Mist Particles */}
+      <AnimatePresence>
+        {smokeParticles.map((smoke) => (
+          <motion.div
+            key={smoke.id}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: [0, 0.2, 0.1, 0],
+              scale: [0.5, 1.2, 1.5, 2],
+              y: [0, -100, -200, -300],
+              x: [0, 30, -20, 50]
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: smoke.duration, ease: "easeOut" }}
+            className="absolute rounded-full blur-3xl pointer-events-none"
+            style={{
+              width: smoke.size, height: smoke.size,
+              left: `${smoke.x}%`, top: `${smoke.y}%`,
+              background: `radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.1) 50%, transparent 70%)`,
+            }}
+          />
+        ))}
+      </AnimatePresence>
+
+      {/* Floating Magical Orbs */}
+      {[...Array(6)].map((_, i) => (
         <motion.div
           key={i} className="absolute rounded-full pointer-events-none"
           style={{
             width: Math.random() * 150 + 100, height: Math.random() * 150 + 100,
             left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`,
-            background: `radial-gradient(circle, rgba(88, 28, 135, 0.15) 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${i % 2 === 0 ? 'rgba(168, 85, 247, 0.15)' : 'rgba(236, 72, 153, 0.15)'} 0%, transparent 70%)`,
             animation: `magicalPulse ${Math.random() * 5 + 5}s ease-in-out infinite`,
           }}
         />
@@ -379,7 +426,7 @@ export default function MagicalCatchGame() {
               </motion.div>
             )}
             
-            {/* ✅ PROGRESSIVE MAGICAL HEARTS (Violet to Red) */}
+            {/* ✅ PROGRESSIVE MAGICAL HEARTS */}
             <div className="flex gap-1 bg-black/90 backdrop-blur-md px-2 md:px-3 py-2 rounded-full border border-white/40 shadow-2xl">
               {[...Array(3)].map((_, i) => (
                 <motion.div key={i}
@@ -391,7 +438,6 @@ export default function MagicalCatchGame() {
                     animate={lives > i ? { scale: [1, 1.1, 1] } : {}}
                     transition={{ duration: 1.5, repeat: Infinity }}
                     style={{
-                      // Dynamic Glow Color based on time
                       filter: lives > i ? `drop-shadow(0 0 8px ${getMagicalColor()}) drop-shadow(0 0 16px ${getMagicalColor()})` : 'grayscale(100%) opacity(0.3)'
                     }}
                   >
@@ -404,10 +450,7 @@ export default function MagicalCatchGame() {
             {/* ✅ MAGICAL TIMER */}
             <motion.div 
               className="bg-black/90 backdrop-blur-md px-3 md:px-4 py-2 rounded-full font-black text-lg md:text-xl border border-white/40 shadow-2xl flex items-center gap-2"
-              style={{
-                color: getMagicalColor(),
-                animation: 'timerGlow 2s ease-in-out infinite'
-              }}
+              style={{ color: getMagicalColor(), animation: 'timerGlow 2s ease-in-out infinite' }}
             >
               <span>⏰</span>
               <span className={timeLeft <= 10 ? "animate-pulse font-black" : ""}>{timeLeft}s</span>
@@ -421,7 +464,7 @@ export default function MagicalCatchGame() {
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
             className="absolute top-20 left-1/2 -translate-x-1/2 z-30 text-white font-black text-lg md:text-2xl drop-shadow-[0_4px_12px_rgba(0,0,0,1)]"
             style={{ textShadow: "0 0 20px currentColor, 0 0 40px currentColor" }}>
-            {activePowerUp === "slowmo" ? "⏰ SLOW MOTION!" : activePowerUp === "double" ? "✨ DOUBLE POINTS!" : " MAGNET!"}
+            {activePowerUp === "slowmo" ? "⏰ SLOW MOTION!" : activePowerUp === "double" ? "✨ DOUBLE POINTS!" : "🧲 MAGNET!"}
             <span className="block text-center text-sm md:text-base mt-1 opacity-90">{powerUpTimer}s remaining</span>
           </motion.div>
         )}
@@ -431,11 +474,11 @@ export default function MagicalCatchGame() {
         <motion.div initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }}
           className="absolute top-24 left-3 md:left-4 z-30 text-white font-black text-base md:text-lg drop-shadow-[0_4px_12px_rgba(0,0,0,1)]"
           style={{ textShadow: "0 0 15px currentColor" }}>
-           Level {milestone + 1}
+           🎯 Level {milestone + 1}
         </motion.div>
       )}
 
-      {/* ✅ Game Area - Crystal Clear Visibility */}
+      {/* ✅ Game Area */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         <AnimatePresence>
           {items.map((item) => {
@@ -453,7 +496,7 @@ export default function MagicalCatchGame() {
                     className="absolute inset-0 bg-yellow-400/90 rounded-full blur-xl" />
                 )}
                 
-                {/* ✅ CRYSTAL CLEAR OBJECTS ON DEEP DARK BACKGROUND */}
+                {/* ✅ CRYSTAL CLEAR OBJECTS */}
                 <span className="text-6xl md:text-7xl relative z-10"
                   style={{
                     filter: "drop-shadow(0 0 15px rgba(255,255,255,0.9)) drop-shadow(0 0 30px rgba(255,255,255,0.6)) drop-shadow(0 4px 10px rgba(0,0,0,1))",
@@ -552,7 +595,7 @@ export default function MagicalCatchGame() {
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startGame} className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 text-white font-black text-xl md:text-2xl px-10 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 border-2 border-white/30">
               <Play className="w-7 h-7 fill-white" /> Play Game
             </motion.button>
-            <p className="text-stone-500 text-xs mt-4 font-medium">️ 60 seconds • Lagatar catch karo, combo banao!</p>
+            <p className="text-stone-500 text-xs mt-4 font-medium">⏱️ 60 seconds • Lagatar catch karo, combo banao!</p>
           </motion.div>
         </motion.div>
       )}
