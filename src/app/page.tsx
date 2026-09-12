@@ -26,7 +26,7 @@ import {
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
+// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES (16:9 Ratio)
 // ═══════════════════════════════════════════════════════════
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
@@ -73,7 +73,7 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
         >
           <img 
             src={img} 
-            alt={`Alamnagar Hero ${index + 1}`} 
+            alt={`Alamnagar ${index + 1}`} 
             className="w-full h-full object-cover"
             onError={() => handleImageError(index)}
           />
@@ -176,48 +176,38 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
   );
 };
 
-const NewsletterRealtimeChart = ({ data }: { data: any[] }) => {
-  if (data.length === 0) return null;
+// ✅ NEWSLETTER CINEMATIC SLIDER COMPONENT
+const NewsletterCinematicSlider = ({ data }: { data: any[] }) => {
+  const newsletterImages = [
+    '/images/newsletter-1.jpg',
+    '/images/newsletter-2.jpg',
+    '/images/newsletter-3.jpg',
+    '/images/newsletter-4.jpg',
+    '/images/newsletter-5.jpg'
+  ];
+
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-50">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="nlViews" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.6}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05}/></linearGradient>
-            <linearGradient id="nlLikes" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.5}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05}/></linearGradient>
-            <linearGradient id="nlComments" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05}/></linearGradient>
-            <linearGradient id="nlShares" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.05}/></linearGradient>
-          </defs>
-          <Area type="monotone" dataKey="Views" stroke="#3b82f6" strokeWidth={10} fillOpacity={1} fill="url(#nlViews)" isAnimationActive={true} animationDuration={6000} />
-          <Area type="monotone" dataKey="Likes" stroke="#f43f5e" strokeWidth={7} fillOpacity={1} fill="url(#nlLikes)" isAnimationActive={true} animationDuration={7500} />
-          <Area type="monotone" dataKey="Comments" stroke="#f59e0b" strokeWidth={5} fillOpacity={1} fill="url(#nlComments)" isAnimationActive={true} animationDuration={9000} />
-          <Area type="monotone" dataKey="Shares" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#nlShares)" isAnimationActive={true} animationDuration={10500} />
-        </AreaChart>
-      </ResponsiveContainer>
+    <div className="absolute inset-0 z-0">
+      <SmoothImageSlider images={newsletterImages} className="w-full h-full" />
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-zinc-900/40 to-transparent" />
     </div>
   );
 };
 
-const MarketplaceTowerChart = ({ stats }: { stats: any }) => {
-  const data = useMemo(() => [
-    { name: 'सदस्य', value: stats.totalUsers || 10 },
-    { name: 'पोस्ट', value: stats.totalPosts || 10 },
-    { name: 'व्यूज़', value: stats.totalViews || 10 },
-    { name: 'लाइक', value: stats.totalLikes || 10 },
-  ], [stats]);
+// ✅ MARKETPLACE CINEMATIC SLIDER COMPONENT
+const MarketplaceCinematicSlider = () => {
+  const marketplaceImages = [
+    '/images/marketplace-1.jpg',
+    '/images/marketplace-2.jpg',
+    '/images/marketplace-3.jpg',
+    '/images/marketplace-4.jpg',
+    '/images/marketplace-5.jpg'
+  ];
+
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-55">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="towerEmerald" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={1}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/></linearGradient>
-            <linearGradient id="towerAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={1}/><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2}/></linearGradient>
-            <linearGradient id="towerBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/></linearGradient>
-            <linearGradient id="towerRose" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.2}/></linearGradient>
-          </defs>
-          <Bar dataKey="value" radius={[8, 8, 0, 0]} animationDuration={2000} />
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="absolute inset-0 z-0">
+      <SmoothImageSlider images={marketplaceImages} className="w-full h-full" />
+      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-neutral-950/40 to-transparent" />
     </div>
   );
 };
@@ -748,9 +738,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 5. MARKETPLACE TEASER ===== */}
+        {/* ===== 5. MARKETPLACE TEASER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-neutral-900 text-white relative overflow-hidden">
-          <MarketplaceTowerChart stats={liveStats} />
+          {/* ✅ CINEMATIC SLIDER INTEGRATED */}
+          <MarketplaceCinematicSlider />
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10 max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -897,9 +888,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 7. WORKING NEWSLETTER ===== */}
+        {/* ===== 7. WORKING NEWSLETTER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-zinc-800 text-white relative overflow-hidden">
-          <NewsletterRealtimeChart data={chartData} />
+          {/* ✅ CINEMATIC SLIDER INTEGRATED */}
+          <NewsletterCinematicSlider data={chartData} />
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
             <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
               <Mail className="w-10 h-10 text-amber-400" />
@@ -914,7 +906,7 @@ export default function HomePage() {
             </form>
             <AnimatePresence>
               {newsletterStatus === "success" && (<motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-emerald-400 mt-6 font-bold flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> ✅ सफलतापूर्वक सदस्यता ले ली गई!</motion.p>)}
-              {newsletterStatus === "error" && (<motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2"><AlertTriangle className="w-5 h-5" /> ❌ {errorMessage}</motion.p>)}
+              {newsletterStatus === "error" && (<motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2"><AlertTriangle className="w-5 h-5" />  {errorMessage}</motion.p>)}
             </AnimatePresence>
           </motion.div>
         </section>
