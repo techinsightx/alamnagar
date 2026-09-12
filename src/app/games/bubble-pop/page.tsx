@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
@@ -64,11 +64,24 @@ export default function BubblePopGame() {
   const [shockwaves, setShockwaves] = useState<Shockwave[]>([]);
   const [nextId, setNextId] = useState(0);
   const [highScore, setHighScore] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const nextIdRef = useRef(0);
+  const isPlayingRef = useRef(false);
+  const soundEnabledRef = useRef(true);
 
   useEffect(() => {
     const saved = localStorage.getItem("bubblePopHighScore");
     if (saved) setHighScore(parseInt(saved));
   }, []);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
 
   const startGame = () => {
     setScore(0);
@@ -77,48 +90,102 @@ export default function BubblePopGame() {
     setParticles([]);
     setFloatingTexts([]);
     setShockwaves([]);
+    setNextId(0);
+    nextIdRef.current = 0;
     setIsPlaying(true);
   };
 
   // Timer Logic
   useEffect(() => {
     if (!isPlaying) return;
-    if (timeLeft <= 0) {
-      setIsPlaying(false);
-      if (score > highScore) {
-        setHighScore(score);
-        localStorage.setItem("bubblePopHighScore", score.toString());
-      }
-      return;
-    }
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    const timer = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          setIsPlaying(false);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
     return () => clearInterval(timer);
-  }, [isPlaying, timeLeft, score, highScore]);
+  }, [isPlaying]);
+
+  // Save High Score
+  useEffect(() => {
+    if (!isPlaying && score > 0 && score > highScore) {
+      setHighScore(score);
+      localStorage.setItem("bubblePopHighScore", score.toString());
+    }
+  }, [isPlaying, score, highScore]);
 
   // ✅ FIXED: Balanced Spawn Rate (800ms, max 8 balloons)
   useEffect(() => {
     if (!isPlaying) return;
     const spawnInterval = setInterval(() => {
       setBalloons((prev) => {
-        if (prev.length >= 8) return prev; // Reduced max from 15 to 8
+        if (prev.length >= 8) return prev;
         const newBalloon: Balloon = {
-          id: nextId,
-          x: Math.random() * 80 + 10, // 10% to 90% screen width
-          size: Math.random() * 50 + 80, // 80px to 130px (slightly bigger)
+          id: nextIdRef.current,
+          x: Math.random() * 80 + 10,
+          size: Math.random() * 50 + 80,
           style: BALLOON_STYLES[Math.floor(Math.random() * BALLOON_STYLES.length)],
-          duration: Math.random() * 3 + 5, // 5 to 8 seconds (slightly slower for better tracking)
+          duration: Math.random() * 3 + 5,
         };
-        setNextId((id) => id + 1);
+        nextIdRef.current += 1;
         return [...prev, newBalloon];
       });
-    }, 800); // Increased from 400ms to 800ms
+    }, 800);
     return () => clearInterval(spawnInterval);
-  }, [isPlaying, nextId]);
+  }, [isPlaying]);
 
-  // ✅ FIXED: Ultra Explosive Burst with Shockwave + 16 Particles
+  // ✅ FIXED: Ultra Explosive Burst with Shockwave + 16 Particles + MAGICAL SOUND
   const popBalloon = useCallback((id: number, x: number, size: number) => {
     setScore((s) => s + 10);
     setBalloons((prev) => prev.filter((b) => b.id !== id));
+
+    // ✅ Magical Pop Sound Effect (Varied pitch for each balloon)
+    if (soundEnabledRef.current) {
+      try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        const audioContext = new AudioContext();
+        
+        // Oscillator 1: Main pop
+        const osc1 = audioContext.createOscillator();
+        const gain1 = audioContext.createGain();
+        osc1.connect(gain1);
+        gain1.connect(audioContext.destination);
+        
+        // Oscillator 2: Harmonic chime
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        
+        // Randomize pitch for variety (different balloon pop sounds)
+        const baseFreq = 500 + Math.random() * 500;
+        
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+        osc1.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, audioContext.currentTime + 0.1);
+        
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(baseFreq * 1.5, audioContext.currentTime);
+        osc2.frequency.exponentialRampToValueAtTime(baseFreq * 0.75, audioContext.currentTime + 0.15);
+        
+        gain1.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        
+        gain2.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+        
+        osc1.start(audioContext.currentTime);
+        osc2.start(audioContext.currentTime);
+        osc1.stop(audioContext.currentTime + 0.15);
+        osc2.stop(audioContext.currentTime + 0.15);
+      } catch (e) {
+        console.log('Audio not supported');
+      }
+    }
 
     const centerX = x;
     const centerY = 50; 
@@ -135,14 +202,14 @@ export default function BubblePopGame() {
     const particleCount = 16;
     for (let i = 0; i < particleCount; i++) {
       const angle = (Math.PI * 2 * i) / particleCount;
-      const velocity = 120 + Math.random() * 180; // Wider explosion radius
+      const velocity = 120 + Math.random() * 180;
       newParticles.push({
         id: Date.now() + i,
         x: centerX,
         y: centerY,
         emoji: POP_EMOJIS[Math.floor(Math.random() * POP_EMOJIS.length)],
         tx: Math.cos(angle) * velocity,
-        ty: Math.sin(angle) * velocity - 80, // Upward bias for gravity feel
+        ty: Math.sin(angle) * velocity - 80,
         rotate: Math.random() * 720 - 360,
       });
     }
@@ -175,8 +242,16 @@ export default function BubblePopGame() {
         </Link>
         
         {isPlaying && (
-          <div className="flex gap-3">
-            {/* ✅ FIXED: High Contrast Score Display */}
+          <div className="flex gap-3 items-center">
+            {/* ✅ Sound Toggle Button */}
+            <button 
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="bg-black/40 backdrop-blur-md text-white px-3 py-2 rounded-full font-bold text-sm border-2 border-white/50 shadow-lg hover:bg-black/60 transition"
+            >
+              {soundEnabled ? "🔊" : "🔇"}
+            </button>
+
+            {/* ✅ High Contrast Score Display */}
             <motion.div 
               key={score}
               initial={{ scale: 1.3 }}
@@ -231,7 +306,7 @@ export default function BubblePopGame() {
           ))}
         </AnimatePresence>
 
-        {/* ✅ FIXED: Shockwave Ring Effect */}
+        {/* ✅ Shockwave Ring Effect */}
         <AnimatePresence>
           {shockwaves.map((wave) => (
             <motion.div
@@ -253,7 +328,7 @@ export default function BubblePopGame() {
           ))}
         </AnimatePresence>
 
-        {/* ✅ FIXED: Rich Particle Explosions */}
+        {/* ✅ Rich Particle Explosions */}
         <AnimatePresence>
           {particles.map((p) => (
             <motion.div
@@ -267,7 +342,7 @@ export default function BubblePopGame() {
                 rotate: p.rotate 
               }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }} // Custom bezier for snappy explosion
+              transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="absolute pointer-events-none text-3xl md:text-5xl flex items-center justify-center drop-shadow-lg"
               style={{ left: `${p.x}vw`, top: `${p.y}%` }}
             >
