@@ -2,17 +2,17 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Trophy, Play, RotateCcw, Heart, Sparkles, Info, Zap, Flame, Target } from "lucide-react";
+import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Info, Zap, Flame, Target } from "lucide-react";
 import Link from "next/link";
 
 const ITEM_TYPES = {
   star: { emoji: "⭐", score: 10, particle: "✨", weight: 30, type: "good", rarity: "common" },
-  candy: { emoji: "🍬", score: 15, particle: "", weight: 22, type: "good", rarity: "common" },
+  candy: { emoji: "🍬", score: 15, particle: "🍭", weight: 22, type: "good", rarity: "common" },
   gift: { emoji: "🎁", score: 25, particle: "🎉", weight: 15, type: "good", rarity: "uncommon" },
-  potion: { emoji: "", score: 30, particle: "🌟", weight: 10, type: "good", rarity: "uncommon" },
+  potion: { emoji: "🧪", score: 30, particle: "", weight: 10, type: "good", rarity: "uncommon" },
   diamond: { emoji: "💎", score: 50, particle: "💠", weight: 6, type: "good", rarity: "rare" },
   goldenStar: { emoji: "🌟", score: 100, particle: "⭐", weight: 2, type: "good", rarity: "legendary" },
-  bomb: { emoji: "", score: 0, particle: "💥", weight: 10, type: "bad", rarity: "common" },
+  bomb: { emoji: "💣", score: 0, particle: "💥", weight: 10, type: "bad", rarity: "common" },
   slowmo: { emoji: "⏰", score: 0, particle: "⏳", weight: 2, type: "powerup", effect: "slowmo", rarity: "rare" },
   double: { emoji: "✨", score: 0, particle: "💫", weight: 2, type: "powerup", effect: "double", rarity: "rare" },
   magnet: { emoji: "🧲", score: 0, particle: "⚡", weight: 1, type: "powerup", effect: "magnet", rarity: "legendary" },
@@ -208,7 +208,6 @@ export default function MagicalCatchGame() {
         prevItems.forEach((item) => {
           const newY = item.y + item.speed * speedMultiplier;
           
-          // ✅ Optimized Catch Radius (Realistic but Fair)
           const distX = Math.abs(item.x - playerXRef.current);
           const distY = Math.abs(newY - playerYRef.current);
           const isCaught = distX < 6 && distY < 5;
@@ -257,7 +256,7 @@ export default function MagicalCatchGame() {
                 x: item.x,
                 y: newY,
                 isText: true,
-                text: data.effect === "slowmo" ? " SLOW MO!" : data.effect === "double" ? "✨ 2X POINTS!" : "🧲 MAGNET!",
+                text: data.effect === "slowmo" ? "⏰ SLOW MOTION!" : data.effect === "double" ? "✨ DOUBLE POINTS!" : "🧲 MAGNET POWER!",
                 tx: 0,
                 ty: -60,
                 color: "cyan",
@@ -280,7 +279,6 @@ export default function MagicalCatchGame() {
               });
               setBasketState("catch");
               
-              // Screen flash on rare items
               if (item.type === "goldenStar" || item.type === "diamond") {
                 setScreenFlash("gold");
                 setTimeout(() => setScreenFlash(null), 300);
@@ -332,7 +330,6 @@ export default function MagicalCatchGame() {
         if (scoreGained > 0) {
           setScore((s) => {
             const newScore = s + scoreGained;
-            // Milestone check
             if (Math.floor(newScore / 500) > Math.floor(s / 500)) {
               setMilestone(Math.floor(newScore / 500));
               setScreenFlash("purple");
@@ -361,7 +358,6 @@ export default function MagicalCatchGame() {
     return () => clearInterval(loop);
   }, [isPlaying, activePowerUp]);
 
-  // ✅ 2D Movement Handler (Constrained to lower 60% of screen)
   const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!isPlayingRef.current) return;
     const clientX = "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
@@ -371,7 +367,6 @@ export default function MagicalCatchGame() {
     const y = (clientY / window.innerHeight) * 100;
     
     const clampedX = Math.max(5, Math.min(95, x));
-    // ✅ Basket constrained to lower 60% (40% to 95%)
     const clampedY = Math.max(40, Math.min(95, y));
     
     playerXRef.current = clampedX;
@@ -382,7 +377,7 @@ export default function MagicalCatchGame() {
 
   return (
     <div 
-      className={`min-h-screen bg-gradient-to-br from-indigo-900/80 via-purple-900/80 to-pink-900/80 backdrop-blur-sm relative overflow-hidden select-none font-sans ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
+      className={`min-h-screen bg-gradient-to-br from-indigo-900/30 via-purple-900/30 to-pink-900/30 backdrop-blur-sm relative overflow-hidden select-none font-sans ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
       onMouseMove={handleMove}
       onTouchMove={handleMove}
     >
@@ -405,7 +400,7 @@ export default function MagicalCatchGame() {
             key={smoke.id}
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ 
-              opacity: [0, 0.3, 0.2, 0],
+              opacity: [0, 0.25, 0.15, 0],
               scale: [0.5, 1.2, 1.5, 2],
               y: [0, -100, -200, -300],
               x: [0, 30, -20, 50]
@@ -418,7 +413,7 @@ export default function MagicalCatchGame() {
               height: smoke.size,
               left: `${smoke.x}%`,
               top: `${smoke.y}%`,
-              background: `radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(236, 72, 153, 0.2) 50%, transparent 70%)`,
+              background: `radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.15) 50%, transparent 70%)`,
             }}
           />
         ))}
@@ -434,12 +429,12 @@ export default function MagicalCatchGame() {
             height: Math.random() * 200 + 150,
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
-            background: `radial-gradient(circle, ${i % 2 === 0 ? 'rgba(251, 191, 36, 0.25)' : 'rgba(168, 85, 247, 0.25)'} 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${i % 2 === 0 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(168, 85, 247, 0.2)'} 0%, transparent 70%)`,
           }}
           animate={{ 
             y: [0, -50, 0], 
             x: [0, 40, 0],
-            opacity: [0.2, 0.4, 0.2] 
+            opacity: [0.15, 0.3, 0.15] 
           }}
           transition={{ duration: Math.random() * 8 + 8, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -486,13 +481,14 @@ export default function MagicalCatchGame() {
                 <Flame className="w-5 h-5 fill-white animate-pulse" /> x{Math.min(Math.floor(combo / 5) + 1, 5)}
               </motion.div>
             )}
+            {/* ✅ Life System: Stars instead of Hearts */}
             <div className="flex gap-1 bg-black/40 backdrop-blur-md px-3 py-2 rounded-full border-2 border-white/30">
               {[...Array(3)].map((_, i) => (
                 <motion.div
                   key={i}
                   animate={lives <= i ? { scale: 0.8, opacity: 0.3 } : { scale: 1, opacity: 1 }}
                 >
-                  <Heart className={`w-5 h-5 md:w-6 md:h-6 ${lives > i ? "text-red-500 fill-red-500" : "text-gray-600"}`} />
+                  <span className="text-2xl md:text-3xl">{lives > i ? "⭐" : "☆"}</span>
                 </motion.div>
               ))}
             </div>
@@ -503,15 +499,45 @@ export default function MagicalCatchGame() {
         )}
       </div>
 
-      {/* Power-up Indicator */}
+      {/* ✅ Magical Progress Bar (Time) */}
+      {isPlaying && (
+        <div className="absolute top-20 left-0 right-0 z-30 px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="relative h-3 bg-black/30 backdrop-blur-md rounded-full overflow-hidden border-2 border-white/30">
+              <motion.div 
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-full shadow-lg"
+                initial={{ width: "100%" }}
+                animate={{ width: `${(timeLeft / 60) * 100}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              />
+              {/* Magical shimmer effect */}
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              />
+            </div>
+            {/* Milestone markers */}
+            <div className="flex justify-between mt-1 px-1">
+              {[0, 15, 30, 45, 60].map((time) => (
+                <div key={time} className="w-1 h-1 bg-white/50 rounded-full" />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Power-up Indicator (Simple Text + Emoji, No Card) */}
       <AnimatePresence>
         {activePowerUp && (
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.8 }} animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.8 }}
-            className="absolute top-24 left-1/2 -translate-x-1/2 z-30 bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-6 py-3 rounded-full font-black text-lg shadow-2xl border-4 border-white flex items-center gap-2"
+            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-28 left-1/2 -translate-x-1/2 z-30 text-white font-black text-xl md:text-2xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]"
+            style={{ textShadow: "0 0 20px currentColor, 0 0 40px currentColor" }}
           >
-            {activePowerUp === "slowmo" ? " SLOW MO" : activePowerUp === "double" ? "✨ 2X POINTS" : "🧲 MAGNET"} - {powerUpTimer}s
+            {activePowerUp === "slowmo" ? " SLOW MOTION!" : activePowerUp === "double" ? "✨ DOUBLE POINTS!" : "🧲 MAGNET POWER!"}
+            <span className="block text-center text-base md:text-lg mt-1 opacity-80">{powerUpTimer}s remaining</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -520,15 +546,16 @@ export default function MagicalCatchGame() {
       {milestone > 0 && (
         <motion.div
           initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }}
-          className="absolute top-32 left-4 z-30 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full font-black text-sm shadow-2xl border-2 border-white flex items-center gap-2"
+          className="absolute top-32 left-4 z-30 text-white font-black text-lg drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]"
+          style={{ textShadow: "0 0 15px currentColor" }}
         >
-          <Target className="w-4 h-4" /> Level {milestone + 1}
+          🎯 Level {milestone + 1}
         </motion.div>
       )}
 
       {/* Game Area */}
       <div className="absolute inset-0 z-10 pointer-events-none">
-        {/* Falling Items */}
+        {/* ✅ Falling Items (Enhanced Size) */}
         <AnimatePresence>
           {items.map((item) => {
             const data = ITEM_TYPES[item.type];
@@ -541,7 +568,6 @@ export default function MagicalCatchGame() {
                 className="absolute pointer-events-auto cursor-pointer"
                 style={{ left: 0, top: 0, rotate: item.rotation }}
               >
-                {/* Glow effect for rare items */}
                 {item.glow && (
                   <motion.div
                     animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
@@ -549,7 +575,7 @@ export default function MagicalCatchGame() {
                     className="absolute inset-0 bg-yellow-400/60 rounded-full blur-xl"
                   />
                 )}
-                <span className="text-5xl md:text-6xl filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.8)] relative z-10">{data.emoji}</span>
+                <span className="text-6xl md:text-7xl filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.8)] relative z-10">{data.emoji}</span>
               </motion.div>
             );
           })}
@@ -577,7 +603,7 @@ export default function MagicalCatchGame() {
           ))}
         </AnimatePresence>
 
-        {/* ✅ Custom Bamboo Basket (Larger on Mobile, Constrained Movement) */}
+        {/* ✅ Realistic Bamboo Basket (Rural Indian Style) */}
         {isPlaying && (
           <motion.div
             className="absolute pointer-events-none z-20"
@@ -591,7 +617,7 @@ export default function MagicalCatchGame() {
                 className="absolute inset-0 bg-amber-400/70 rounded-full blur-3xl transition-all duration-300" 
               />
               
-              {/* Custom Basket SVG (No Handle, Larger on Mobile) */}
+              {/* ✅ Realistic Bamboo Basket SVG */}
               <motion.div
                 animate={
                   basketState === "catch" 
@@ -603,24 +629,45 @@ export default function MagicalCatchGame() {
                 transition={{ duration: basketState === "idle" ? 2 : 0.4, type: "spring", bounce: 0.6 }}
                 className="relative z-10"
               >
-                <svg width="120" height="100" viewBox="0 0 100 80" className="w-28 h-24 md:w-36 md:h-28">
-                  {/* Basket Body */}
-                  <ellipse cx="50" cy="50" rx="45" ry="25" fill="url(#basketGradient)" stroke="#92400e" strokeWidth="3"/>
-                  {/* Basket Rim */}
-                  <ellipse cx="50" cy="30" rx="45" ry="10" fill="url(#rimGradient)" stroke="#92400e" strokeWidth="3"/>
-                  {/* Bamboo Texture Lines */}
-                  <path d="M 10 40 Q 50 45 90 40" stroke="#78350f" strokeWidth="2" fill="none" opacity="0.6"/>
-                  <path d="M 15 50 Q 50 55 85 50" stroke="#78350f" strokeWidth="2" fill="none" opacity="0.6"/>
-                  <path d="M 20 60 Q 50 65 80 60" stroke="#78350f" strokeWidth="2" fill="none" opacity="0.6"/>
+                <svg width="140" height="120" viewBox="0 0 120 100" className="w-32 h-28 md:w-40 md:h-36">
+                  {/* Handle */}
+                  <path d="M 30 20 Q 60 -10 90 20" stroke="#8B6914" strokeWidth="4" fill="none" strokeLinecap="round"/>
+                  <path d="M 30 20 Q 60 -10 90 20" stroke="#A0822A" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                  
+                  {/* Basket Body (Open Top) */}
+                  <path d="M 20 30 L 30 90 Q 60 100 90 90 L 100 30 Z" fill="url(#basketGradient)" stroke="#6B4E12" strokeWidth="2"/>
+                  
+                  {/* Woven Texture - Horizontal Lines */}
+                  <path d="M 22 40 Q 60 45 98 40" stroke="#8B6914" strokeWidth="1.5" fill="none" opacity="0.7"/>
+                  <path d="M 24 50 Q 60 55 96 50" stroke="#8B6914" strokeWidth="1.5" fill="none" opacity="0.7"/>
+                  <path d="M 26 60 Q 60 65 94 60" stroke="#8B6914" strokeWidth="1.5" fill="none" opacity="0.7"/>
+                  <path d="M 28 70 Q 60 75 92 70" stroke="#8B6914" strokeWidth="1.5" fill="none" opacity="0.7"/>
+                  <path d="M 29 80 Q 60 85 91 80" stroke="#8B6914" strokeWidth="1.5" fill="none" opacity="0.7"/>
+                  
+                  {/* Woven Texture - Vertical Lines */}
+                  <path d="M 35 30 L 40 95" stroke="#8B6914" strokeWidth="1" fill="none" opacity="0.6"/>
+                  <path d="M 50 30 L 52 98" stroke="#8B6914" strokeWidth="1" fill="none" opacity="0.6"/>
+                  <path d="M 60 30 L 60 100" stroke="#8B6914" strokeWidth="1" fill="none" opacity="0.6"/>
+                  <path d="M 70 30 L 68 98" stroke="#8B6914" strokeWidth="1" fill="none" opacity="0.6"/>
+                  <path d="M 85 30 L 80 95" stroke="#8B6914" strokeWidth="1" fill="none" opacity="0.6"/>
+                  
+                  {/* Rim */}
+                  <ellipse cx="60" cy="30" rx="40" ry="8" fill="url(#rimGradient)" stroke="#6B4E12" strokeWidth="2"/>
+                  
+                  {/* Open Top (Dark Interior) */}
+                  <ellipse cx="60" cy="30" rx="38" ry="6" fill="#3D2817" opacity="0.8"/>
+                  
                   <defs>
                     <linearGradient id="basketGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#fbbf24"/>
-                      <stop offset="50%" stopColor="#d97706"/>
-                      <stop offset="100%" stopColor="#92400e"/>
+                      <stop offset="0%" stopColor="#D4A574"/>
+                      <stop offset="30%" stopColor="#A0822A"/>
+                      <stop offset="70%" stopColor="#8B6914"/>
+                      <stop offset="100%" stopColor="#6B4E12"/>
                     </linearGradient>
                     <linearGradient id="rimGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#fcd34d"/>
-                      <stop offset="100%" stopColor="#f59e0b"/>
+                      <stop offset="0%" stopColor="#E8C99B"/>
+                      <stop offset="50%" stopColor="#C4A265"/>
+                      <stop offset="100%" stopColor="#A0822A"/>
                     </linearGradient>
                   </defs>
                 </svg>
@@ -635,7 +682,7 @@ export default function MagicalCatchGame() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md p-4">
           <motion.div initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl text-center max-w-md w-full border-4 border-purple-300">
             <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="text-8xl mb-4 drop-shadow-lg">
-              
+              🧺
             </motion.div>
             <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 mb-3">
               Jadui Tokri!
@@ -647,11 +694,11 @@ export default function MagicalCatchGame() {
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm">
-                  <span className="text-2xl"></span> 
+                  <span className="text-2xl">👆</span> 
                   <span className="font-semibold text-stone-700">Kahi bhi move karo</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm">
-                  <span className="text-2xl">⭐🎁💎</span> 
+                  <span className="text-2xl">⭐🎁</span> 
                   <span className="font-semibold text-stone-700">Pakdo aur points lo</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm">
