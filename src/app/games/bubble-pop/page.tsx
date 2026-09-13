@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Star } from "lucide-react";
+import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
 
 // 11+ Vibrant Balloon Gradients for a premium 3D look
@@ -127,7 +127,7 @@ export default function BubblePopGame() {
         const newBalloon: Balloon = {
           id: nextIdRef.current,
           x: Math.random() * 80 + 10,
-          size: Math.random() * 50 + 80,
+          size: Math.random() * 50 + 80, // 80px to 130px (Perfect for mobile touch)
           style: BALLOON_STYLES[Math.floor(Math.random() * BALLOON_STYLES.length)],
           duration: Math.random() * 3 + 5,
         };
@@ -138,10 +138,15 @@ export default function BubblePopGame() {
     return () => clearInterval(spawnInterval);
   }, [isPlaying]);
 
-  // ✅ FIXED: Ultra Explosive Burst with Shockwave + 16 Particles + MAGICAL SOUND
+  // ✅ FIXED: Ultra Explosive Burst + HAPTIC FEEDBACK + MAGICAL SOUND
   const popBalloon = useCallback((id: number, x: number, size: number) => {
     setScore((s) => s + 10);
     setBalloons((prev) => prev.filter((b) => b.id !== id));
+
+    // ✅ Haptic Feedback for Mobile (Satisfying vibration on pop)
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(30); 
+    }
 
     // ✅ Magical Pop Sound Effect (Varied pitch for each balloon)
     if (soundEnabledRef.current) {
@@ -149,19 +154,16 @@ export default function BubblePopGame() {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         const audioContext = new AudioContext();
         
-        // Oscillator 1: Main pop
         const osc1 = audioContext.createOscillator();
         const gain1 = audioContext.createGain();
         osc1.connect(gain1);
         gain1.connect(audioContext.destination);
         
-        // Oscillator 2: Harmonic chime
         const osc2 = audioContext.createOscillator();
         const gain2 = audioContext.createGain();
         osc2.connect(gain2);
         gain2.connect(audioContext.destination);
         
-        // Randomize pitch for variety (different balloon pop sounds)
         const baseFreq = 500 + Math.random() * 500;
         
         osc1.type = 'sine';
@@ -229,7 +231,8 @@ export default function BubblePopGame() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-400 to-indigo-500 relative overflow-hidden select-none font-sans">
+    // ✅ CRITICAL FIX: touch-none prevents double-tap zoom and pinch-zoom on mobile
+    <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-400 to-indigo-500 relative overflow-hidden select-none font-sans touch-none">
       {/* Animated Background Clouds */}
       <motion.div animate={{ x: [0, 50, 0] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute top-10 left-10 w-40 h-20 bg-white/30 rounded-full blur-2xl" />
       <motion.div animate={{ x: [0, -70, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }} className="absolute top-20 right-20 w-60 h-32 bg-white/20 rounded-full blur-3xl" />
@@ -237,7 +240,7 @@ export default function BubblePopGame() {
 
       {/* Top Bar */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 text-white font-bold hover:bg-white/20 px-4 py-2 rounded-full transition bg-black/30 backdrop-blur-md border border-white/30 shadow-lg">
+        <Link href="/" className="flex items-center gap-2 text-white font-bold hover:bg-white/20 px-4 py-2 rounded-full transition bg-black/30 backdrop-blur-md border border-white/30 shadow-lg touch-manipulation">
           <ArrowLeft className="w-5 h-5" /> Home
         </Link>
         
@@ -246,9 +249,9 @@ export default function BubblePopGame() {
             {/* ✅ Sound Toggle Button */}
             <button 
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="bg-black/40 backdrop-blur-md text-white px-3 py-2 rounded-full font-bold text-sm border-2 border-white/50 shadow-lg hover:bg-black/60 transition"
+              className="bg-black/40 backdrop-blur-md text-white px-3 py-2 rounded-full font-bold text-sm border-2 border-white/50 shadow-lg hover:bg-black/60 transition touch-manipulation"
             >
-              {soundEnabled ? "🔊" : "🔇"}
+              {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
             </button>
 
             {/* ✅ High Contrast Score Display */}
@@ -256,12 +259,12 @@ export default function BubblePopGame() {
               key={score}
               initial={{ scale: 1.3 }}
               animate={{ scale: 1 }}
-              className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-black px-5 py-2 rounded-full font-black text-2xl shadow-2xl flex items-center gap-2 border-4 border-white"
+              className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-black px-4 py-2 rounded-full font-black text-xl md:text-2xl shadow-2xl flex items-center gap-2 border-4 border-white"
             >
-              <Sparkles className="w-6 h-6 text-white fill-white" />
+              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white fill-white" />
               {score}
             </motion.div>
-            <div className="bg-black/40 backdrop-blur-md text-white px-5 py-2 rounded-full font-black text-xl shadow-lg border-2 border-white/50 flex items-center gap-2">
+            <div className="bg-black/40 backdrop-blur-md text-white px-4 py-2 rounded-full font-black text-lg md:text-xl shadow-lg border-2 border-white/50 flex items-center gap-2">
               <span className="animate-pulse text-yellow-400">⏰</span> {timeLeft}s
             </div>
           </div>
@@ -289,8 +292,12 @@ export default function BubblePopGame() {
                 y: { duration: balloon.duration, ease: "linear" },
                 x: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
               }}
-              onClick={() => popBalloon(balloon.id, balloon.x, balloon.size)}
-              className="absolute pointer-events-auto cursor-pointer flex flex-col items-center"
+              // ✅ Use onPointerDown for better mobile response and to prevent zoom
+              onPointerDown={(e) => {
+                e.preventDefault(); 
+                popBalloon(balloon.id, balloon.x, balloon.size);
+              }}
+              className="absolute pointer-events-auto cursor-pointer flex flex-col items-center touch-none"
               style={{ width: balloon.size, height: balloon.size * 1.2, left: 0 }}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -373,7 +380,7 @@ export default function BubblePopGame() {
       {!isPlaying && timeLeft === 60 && (
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/30 backdrop-blur-md"
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/30 backdrop-blur-md touch-manipulation"
         >
           <motion.div 
             initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }}
@@ -407,7 +414,7 @@ export default function BubblePopGame() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={startGame}
-              className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-black text-xl md:text-2xl px-10 py-5 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center gap-3 mx-auto border-2 border-white/30"
+              className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-black text-xl md:text-2xl px-10 py-5 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center gap-3 mx-auto border-2 border-white/30 touch-manipulation"
             >
               <Play className="w-7 h-7 fill-white" /> Play Game
             </motion.button>
@@ -421,7 +428,7 @@ export default function BubblePopGame() {
       {!isPlaying && timeLeft === 0 && (
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md"
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md touch-manipulation"
         >
           <motion.div 
             initial={{ scale: 0.8, rotate: -5 }} animate={{ scale: 1, rotate: 0 }}
@@ -463,12 +470,12 @@ export default function BubblePopGame() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={startGame}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-black text-xl px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 border-2 border-white/30"
+                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-black text-xl px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 border-2 border-white/30 touch-manipulation"
               >
                 <RotateCcw className="w-6 h-6" /> Play Again
               </motion.button>
               
-              <Link href="/" className="text-gray-500 hover:text-gray-800 font-bold text-sm transition-colors py-2">
+              <Link href="/" className="text-gray-500 hover:text-gray-800 font-bold text-sm transition-colors py-2 touch-manipulation">
                 ← Back to Home
               </Link>
             </div>
