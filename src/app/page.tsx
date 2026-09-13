@@ -8,7 +8,7 @@ import {
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
   CheckCircle, X, Globe, AlertTriangle, Gamepad2, Bot, LayoutTemplate, ExternalLink,
-  Smile, Rocket, Palette, Trophy, ChevronUp, ChevronDown as ChevronDownIcon
+  Smile, Rocket, Palette, Trophy, ChevronDown as ChevronDownIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -26,7 +26,7 @@ import {
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES (16:9 Ratio)
+// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
 // ═══════════════════════════════════════════════════════════
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
@@ -176,36 +176,26 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
   );
 };
 
-// ✅ NEWSLETTER CINEMATIC SLIDER COMPONENT (Fixed Height)
 const NewsletterCinematicSlider = () => {
   const newsletterImages = [
-    '/images/newsletter-1.jpg',
-    '/images/newsletter-2.jpg',
-    '/images/newsletter-3.jpg',
-    '/images/newsletter-4.jpg',
-    '/images/newsletter-5.jpg'
+    '/images/newsletter-1.jpg', '/images/newsletter-2.jpg', '/images/newsletter-3.jpg',
+    '/images/newsletter-4.jpg', '/images/newsletter-5.jpg'
   ];
-
   return (
-    <div className="absolute inset-0 z-0 min-h-[400px] md:min-h-[500px] lg:min-h-[600px]">
+    <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
       <SmoothImageSlider images={newsletterImages} className="w-full h-full" />
       <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/50 to-transparent" />
     </div>
   );
 };
 
-// ✅ MARKETPLACE CINEMATIC SLIDER COMPONENT (Fixed Height)
 const MarketplaceCinematicSlider = () => {
   const marketplaceImages = [
-    '/images/marketplace-1.jpg',
-    '/images/marketplace-2.jpg',
-    '/images/marketplace-3.jpg',
-    '/images/marketplace-4.jpg',
-    '/images/marketplace-5.jpg'
+    '/images/marketplace-1.jpg', '/images/marketplace-2.jpg', '/images/marketplace-3.jpg',
+    '/images/marketplace-4.jpg', '/images/marketplace-5.jpg'
   ];
-
   return (
-    <div className="absolute inset-0 z-0 min-h-[400px] md:min-h-[500px] lg:min-h-[600px]">
+    <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
       <SmoothImageSlider images={marketplaceImages} className="w-full h-full" />
       <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/90 via-neutral-950/50 to-transparent" />
     </div>
@@ -307,16 +297,12 @@ const LiveActivityTicker = () => {
   useEffect(() => {
     const postsQuery = query(collection(db, "spotlights"), orderBy("createdAt", "desc"), limit(5));
     const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
-      const newItems: TickerItem[] = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id, type: 'post',
-          userName: data.userName || "आलमनगर वासी", userPhoto: data.userPhoto,
-          title: data.title || "एक नई तस्वीर",
-          metrics: { likes: data.likes || 0, comments: data.comments || 0, shares: data.shares || 0 },
-          timestamp: data.createdAt?.toDate?.()?.getTime() || Date.now()
-        };
-      });
+      const newItems: TickerItem[] = snapshot.docs.map(doc => ({
+        id: doc.id, type: 'post', userName: doc.data().userName || "आलमनगर वासी", userPhoto: doc.data().userPhoto,
+        title: doc.data().title || "एक नई तस्वीर",
+        metrics: { likes: doc.data().likes || 0, comments: doc.data().comments || 0, shares: doc.data().shares || 0 },
+        timestamp: doc.data().createdAt?.toDate?.()?.getTime() || Date.now()
+      }));
       setItems(prev => {
         const users = prev.filter(i => i.type === 'join');
         return [...newItems, ...users].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
@@ -475,7 +461,6 @@ export default function HomePage() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [newReviewText, setNewReviewText] = useState("");
   
-  // ✅ States for expendable footer sections
   const [isToolsExpanded, setIsToolsExpanded] = useState(false);
   const [isLinksExpanded, setIsLinksExpanded] = useState(false);
 
@@ -527,11 +512,7 @@ export default function HomePage() {
       setLoadingTestimonials(false);
     });
 
-    return () => { 
-      unsubUsers(); 
-      unsubPosts(); 
-      unsubTestimonials(); 
-    };
+    return () => { unsubUsers(); unsubPosts(); unsubTestimonials(); };
   }, []);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -744,10 +725,7 @@ export default function HomePage() {
 
         {/* ===== 5. MARKETPLACE TEASER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-neutral-900 text-white relative overflow-hidden">
-          {/* ✅ FIXED: Dedicated container with fixed height for slider visibility */}
-          <div className="absolute inset-0 z-0">
-            <MarketplaceCinematicSlider />
-          </div>
+          <MarketplaceCinematicSlider />
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10 max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -830,7 +808,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== NEW: KIDS ZONE SECTION (UPGRADED WITH 2 GAMES) ===== */}
+        {/* ===== 7. KIDS ZONE SECTION ===== */}
         <section className="relative py-24 px-4 md:px-8 lg:px-12 overflow-hidden bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <FloatingBubble delay={0} size={80} left={10} duration={12} />
@@ -843,18 +821,17 @@ export default function HomePage() {
 
           <div className="relative z-10 max-w-6xl mx-auto text-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-              <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }} className="inline-block text-7xl md:text-8xl mb-4"></motion.div>
+              <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }} className="inline-block text-7xl md:text-8xl mb-4">🎮</motion.div>
               <span className="inline-block px-6 py-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-white font-black text-sm tracking-widest uppercase mb-6">✨ Kids Zone ✨</span>
               <h2 className="text-5xl md:text-7xl font-black text-white mb-6 drop-shadow-2xl">बच्चों की <span className="text-yellow-300">मस्ती की दुनिया</span></h2>
               <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">आलमनगर के बच्चों के लिए खास गेम्स! यहाँ खेलो, सीखो, और मज़े करो।</p>
             </motion.div>
 
-            {/* ✅ UPGRADED: 2 Game Cards Side by Side */}
             <div className="grid md:grid-cols-2 gap-6 mb-12 max-w-4xl mx-auto">
               <Link href="/games/bubble-pop" className="group relative bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-white/50 hover:scale-105 transition-all duration-300 overflow-hidden text-left">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-yellow-400/40 transition-all" />
                 <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300"></div>
+                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">🎈</div>
                   <h3 className="text-2xl font-black text-stone-900 mb-2">Bubble Pop</h3>
                   <p className="text-stone-600 text-sm mb-4">Balloons ko pop karo aur magical items collect karo!</p>
                   <span className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold px-6 py-2 rounded-full group-hover:shadow-lg transition-all">
@@ -894,12 +871,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 7. WORKING NEWSLETTER WITH CINEMATIC SLIDER ===== */}
+        {/* ===== 8. WORKING NEWSLETTER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-zinc-800 text-white relative overflow-hidden">
-          {/* ✅ FIXED: Dedicated container with fixed height for slider visibility */}
-          <div className="absolute inset-0 z-0">
-            <NewsletterCinematicSlider />
-          </div>
+          <NewsletterCinematicSlider />
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
             <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
               <Mail className="w-10 h-10 text-amber-400" />
@@ -914,12 +888,12 @@ export default function HomePage() {
             </form>
             <AnimatePresence>
               {newsletterStatus === "success" && (<motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-emerald-400 mt-6 font-bold flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> ✅ सफलतापूर्वक सदस्यता ले ली गई!</motion.p>)}
-              {newsletterStatus === "error" && (<motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2"><AlertTriangle className="w-5 h-5" />  {errorMessage}</motion.p>)}
+              {newsletterStatus === "error" && (<motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-red-400 mt-6 font-bold flex items-center justify-center gap-2"><AlertTriangle className="w-5 h-5" /> ❌ {errorMessage}</motion.p>)}
             </AnimatePresence>
           </motion.div>
         </section>
 
-        {/* ===== 8. PREMIUM FOOTER WITH EXPENDABLE TOOLS, GAMES & LINKS ===== */}
+        {/* ===== 9. PREMIUM FOOTER WITH EXPENDABLE SECTIONS ===== */}
         <footer className="bg-stone-950 text-stone-400 py-16 px-4 md:px-8 lg:px-12 border-t border-stone-900 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
           <div className="max-w-7xl mx-auto">
@@ -935,29 +909,17 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* ✅ EXPENDABLE QUICK LINKS SECTION */}
+              {/* ✅ EXPENDABLE QUICK LINKS */}
               <div className="md:col-span-4">
-                <button 
-                  onClick={() => setIsLinksExpanded(!isLinksExpanded)}
-                  className="w-full flex items-center justify-between text-white font-black mb-6 text-lg hover:text-amber-400 transition-colors group"
-                >
-                  <div className="flex items-center gap-2">
-                    <ArrowRight className="w-5 h-5 text-amber-500" /> त्वरित लिंक
-                  </div>
+                <button onClick={() => setIsLinksExpanded(!isLinksExpanded)} className="w-full flex items-center justify-between text-white font-black mb-6 text-lg hover:text-amber-400 transition-colors group">
+                  <div className="flex items-center gap-2"><ArrowRight className="w-5 h-5 text-amber-500" /> त्वरित लिंक</div>
                   <motion.div animate={{ rotate: isLinksExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
                     <ChevronDownIcon className="w-5 h-5 text-stone-500 group-hover:text-amber-400" />
                   </motion.div>
                 </button>
-
                 <AnimatePresence>
                   {isLinksExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="overflow-hidden"
-                    >
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="overflow-hidden">
                       <ul className="space-y-3 text-base pt-2">
                         <li><Link href="/about" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> हमारे बारे में</Link></li>
                         <li><Link href="/gallery" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> गैलरी</Link></li>
@@ -971,7 +933,7 @@ export default function HomePage() {
                 </AnimatePresence>
               </div>
 
-              {/* ✅ ALWAYS VISIBLE ADMIN DASHBOARD (Only for Admin) */}
+              {/* ✅ ALWAYS VISIBLE ADMIN DASHBOARD */}
               {isAdmin && (
                 <div className="md:col-span-4 mb-6">
                    <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-4 py-2 hover:bg-red-500/30 transition-all group shadow-lg w-fit">
@@ -981,78 +943,43 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* ✅ EXPENDABLE TOOLS & GAMES SECTION */}
+              {/* ✅ EXPENDABLE TOOLS & GAMES */}
               <div className="md:col-span-4">
-                <button 
-                  onClick={() => setIsToolsExpanded(!isToolsExpanded)}
-                  className="w-full flex items-center justify-between text-white font-black mb-6 text-lg hover:text-amber-400 transition-colors group"
-                >
-                  <div className="flex items-center gap-2">
-                    <Bot className="w-5 h-5 text-purple-500" /> Tools & Games
-                  </div>
+                <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className="w-full flex items-center justify-between text-white font-black mb-6 text-lg hover:text-amber-400 transition-colors group">
+                  <div className="flex items-center gap-2"><Bot className="w-5 h-5 text-purple-500" /> Tools & Games</div>
                   <motion.div animate={{ rotate: isToolsExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
                     <ChevronDownIcon className="w-5 h-5 text-stone-500 group-hover:text-amber-400" />
                   </motion.div>
                 </button>
-
                 <AnimatePresence>
                   {isToolsExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="overflow-hidden"
-                    >
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="overflow-hidden">
                       <div className="space-y-4 pt-2">
                         <Link href="https://funnelsbuilder.netlify.app" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-purple-500/50 hover:bg-purple-500/10 transition-all">
-                          <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-colors">
-                            <LayoutTemplate className="w-5 h-5 text-purple-400 group-hover:text-white" />
-                          </div>
+                          <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-colors"><LayoutTemplate className="w-5 h-5 text-purple-400 group-hover:text-white" /></div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <h5 className="font-bold text-white text-sm group-hover:text-purple-400 transition-colors">FunnelsBuilder</h5>
-                              <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-purple-400" />
-                            </div>
+                            <div className="flex items-center justify-between mb-1"><h5 className="font-bold text-white text-sm group-hover:text-purple-400 transition-colors">FunnelsBuilder</h5><ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-purple-400" /></div>
                             <p className="text-xs text-stone-400 leading-relaxed">मुफ्त में प्रोफेशनल वेबसाइट और लैंडिंग पेज बनाएं।</p>
                           </div>
                         </Link>
-
                         <Link href="https://aipassivesystem.netlify.app" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all">
-                          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center shrink-0 group-hover:bg-cyan-500 transition-colors">
-                            <Bot className="w-5 h-5 text-cyan-400 group-hover:text-white" />
-                          </div>
+                          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center shrink-0 group-hover:bg-cyan-500 transition-colors"><Bot className="w-5 h-5 text-cyan-400 group-hover:text-white" /></div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <h5 className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors">AI Passive System</h5>
-                              <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-cyan-400" />
-                            </div>
+                            <div className="flex items-center justify-between mb-1"><h5 className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors">AI Passive System</h5><ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-cyan-400" /></div>
                             <p className="text-xs text-stone-400 leading-relaxed">ऑटोमेटेड AI टूल्स जो खुद काम करते हैं।</p>
                           </div>
                         </Link>
-
                         <Link href="/games/bubble-pop" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-amber-500/50 hover:bg-amber-500/10 transition-all cursor-pointer">
-                          <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0 group-hover:bg-amber-500 transition-colors">
-                            <Gamepad2 className="w-5 h-5 text-amber-400 group-hover:text-white" />
-                          </div>
+                          <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0 group-hover:bg-amber-500 transition-colors"><Gamepad2 className="w-5 h-5 text-amber-400 group-hover:text-white" /></div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <h5 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">Bubble Pop Game</h5>
-                              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                            </div>
+                            <div className="flex items-center justify-between mb-1"><h5 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">Bubble Pop Game</h5><Sparkles className="w-3.5 h-3.5 text-amber-400" /></div>
                             <p className="text-xs text-stone-400 leading-relaxed">Bubbles pop करो और stars जमा करो।</p>
                           </div>
                         </Link>
-
                         <Link href="/games/magical-catch" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-indigo-500/50 hover:bg-indigo-500/10 transition-all cursor-pointer">
-                          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0 group-hover:bg-indigo-500 transition-colors">
-                            <Gamepad2 className="w-5 h-5 text-indigo-400 group-hover:text-white" />
-                          </div>
+                          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0 group-hover:bg-indigo-500 transition-colors"><Gamepad2 className="w-5 h-5 text-indigo-400 group-hover:text-white" /></div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <h5 className="font-bold text-white text-sm group-hover:text-indigo-400 transition-colors">Jadui Tokri Game</h5>
-                              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                            </div>
+                            <div className="flex items-center justify-between mb-1"><h5 className="font-bold text-white text-sm group-hover:text-indigo-400 transition-colors">Jadui Tokri Game</h5><Sparkles className="w-3.5 h-3.5 text-indigo-400" /></div>
                             <p className="text-xs text-stone-400 leading-relaxed">Stars aur gifts pakdo, bombs se bacho!</p>
                           </div>
                         </Link>
