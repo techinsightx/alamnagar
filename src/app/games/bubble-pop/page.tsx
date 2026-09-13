@@ -69,6 +69,21 @@ export default function BubblePopGame() {
   const nextIdRef = useRef(0);
   const isPlayingRef = useRef(false);
   const soundEnabledRef = useRef(true);
+  
+  // ✅ FIX: Single AudioContext instance to prevent browser limits
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const initAudio = () => {
+    if (!audioContextRef.current) {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      }
+    }
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem("bubblePopHighScore");
@@ -93,6 +108,7 @@ export default function BubblePopGame() {
     setNextId(0);
     nextIdRef.current = 0;
     setIsPlaying(true);
+    initAudio(); // ✅ Initialize audio on game start
   };
 
   // Timer Logic
@@ -138,7 +154,7 @@ export default function BubblePopGame() {
     return () => clearInterval(spawnInterval);
   }, [isPlaying]);
 
-  // ✅ FIXED: Ultra Explosive Burst + HAPTIC FEEDBACK + MAGICAL SOUND
+  // ✅ FIXED: Ultra Explosive Burst + HAPTIC FEEDBACK + REUSED AUDIO CONTEXT
   const popBalloon = useCallback((id: number, x: number, size: number) => {
     setScore((s) => s + 10);
     setBalloons((prev) => prev.filter((b) => b.id !== id));
@@ -148,44 +164,43 @@ export default function BubblePopGame() {
       navigator.vibrate(30); 
     }
 
-    // ✅ Magical Pop Sound Effect (Varied pitch for each balloon)
-    if (soundEnabledRef.current) {
+    // ✅ Magical Pop Sound Effect (Reusing single AudioContext)
+    if (soundEnabledRef.current && audioContextRef.current) {
       try {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        const audioContext = new AudioContext();
+        const ctx = audioContextRef.current;
         
-        const osc1 = audioContext.createOscillator();
-        const gain1 = audioContext.createGain();
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
         osc1.connect(gain1);
-        gain1.connect(audioContext.destination);
+        gain1.connect(ctx.destination);
         
-        const osc2 = audioContext.createOscillator();
-        const gain2 = audioContext.createGain();
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
         osc2.connect(gain2);
-        gain2.connect(audioContext.destination);
+        gain2.connect(ctx.destination);
         
         const baseFreq = 500 + Math.random() * 500;
         
         osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
-        osc1.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, audioContext.currentTime + 0.1);
+        osc1.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+        osc1.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, ctx.currentTime + 0.1);
         
         osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(baseFreq * 1.5, audioContext.currentTime);
-        osc2.frequency.exponentialRampToValueAtTime(baseFreq * 0.75, audioContext.currentTime + 0.15);
+        osc2.frequency.setValueAtTime(baseFreq * 1.5, ctx.currentTime);
+        osc2.frequency.exponentialRampToValueAtTime(baseFreq * 0.75, ctx.currentTime + 0.15);
         
-        gain1.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
         
-        gain2.gain.setValueAtTime(0.15, audioContext.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+        gain2.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
         
-        osc1.start(audioContext.currentTime);
-        osc2.start(audioContext.currentTime);
-        osc1.stop(audioContext.currentTime + 0.15);
-        osc2.stop(audioContext.currentTime + 0.15);
+        osc1.start(ctx.currentTime);
+        osc2.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.15);
+        osc2.stop(ctx.currentTime + 0.15);
       } catch (e) {
-        console.log('Audio not supported');
+        console.log('Audio error:', e);
       }
     }
 
@@ -248,7 +263,10 @@ export default function BubblePopGame() {
           <div className="flex gap-3 items-center">
             {/* ✅ Sound Toggle Button */}
             <button 
-              onClick={() => setSoundEnabled(!soundEnabled)}
+              onClick={() => {
+                setSoundEnabled(!soundEnabled);
+                if (!soundEnabled) initAudio(); // Ensure audio is ready when turning back on
+              }}
               className="bg-black/40 backdrop-blur-md text-white px-3 py-2 rounded-full font-bold text-sm border-2 border-white/50 shadow-lg hover:bg-black/60 transition touch-manipulation"
             >
               {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
