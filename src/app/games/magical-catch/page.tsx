@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Info, Flame, Zap, Target, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Info, Flame, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
 
 const ITEM_TYPES = {
@@ -323,6 +323,7 @@ export default function MagicalCatchGame() {
       <style>{`
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px) rotate(-1deg); } 75% { transform: translateX(8px) rotate(1deg); } }
         @keyframes timerGlow { 0%, 100% { text-shadow: 0 0 10px currentColor; } 50% { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; } }
+        @keyframes rarePulse { 0%, 100% { box-shadow: 0 0 15px rgba(253, 224, 71, 0.6); } 50% { box-shadow: 0 0 30px rgba(253, 224, 71, 1); } }
       `}</style>
 
       {/* ✅ ANIMATED BACKGROUND CLOUDS */}
@@ -414,22 +415,23 @@ export default function MagicalCatchGame() {
         </motion.div>
       )}
 
-      {/* ✅ Game Area - MAXIMUM CRYSTAL CLEAR VISIBILITY */}
+      {/* ✅ Game Area - MAXIMUM CRYSTAL CLEAR VISIBILITY (Notification Style) */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         <AnimatePresence>
           {items.map((item) => {
             const data = ITEM_TYPES[item.type];
             
-            // ✅ DYNAMIC STRONG STYLING BASED ON ITEM TYPE
-            const orbStyle = item.type === 'bomb' 
-              ? 'bg-gray-900 border-red-500' // Bomb: Dark with red border for danger
-              : item.type === 'slowmo' 
-              ? 'bg-cyan-400 border-white' 
-              : item.type === 'double' 
-              ? 'bg-yellow-400 border-white' 
-              : item.type === 'magnet' 
-              ? 'bg-purple-500 border-white' 
-              : 'bg-white border-blue-400'; // Normal items: Clean white with colored border
+            // ✅ NOTIFICATION-STYLE HIGH CONTRAST STYLING
+            const isBomb = item.type === 'bomb';
+            const isRare = item.glow;
+            
+            const bgClass = isBomb ? 'bg-red-500' : isRare ? 'bg-yellow-300' : 'bg-white';
+            const borderClass = 'border-4 border-white';
+            const shadowClass = isBomb 
+              ? 'shadow-[0_0_20px_rgba(239,68,68,0.9)] drop-shadow-2xl' 
+              : isRare 
+              ? 'shadow-[0_0_25px_rgba(253,224,71,1)] drop-shadow-2xl animate-[rarePulse_1.5s_ease-in-out_infinite]'
+              : 'shadow-[0_0_15px_rgba(255,255,255,0.9)] drop-shadow-2xl';
 
             return (
               <motion.div key={item.id}
@@ -437,27 +439,18 @@ export default function MagicalCatchGame() {
                 animate={{ y: "110vh", opacity: 1, scale: 1 }}
                 transition={{ duration: (100 / item.speed) * 0.1, ease: "linear" }}
                 className="absolute pointer-events-none flex items-center justify-center"
-                style={{ left: 0, top: 0, width: '3.5rem', height: '3.5rem' }} // Slightly larger for better tap target
+                style={{ left: 0, top: 0, width: '4rem', height: '4rem' }} // 64px - Large and easy to tap
               >
-                {/* ✅ CRYSTAL CLEAR ORB CONTAINER */}
-                <div className={`relative w-full h-full rounded-full flex items-center justify-center shadow-[0_6px_12px_rgba(0,0,0,0.5)] border-4 ${orbStyle}`}>
+                {/* ✅ SOLID, CRISP CONTAINER (No blur, max contrast) */}
+                <div className={`relative w-full h-full rounded-full flex items-center justify-center ${bgClass} ${borderClass} ${shadowClass}`}>
                   
-                  {/* ✅ SHARP, FRESH HIGHLIGHT (No blur for maximum clarity) */}
-                  <div className="absolute top-2 left-3 w-1/3 h-1/3 bg-white rounded-full opacity-90" />
+                  {/* ✅ SHARP, SOLID HIGHLIGHT (Like a glossy notification badge) */}
+                  <div className="absolute top-2 left-3 w-1/3 h-1/3 bg-white rounded-full opacity-100" />
                   
-                  {/* ✅ LARGE, SHARP EMOJI */}
-                  <span className="text-3xl md:text-4xl relative z-10 drop-shadow-md filter">
+                  {/* ✅ LARGE, BOLD EMOJI WITH TEXT SHADOW FOR MAXIMUM POP */}
+                  <span className="text-4xl md:text-5xl relative z-10" style={{ textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
                     {data.emoji}
                   </span>
-
-                  {/* ✅ STRONG GLOW FOR RARE/LEGENDARY ITEMS */}
-                  {item.glow && (
-                    <motion.div 
-                      animate={{ scale: [1, 1.5, 1], opacity: [0.8, 1, 0.8] }} 
-                      transition={{ duration: 1.2, repeat: Infinity }}
-                      className="absolute -inset-3 bg-yellow-400/90 rounded-full blur-md -z-10" 
-                    />
-                  )}
                 </div>
               </motion.div>
             );
