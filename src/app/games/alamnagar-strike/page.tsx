@@ -21,7 +21,7 @@ import {
 } from "firebase/auth";
 
 // ✅ Audio Engine
-const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'hit' | 'kill' | 'explode' | 'gameover' | 'booyah' | 'switch' | 'login') => {
+const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'hit' | 'kill' | 'explode' | 'gameover' | 'booyah' | 'switch' | 'login' | 'shell') => {
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
@@ -72,6 +72,11 @@ const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'hit' | 'kill' | 'expl
       osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, ctx.currentTime);
       gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
       osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.15);
+    } else if (type === 'shell') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(2000, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.05);
     }
   } catch (e) {}
 };
@@ -79,19 +84,20 @@ const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'hit' | 'kill' | 'expl
 type Environment = 'gali' | 'jungle' | 'city';
 type WeaponType = 'pistol' | 'rifle' | 'shotgun' | 'sniper';
 
-const WEAPONS: Record<WeaponType, { name: string; fireRate: number; damage: number; spread: number; speed: number; color: string; size: number }> = {
-  pistol: { name: "Pistol", fireRate: 250, damage: 1, spread: 0, speed: 2.5, color: "#fbbf24", size: 6 },
-  rifle: { name: "Rifle", fireRate: 100, damage: 1, spread: 0.05, speed: 3.0, color: "#3b82f6", size: 5 },
-  shotgun: { name: "Shotgun", fireRate: 800, damage: 1, spread: 0.3, speed: 2.0, color: "#ef4444", size: 7 },
-  sniper: { name: "Sniper", fireRate: 1200, damage: 5, spread: 0, speed: 5.0, color: "#a855f7", size: 10 },
+const WEAPONS: Record<WeaponType, { name: string; fireRate: number; damage: number; spread: number; speed: number; color: string; size: number; muzzleOffset: number; recoil: number }> = {
+  pistol: { name: "Pistol", fireRate: 250, damage: 1, spread: 0, speed: 2.5, color: "#fbbf24", size: 6, muzzleOffset: 3.5, recoil: 2 },
+  rifle: { name: "Rifle", fireRate: 100, damage: 1, spread: 0.05, speed: 3.0, color: "#3b82f6", size: 5, muzzleOffset: 4, recoil: 1.5 },
+  shotgun: { name: "Shotgun", fireRate: 800, damage: 1, spread: 0.3, speed: 2.0, color: "#ef4444", size: 7, muzzleOffset: 4.5, recoil: 4 },
+  sniper: { name: "Sniper", fireRate: 1200, damage: 5, spread: 0, speed: 5.0, color: "#a855f7", size: 10, muzzleOffset: 5, recoil: 5 },
 };
 
 // ✅ Realistic Gun SVG (Large & Detailed)
-const GunSVG = ({ weapon, angle }: { weapon: WeaponType; angle: number }) => {
+const GunSVG = ({ weapon, angle, recoil }: { weapon: WeaponType; angle: number; recoil: number }) => {
   const color = WEAPONS[weapon].color;
+  const recoilOffset = -recoil;
   
   return (
-    <g transform={`rotate(${angle})`} style={{ filter: `drop-shadow(0 0 15px ${color})` }}>
+    <g transform={`rotate(${angle}) translate(${recoilOffset}, 0)`} style={{ filter: `drop-shadow(0 0 15px ${color})` }}>
       {/* Stock */}
       <rect x="-50" y="-8" width="30" height="16" rx="4" fill="#4a3b2a" />
       <rect x="-45" y="-6" width="20" height="12" rx="2" fill="#6b5344" />
@@ -113,10 +119,13 @@ const GunSVG = ({ weapon, angle }: { weapon: WeaponType; angle: number }) => {
       {/* Muzzle */}
       <circle cx="70" cy="0" r="5" fill="#222" />
       <circle cx="70" cy="0" r="3" fill="#111" />
+      <circle cx="70" cy="0" r="1.5" fill="#000" />
       {/* Details */}
       <circle cx="-5" cy="0" r="2" fill="#666" />
       <circle cx="10" cy="0" r="2" fill="#666" />
       <rect x="20" y="-3" width="8" height="6" rx="1" fill="#777" />
+      {/* Ejection Port */}
+      <rect x="5" y="-5" width="6" height="4" rx="1" fill="#222" />
     </g>
   );
 };
@@ -165,6 +174,7 @@ export default function AlamnagarStrike() {
   const [currentWeapon, setCurrentWeapon] = useState<WeaponType>('rifle');
   const [isMicOn, setIsMicOn] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [gunRecoil, setGunRecoil] = useState(0);
 
   // Game refs
   const gunPosRef = useRef({ x: 50, y: 80 });
@@ -174,6 +184,7 @@ export default function AlamnagarStrike() {
   const enemiesRef = useRef<any[]>([]);
   const particlesRef = useRef<any[]>([]);
   const muzzleFlashesRef = useRef<any[]>([]);
+  const shellCasingsRef = useRef<any[]>([]);
   const frameRef = useRef<number>(0);
   const lastShotRef = useRef(0);
   const scoreRef = useRef(0);
@@ -356,11 +367,13 @@ export default function AlamnagarStrike() {
     setGameState('playing');
     setScore(0); setHealth(100); setWave(1);
     setWarningText(null); setCurrentWeapon('rifle');
+    setGunRecoil(0);
     scoreRef.current = 0; healthRef.current = 100;
     gunPosRef.current = { x: 50, y: 80 };
     gunAngleRef.current = 0;
     mousePosRef.current = { x: 50, y: 50 };
-    bulletsRef.current = []; enemiesRef.current = []; particlesRef.current = []; muzzleFlashesRef.current = [];
+    bulletsRef.current = []; enemiesRef.current = []; particlesRef.current = []; 
+    muzzleFlashesRef.current = []; shellCasingsRef.current = [];
     if (soundEnabled) playSound('booyah');
   };
 
@@ -395,6 +408,7 @@ export default function AlamnagarStrike() {
       const enemies = enemiesRef.current;
       const particles = particlesRef.current;
       const muzzleFlashes = muzzleFlashesRef.current;
+      const shellCasings = shellCasingsRef.current;
 
       // Gun moves smoothly
       gunPos.x += (mousePos.x - gunPos.x) * 0.15;
@@ -411,19 +425,35 @@ export default function AlamnagarStrike() {
         gunAngleRef.current += diff * 0.2;
       }
 
+      // Gun recoil recovery
+      if (gunRecoil > 0) {
+        setGunRecoil(r => Math.max(0, r - 0.3));
+      }
+
       // Move bullets
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         b.x += b.vx; b.y += b.vy;
         b.trail.push({ x: b.x, y: b.y });
-        if (b.trail.length > 5) b.trail.shift();
+        if (b.trail.length > 8) b.trail.shift();
         if (b.x < -10 || b.x > 110 || b.y < -10 || b.y > 110) bullets.splice(i, 1);
       }
 
       // Update muzzle flashes
       for (let i = muzzleFlashes.length - 1; i >= 0; i--) {
-        muzzleFlashes[i].life -= 0.1;
+        muzzleFlashes[i].life -= 0.15;
         if (muzzleFlashes[i].life <= 0) muzzleFlashes.splice(i, 1);
+      }
+
+      // Update shell casings
+      for (let i = shellCasings.length - 1; i >= 0; i--) {
+        const s = shellCasings[i];
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vy += 0.1; // Gravity
+        s.rotation += s.rotationSpeed;
+        s.life -= 0.02;
+        if (s.life <= 0 || s.y > 110) shellCasings.splice(i, 1);
       }
 
       // Move enemies
@@ -480,8 +510,13 @@ export default function AlamnagarStrike() {
             e.isHit = true;
             hit = true;
             
-            for (let p = 0; p < 3; p++) {
-              particles.push({ id: Math.random(), x: e.x, y: e.y, vx: (Math.random() - 0.5), vy: (Math.random() - 0.5), life: 0.5, color: '#ffffff', size: 2 });
+            // Impact particles
+            for (let p = 0; p < 5; p++) {
+              particles.push({ 
+                id: Math.random(), x: e.x, y: e.y, 
+                vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2, 
+                life: 0.6, color: '#ffffff', size: 3 
+              });
             }
 
             if (e.hp <= 0) {
@@ -492,11 +527,14 @@ export default function AlamnagarStrike() {
               if (soundEnabled) playSound('explode');
               setScreenShake(8);
               
-              for (let p = 0; p < 15; p++) {
+              // Death explosion
+              for (let p = 0; p < 20; p++) {
+                const angle = (Math.PI * 2 * p) / 20;
+                const speed = 1 + Math.random() * 2;
                 particles.push({
                   id: Math.random(), x: e.x, y: e.y,
-                  vx: (Math.random() - 0.5) * 2.5, vy: (Math.random() - 0.5) * 2.5,
-                  life: 1.5, color: e.color, size: 5
+                  vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                  life: 1.5, color: e.color, size: 4 + Math.random() * 3
                 });
               }
             }
@@ -510,6 +548,7 @@ export default function AlamnagarStrike() {
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.95; p.vy *= 0.95; // Friction
         p.life -= 0.03;
         if (p.life <= 0) particles.splice(i, 1);
       }
@@ -529,7 +568,7 @@ export default function AlamnagarStrike() {
     };
     frameRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameRef.current);
-  }, [gameState, wave, highScore, soundEnabled, spawnEnemy, screenShake, currentUser]);
+  }, [gameState, wave, highScore, soundEnabled, spawnEnemy, screenShake, currentUser, gunRecoil]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (gameState !== 'playing' || !canvasRef.current) return;
@@ -551,20 +590,41 @@ export default function AlamnagarStrike() {
     const gunPos = gunPosRef.current;
     const angleRad = gunAngleRef.current * (Math.PI / 180);
     
-    // Add muzzle flash
+    // ✅ Calculate muzzle position (gun ke muh se bullets niklenge)
+    const muzzleX = gunPos.x + Math.cos(angleRad) * weapon.muzzleOffset;
+    const muzzleY = gunPos.y + Math.sin(angleRad) * weapon.muzzleOffset;
+    
+    // Add muzzle flash at muzzle position
     muzzleFlashesRef.current.push({
       id: Date.now(),
-      x: gunPos.x + Math.cos(angleRad) * 10,
-      y: gunPos.y + Math.sin(angleRad) * 10,
+      x: muzzleX,
+      y: muzzleY,
+      life: 1,
+      size: 2 + Math.random()
+    });
+    
+    // Add shell casing ejection
+    const shellAngle = angleRad + Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+    shellCasingsRef.current.push({
+      id: Date.now() + Math.random(),
+      x: gunPos.x,
+      y: gunPos.y,
+      vx: Math.cos(shellAngle) * 0.5,
+      vy: Math.sin(shellAngle) * 0.5 - 0.3,
+      rotation: 0,
+      rotationSpeed: (Math.random() - 0.5) * 20,
       life: 1
     });
+    
+    // Gun recoil
+    setGunRecoil(weapon.recoil);
     
     const shoot = (spreadOffset: number) => {
       const finalAngle = angleRad + spreadOffset;
       bulletsRef.current.push({
         id: Date.now() + Math.random(), 
-        x: gunPos.x + Math.cos(finalAngle) * 10, 
-        y: gunPos.y + Math.sin(finalAngle) * 10,
+        x: muzzleX, // ✅ Bullet muzzle se spawn hogi
+        y: muzzleY,
         vx: Math.cos(finalAngle) * weapon.speed, 
         vy: Math.sin(finalAngle) * weapon.speed,
         size: weapon.size, 
@@ -584,6 +644,10 @@ export default function AlamnagarStrike() {
       shoot((Math.random() - 0.5) * weapon.spread);
       if (soundEnabled) playSound('shoot');
     }
+    
+    // Shell casing sound
+    if (soundEnabled) playSound('shell');
+    
     setScreenShake(currentWeapon === 'sniper' ? 10 : currentWeapon === 'shotgun' ? 5 : 2);
   }, [gameState, soundEnabled, currentWeapon]);
 
@@ -856,7 +920,7 @@ export default function AlamnagarStrike() {
                 style={{ left: `${p.x}%`, top: `${p.y}%`, width: `${p.size * 2}px`, height: `${p.size * 2}px`, marginLeft: `-${p.size}px`, marginTop: `-${p.size}px`, backgroundColor: p.color, opacity: p.life, boxShadow: `0 0 10px ${p.color}` }} />
             ))}
 
-            {/* Cinematic Bullets with Trails */}
+            {/* ✅ Cinematic Bullets with Trails (Muzzle se nikalti hain) */}
             {bulletsRef.current.map(b => (
               <div key={b.id} className="absolute pointer-events-none">
                 {/* Trail */}
@@ -864,34 +928,50 @@ export default function AlamnagarStrike() {
                   <div key={idx} className="absolute rounded-full"
                     style={{ 
                       left: `${t.x}%`, top: `${t.y}%`, 
-                      width: `${b.size * 0.8}px`, height: `${b.size * 0.8}px`, 
-                      marginLeft: `-${b.size * 0.4}px`, marginTop: `-${b.size * 0.4}px`, 
+                      width: `${b.size * 0.6}px`, height: `${b.size * 0.6}px`, 
+                      marginLeft: `-${b.size * 0.3}px`, marginTop: `-${b.size * 0.3}px`, 
                       backgroundColor: b.color, 
-                      opacity: (idx / b.trail.length) * 0.5,
-                      boxShadow: `0 0 5px ${b.color}`
+                      opacity: (idx / b.trail.length) * 0.6,
+                      boxShadow: `0 0 8px ${b.color}`
                     }} />
                 ))}
-                {/* Main bullet */}
+                {/* Main bullet (glowing core) */}
                 <div className="absolute rounded-full"
                   style={{ 
                     left: `${b.x}%`, top: `${b.y}%`, 
-                    width: `${b.size * 2}px`, height: `${b.size * 2}px`, 
-                    marginLeft: `-${b.size}px`, marginTop: `-${b.size}px`, 
+                    width: `${b.size * 1.5}px`, height: `${b.size * 1.5}px`, 
+                    marginLeft: `-${b.size * 0.75}px`, marginTop: `-${b.size * 0.75}px`, 
                     backgroundColor: 'white',
-                    boxShadow: `0 0 15px ${b.color}, 0 0 30px ${b.color}, 0 0 45px ${b.color}`
+                    boxShadow: `0 0 10px ${b.color}, 0 0 20px ${b.color}, 0 0 30px ${b.color}`
                   }} />
               </div>
             ))}
 
-            {/* Muzzle Flashes */}
+            {/* ✅ Muzzle Flashes (Muzzle position par) */}
             {muzzleFlashesRef.current.map(m => (
               <div key={m.id} className="absolute pointer-events-none"
                 style={{ 
                   left: `${m.x}%`, top: `${m.y}%`, 
-                  width: '30px', height: '30px', 
-                  marginLeft: '-15px', marginTop: '-15px',
-                  background: 'radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,100,0,0.6) 40%, transparent 70%)',
-                  opacity: m.life
+                  width: `${m.size * 15}px`, height: `${m.size * 15}px`, 
+                  marginLeft: `-${m.size * 7.5}px`, marginTop: `-${m.size * 7.5}px`,
+                  background: 'radial-gradient(circle, rgba(255,255,200,1) 0%, rgba(255,200,50,0.8) 30%, rgba(255,100,0,0.4) 60%, transparent 80%)',
+                  opacity: m.life,
+                  transform: `scale(${1 + (1 - m.life) * 2})`
+                }} />
+            ))}
+
+            {/* ✅ Shell Casings (Ejection) */}
+            {shellCasingsRef.current.map(s => (
+              <div key={s.id} className="absolute pointer-events-none"
+                style={{ 
+                  left: `${s.x}%`, top: `${s.y}%`, 
+                  width: '6px', height: '10px', 
+                  marginLeft: '-3px', marginTop: '-5px',
+                  backgroundColor: '#d4af37',
+                  border: '1px solid #8b7355',
+                  borderRadius: '2px',
+                  opacity: s.life,
+                  transform: `rotate(${s.rotation}deg)`
                 }} />
             ))}
 
@@ -909,10 +989,10 @@ export default function AlamnagarStrike() {
               </div>
             ))}
 
-            {/* ✅ Large Realistic Gun (No Character) */}
+            {/* ✅ Large Realistic Gun with Recoil */}
             <div className="absolute z-30 pointer-events-none" style={{ left: `${gunPosRef.current.x}%`, top: `${gunPosRef.current.y}%`, transform: 'translate(-50%, -50%)' }}>
               <svg width="160" height="160" viewBox="-80 -80 160 160" className="overflow-visible">
-                <GunSVG weapon={currentWeapon} angle={gunAngleRef.current} />
+                <GunSVG weapon={currentWeapon} angle={gunAngleRef.current} recoil={gunRecoil} />
               </svg>
             </div>
 
