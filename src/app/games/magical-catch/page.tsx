@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Info, Flame, Zap, Target } from "lucide-react";
+import { ArrowLeft, Trophy, Play, RotateCcw, Sparkles, Info, Flame, Zap, Target, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
 
 const ITEM_TYPES = {
@@ -42,19 +42,10 @@ interface Particle {
   color?: string;
 }
 
-interface SmokeParticle {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  duration: number;
-}
-
 // ✅ EXPLOSIVE & MAGICAL SOUND EFFECTS
 const playSound = (type: 'catch' | 'bomb' | 'combo' | 'powerup' | 'gameover' | 'rare') => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
     switch (type) {
       case 'catch': {
         const osc1 = audioContext.createOscillator();
@@ -149,7 +140,6 @@ export default function MagicalCatchGame() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [items, setItems] = useState<GameItem[]>([]);
   const [particles, setParticles] = useState<Particle[]>([]);
-  const [smokeParticles, setSmokeParticles] = useState<SmokeParticle[]>([]);
   const [highScore, setHighScore] = useState(0);
   const [screenShake, setScreenShake] = useState(false);
   const [basketState, setBasketState] = useState<"idle" | "catch" | "hit">("idle");
@@ -177,7 +167,7 @@ export default function MagicalCatchGame() {
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
   const startGame = () => {
-    setScore(0); setLives(3); setTimeLeft(60); setItems([]); setParticles([]); setSmokeParticles([]);
+    setScore(0); setLives(3); setTimeLeft(60); setItems([]); setParticles([]);
     setBasketState("idle"); setCombo(0); comboRef.current = 0;
     setActivePowerUp(null); powerUpRef.current = null; setMilestone(0); setIsPlaying(true);
   };
@@ -225,19 +215,6 @@ export default function MagicalCatchGame() {
     }, spawnRate);
     return () => clearInterval(spawner);
   }, [isPlaying, activePowerUp]);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    const smokeSpawner = setInterval(() => {
-      const newSmoke: SmokeParticle = {
-        id: Date.now() + Math.random(),
-        x: Math.random() * 100, y: Math.random() * 100,
-        size: Math.random() * 150 + 100, duration: Math.random() * 8 + 6,
-      };
-      setSmokeParticles((prev) => [...prev.slice(-8), newSmoke]);
-    }, 2000);
-    return () => clearInterval(smokeSpawner);
-  }, [isPlaying]);
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -339,55 +316,20 @@ export default function MagicalCatchGame() {
   };
 
   return (
+    // ✅ CRITICAL FIX: touch-none prevents double-tap zoom and pinch-zoom on mobile
     <div 
-      className={`min-h-screen bg-[#0a0a0e] relative overflow-hidden select-none font-sans ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
+      className={`min-h-screen bg-gradient-to-b from-sky-300 via-sky-400 to-indigo-500 relative overflow-hidden select-none font-sans touch-none ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
       onMouseMove={handleMove} onTouchMove={handleMove}
     >
       <style>{`
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px) rotate(-1deg); } 75% { transform: translateX(8px) rotate(1deg); } }
-        @keyframes magicalPulse { 0%, 100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.05); } }
         @keyframes timerGlow { 0%, 100% { text-shadow: 0 0 10px currentColor; } 50% { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; } }
       `}</style>
 
-      {/* ✅ DARK MATTE BACKGROUND WITH SUBTLE DEPTH */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#151520_0%,#0a0a0e_100%)] pointer-events-none" />
-      
-      {/* ✅ Very Subtle Smoke/Mist (Won't distract from objects) */}
-      <AnimatePresence>
-        {smokeParticles.map((smoke) => (
-          <motion.div
-            key={smoke.id}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ 
-              opacity: [0, 0.15, 0.05, 0],
-              scale: [0.5, 1.2, 1.5, 2],
-              y: [0, -100, -200, -300],
-              x: [0, 30, -20, 50]
-            }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: smoke.duration, ease: "easeOut" }}
-            className="absolute rounded-full blur-3xl pointer-events-none"
-            style={{
-              width: smoke.size, height: smoke.size,
-              left: `${smoke.x}%`, top: `${smoke.y}%`,
-              background: `radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%)`,
-            }}
-          />
-        ))}
-      </AnimatePresence>
-
-      {/* Floating Matte Orbs */}
-      {[...Array(5)].map((_, i) => (
-        <motion.div
-          key={i} className="absolute rounded-full pointer-events-none"
-          style={{
-            width: Math.random() * 150 + 100, height: Math.random() * 150 + 100,
-            left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`,
-            background: `radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%)`,
-            animation: `magicalPulse ${Math.random() * 6 + 6}s ease-in-out infinite`,
-          }}
-        />
-      ))}
+      {/* ✅ ANIMATED BACKGROUND CLOUDS (Like Bubble Pop) */}
+      <motion.div animate={{ x: [0, 50, 0] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute top-10 left-10 w-40 h-20 bg-white/30 rounded-full blur-2xl pointer-events-none" />
+      <motion.div animate={{ x: [0, -70, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }} className="absolute top-20 right-20 w-60 h-32 bg-white/20 rounded-full blur-3xl pointer-events-none" />
+      <motion.div animate={{ x: [0, 30, 0] }} transition={{ duration: 18, repeat: Infinity, ease: "linear" }} className="absolute top-1/2 left-1/4 w-48 h-24 bg-white/25 rounded-full blur-2xl pointer-events-none" />
 
       <AnimatePresence>
         {screenFlash && (
@@ -400,20 +342,20 @@ export default function MagicalCatchGame() {
 
       {/* ✅ Top Bar */}
       <div className="absolute top-0 left-0 right-0 z-30 p-3 md:p-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 text-white font-bold hover:bg-white/20 px-3 py-2 rounded-full transition bg-black/80 backdrop-blur-md border border-white/40 shadow-xl text-sm md:text-base">
+        <Link href="/" className="flex items-center gap-2 text-white font-bold hover:bg-white/20 px-3 py-2 rounded-full transition bg-black/30 backdrop-blur-md border border-white/30 shadow-lg touch-manipulation">
           <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" /> Home
         </Link>
         
         {isPlaying && (
           <div className="flex gap-2 md:gap-3 flex-wrap justify-end items-center">
             <button onClick={() => setSoundEnabled(!soundEnabled)}
-              className="bg-black/80 backdrop-blur-md text-white px-3 py-2 rounded-full font-bold text-sm border border-white/40 shadow-xl hover:bg-black/90 transition">
-              {soundEnabled ? "🔊" : "🔇"}
+              className="bg-black/40 backdrop-blur-md text-white px-3 py-2 rounded-full font-bold text-sm border-2 border-white/50 shadow-lg hover:bg-black/60 transition touch-manipulation">
+              {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
             </button>
 
             <motion.div key={score} initial={{ scale: 1.4 }} animate={{ scale: 1 }}
-              className="bg-gradient-to-r from-yellow-400 to-orange-500 text-stone-900 px-3 md:px-5 py-2 rounded-full font-black text-lg md:text-2xl shadow-2xl flex items-center gap-2 border-2 border-white">
-              <Sparkles className="w-4 h-4 md:w-6 md:h-6 fill-white" /> {score}
+              className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-black px-3 md:px-5 py-2 rounded-full font-black text-lg md:text-2xl shadow-2xl flex items-center gap-2 border-4 border-white">
+              <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-white fill-white" /> {score}
             </motion.div>
             
             {combo >= 5 && (
@@ -423,8 +365,7 @@ export default function MagicalCatchGame() {
               </motion.div>
             )}
             
-            {/* ✅ PROGRESSIVE MAGICAL HEARTS */}
-            <div className="flex gap-1 bg-black/90 backdrop-blur-md px-2 md:px-3 py-2 rounded-full border border-white/40 shadow-2xl">
+            <div className="flex gap-1 bg-black/40 backdrop-blur-md px-2 md:px-3 py-2 rounded-full border-2 border-white/50 shadow-2xl">
               {[...Array(3)].map((_, i) => (
                 <motion.div key={i}
                   animate={lives <= i ? { scale: 0.5, opacity: 0.2 } : { scale: 1, opacity: 1 }}
@@ -444,9 +385,8 @@ export default function MagicalCatchGame() {
               ))}
             </div>
             
-            {/* ✅ MAGICAL TIMER */}
             <motion.div 
-              className="bg-black/90 backdrop-blur-md px-3 md:px-4 py-2 rounded-full font-black text-lg md:text-xl border border-white/40 shadow-2xl flex items-center gap-2"
+              className="bg-black/40 backdrop-blur-md text-white px-3 md:px-4 py-2 rounded-full font-black text-lg md:text-xl border-2 border-white/50 shadow-2xl flex items-center gap-2"
               style={{ color: getMagicalColor(), animation: 'timerGlow 2s ease-in-out infinite' }}
             >
               <span>⏰</span>
@@ -475,7 +415,7 @@ export default function MagicalCatchGame() {
         </motion.div>
       )}
 
-      {/* ✅ Game Area - MAXIMUM VISIBILITY ON DARK MATTE */}
+      {/* ✅ Game Area - HIGH VISIBILITY GLOSSY ORBS */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         <AnimatePresence>
           {items.map((item) => {
@@ -485,21 +425,21 @@ export default function MagicalCatchGame() {
                 initial={{ y: "-10vh", x: `${item.x}vw`, opacity: 0, scale: 0.5 }}
                 animate={{ y: "110vh", opacity: 1, scale: 1 }}
                 transition={{ duration: (100 / item.speed) * 0.1, ease: "linear" }}
-                className="absolute pointer-events-auto cursor-pointer"
-                style={{ left: 0, top: 0, rotate: item.rotation }}>
-                
-                {item.glow && (
-                  <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.8, 1, 0.8] }} transition={{ duration: 1, repeat: Infinity }}
-                    className="absolute inset-0 bg-yellow-400/90 rounded-full blur-xl" />
-                )}
-                
-                {/* ✅ CRYSTAL CLEAR OBJECTS: Strong white glow + deep shadow for max pop on dark matte */}
-                <span className="text-6xl md:text-7xl relative z-10"
-                  style={{
-                    filter: "drop-shadow(0 0 12px rgba(255,255,255,0.9)) drop-shadow(0 0 24px rgba(255,255,255,0.5)) drop-shadow(0 8px 16px rgba(0,0,0,1))",
-                  }}>
-                  {data.emoji}
-                </span>
+                className="absolute pointer-events-none"
+                style={{ left: 0, top: 0 }}
+              >
+                {/* ✅ GLOSSY BALLOON/ORB STYLE FOR MAXIMUM VISIBILITY */}
+                <div className={`relative flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full shadow-2xl border-2 border-white/60 ${item.type === 'bomb' ? 'bg-gray-800/90' : item.glow ? 'bg-yellow-100/90' : 'bg-white/90'} backdrop-blur-sm`}>
+                  <div className="absolute top-2 left-3 w-1/3 h-1/3 bg-white/70 rounded-full blur-sm transform -rotate-12" />
+                  <span className="text-2xl md:text-3xl relative z-10 drop-shadow-md">{data.emoji}</span>
+                  {item.glow && (
+                    <motion.div 
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0.9, 0.6] }} 
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="absolute inset-0 bg-yellow-400/60 rounded-full blur-xl" 
+                    />
+                  )}
+                </div>
               </motion.div>
             );
           })}
@@ -571,15 +511,15 @@ export default function MagicalCatchGame() {
 
       {/* Start Screen */}
       {!isPlaying && timeLeft === 60 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/90 backdrop-blur-lg p-4">
-          <motion.div initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl text-center max-w-md w-full border-4 border-purple-300">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/30 backdrop-blur-md touch-manipulation">
+          <motion.div initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl text-center max-w-md w-full border-4 border-sky-200">
             <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="text-8xl mb-4 drop-shadow-lg">🧺</motion.div>
             <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 mb-3">Jadui Tokri!</h1>
             <div className="bg-purple-50/80 border-2 border-purple-200 rounded-2xl p-4 mb-6 text-left">
               <div className="flex items-center gap-2 mb-3 text-purple-900 font-bold text-sm"><Info className="w-4 h-4" /> Kaise Khelen:</div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">👆</span><span className="font-semibold text-stone-700">Kahi bhi move karo</span></div>
-                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">⭐</span><span className="font-semibold text-stone-700">Pakdo aur points lo</span></div>
+                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">👆</span><span className="font-semibold text-stone-700">Basket move karo</span></div>
+                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">⭐</span><span className="font-semibold text-stone-700">Items pakdo</span></div>
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">💣</span><span className="font-semibold text-red-600">Bomb se bacho!</span></div>
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">🔥</span><span className="font-semibold text-stone-700">Combo banao!</span></div>
               </div>
@@ -589,7 +529,7 @@ export default function MagicalCatchGame() {
                 <div className="flex items-center justify-center gap-2 text-yellow-700 font-black text-xl"><Trophy className="w-6 h-6 fill-yellow-500" /> High Score: {highScore}</div>
               </div>
             )}
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startGame} className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 text-white font-black text-xl md:text-2xl px-10 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 border-2 border-white/30">
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startGame} className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 text-white font-black text-xl md:text-2xl px-10 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 border-2 border-white/30 touch-manipulation">
               <Play className="w-7 h-7 fill-white" /> Play Game
             </motion.button>
             <p className="text-stone-500 text-xs mt-4 font-medium">⏱️ 60 seconds • Lagatar catch karo, combo banao!</p>
@@ -599,22 +539,25 @@ export default function MagicalCatchGame() {
 
       {/* Game Over Screen */}
       {!isPlaying && timeLeft < 60 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/95 backdrop-blur-lg p-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md touch-manipulation">
           <motion.div initial={{ scale: 0.8, rotate: -5 }} animate={{ scale: 1, rotate: 0 }} className="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl text-center max-w-md w-full border-4 border-yellow-300">
             <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
               <Trophy className="w-24 h-24 md:w-28 md:h-28 text-yellow-500 mx-auto mb-4 drop-shadow-lg" />
             </motion.div>
-            <h2 className="text-3xl md:text-4xl font-black text-stone-800 mb-2">Game Over!</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-gray-800 mb-2">Game Over!</h2>
             {score >= highScore && score > 0 && (
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-white font-black px-6 py-3 rounded-full inline-block mb-6 shadow-lg text-lg">🎉 New High Score!</motion.div>
             )}
-            <p className="text-stone-600 mb-2 text-lg font-medium">Tumhara Score:</p>
-            <motion.div key={score} initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-purple-600 to-pink-600 mb-6 drop-shadow-sm">{score}</motion.div>
+            <p className="text-gray-600 mb-2 text-lg font-medium">Tumhara Score:</p>
+            <motion.div key={score} initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-sky-500 to-indigo-600 mb-6 drop-shadow-sm">{score}</motion.div>
+            <div className="text-sm text-gray-500 mb-8 font-medium">
+              Best Score: <span className="font-black text-yellow-600 text-lg">{highScore}</span>
+            </div>
             <div className="flex flex-col gap-3">
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startGame} className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-black text-xl px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 border-2 border-white/30">
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startGame} className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-black text-xl px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 border-2 border-white/30 touch-manipulation">
                 <RotateCcw className="w-6 h-6" /> Play Again
               </motion.button>
-              <Link href="/" className="text-stone-500 hover:text-stone-800 font-bold text-sm transition-colors py-2 text-center">← Back to Home</Link>
+              <Link href="/" className="text-gray-500 hover:text-gray-800 font-bold text-sm transition-colors py-2 text-center touch-manipulation">← Back to Home</Link>
             </div>
           </motion.div>
         </motion.div>
