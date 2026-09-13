@@ -7,11 +7,11 @@ import Link from "next/link";
 
 const ITEM_TYPES = {
   star: { emoji: "⭐", score: 10, particle: "✨", weight: 30, type: "good", rarity: "common" },
-  candy: { emoji: "🍬", score: 15, particle: "", weight: 22, type: "good", rarity: "common" },
+  candy: { emoji: "🍬", score: 15, particle: "🍭", weight: 22, type: "good", rarity: "common" },
   gift: { emoji: "🎁", score: 25, particle: "🎉", weight: 15, type: "good", rarity: "uncommon" },
-  potion: { emoji: "", score: 30, particle: "🌟", weight: 10, type: "good", rarity: "uncommon" },
+  potion: { emoji: "🧪", score: 30, particle: "🌟", weight: 10, type: "good", rarity: "uncommon" }, // ✅ Fixed missing emoji
   diamond: { emoji: "💎", score: 50, particle: "💠", weight: 6, type: "good", rarity: "rare" },
-  goldenStar: { emoji: "", score: 100, particle: "⭐", weight: 2, type: "good", rarity: "legendary" },
+  goldenStar: { emoji: "🌟", score: 100, particle: "⭐", weight: 2, type: "good", rarity: "legendary" }, // ✅ Fixed missing emoji
   bomb: { emoji: "💣", score: 0, particle: "💥", weight: 10, type: "bad", rarity: "common" },
   slowmo: { emoji: "⏰", score: 0, particle: "⏳", weight: 2, type: "powerup", effect: "slowmo", rarity: "rare" },
   double: { emoji: "✨", score: 0, particle: "💫", weight: 2, type: "powerup", effect: "double", rarity: "rare" },
@@ -59,97 +59,6 @@ const getOrbGradient = (type: ItemType) => {
   }
 };
 
-// ✅ EXPLOSIVE & MAGICAL SOUND EFFECTS
-const playSound = (type: 'catch' | 'bomb' | 'combo' | 'powerup' | 'gameover' | 'rare') => {
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    switch (type) {
-      case 'catch': {
-        const osc1 = audioContext.createOscillator();
-        const osc2 = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc1.connect(gain); osc2.connect(gain); gain.connect(audioContext.destination);
-        osc1.type = 'sine'; osc2.type = 'sine';
-        osc1.frequency.setValueAtTime(880, audioContext.currentTime);
-        osc2.frequency.setValueAtTime(1320, audioContext.currentTime);
-        gain.gain.setValueAtTime(0.25, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-        osc1.start(audioContext.currentTime); osc2.start(audioContext.currentTime);
-        osc1.stop(audioContext.currentTime + 0.15); osc2.stop(audioContext.currentTime + 0.15);
-        break;
-      }
-      case 'bomb': {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.connect(gain); gain.connect(audioContext.destination);
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, audioContext.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(30, audioContext.currentTime + 0.5);
-        gain.gain.setValueAtTime(0.5, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-        osc.start(audioContext.currentTime); osc.stop(audioContext.currentTime + 0.5);
-        break;
-      }
-      case 'combo': {
-        const osc1 = audioContext.createOscillator();
-        const osc2 = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc1.connect(gain); osc2.connect(gain); gain.connect(audioContext.destination);
-        osc1.type = 'sine'; osc2.type = 'triangle';
-        osc1.frequency.setValueAtTime(523, audioContext.currentTime);
-        osc1.frequency.exponentialRampToValueAtTime(1046, audioContext.currentTime + 0.2);
-        osc2.frequency.setValueAtTime(784, audioContext.currentTime);
-        osc2.frequency.exponentialRampToValueAtTime(1568, audioContext.currentTime + 0.2);
-        gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
-        osc1.start(audioContext.currentTime); osc2.start(audioContext.currentTime);
-        osc1.stop(audioContext.currentTime + 0.25); osc2.stop(audioContext.currentTime + 0.25);
-        break;
-      }
-      case 'powerup': {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.connect(gain); gain.connect(audioContext.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(400, audioContext.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(2000, audioContext.currentTime + 0.4);
-        gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-        osc.start(audioContext.currentTime); osc.stop(audioContext.currentTime + 0.4);
-        break;
-      }
-      case 'rare': {
-        const osc1 = audioContext.createOscillator();
-        const osc2 = audioContext.createOscillator();
-        const osc3 = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc1.connect(gain); osc2.connect(gain); osc3.connect(gain); gain.connect(audioContext.destination);
-        osc1.type = 'sine'; osc2.type = 'triangle'; osc3.type = 'sine';
-        osc1.frequency.setValueAtTime(659, audioContext.currentTime);
-        osc2.frequency.setValueAtTime(988, audioContext.currentTime);
-        osc3.frequency.setValueAtTime(1318, audioContext.currentTime);
-        gain.gain.setValueAtTime(0.35, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-        osc1.start(audioContext.currentTime); osc2.start(audioContext.currentTime); osc3.start(audioContext.currentTime);
-        osc1.stop(audioContext.currentTime + 0.4); osc2.stop(audioContext.currentTime + 0.4); osc3.stop(audioContext.currentTime + 0.4);
-        break;
-      }
-      case 'gameover': {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.connect(gain); gain.connect(audioContext.destination);
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(440, audioContext.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(110, audioContext.currentTime + 0.8);
-        gain.gain.setValueAtTime(0.4, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-        osc.start(audioContext.currentTime); osc.stop(audioContext.currentTime + 0.8);
-        break;
-      }
-    }
-  } catch (e) { console.log('Audio not supported'); }
-};
-
 export default function MagicalCatchGame() {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -175,6 +84,113 @@ export default function MagicalCatchGame() {
   const comboRef = useRef(0);
   const powerUpRef = useRef<string | null>(null);
   const soundEnabledRef = useRef(true);
+  
+  // ✅ FIX: Single AudioContext instance to prevent browser limits (just like Bubble Pop)
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const initAudio = () => {
+    if (!audioContextRef.current) {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      }
+    }
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+  };
+
+  // ✅ Reusable Sound Function using the single AudioContext
+  const playSound = useCallback((type: 'catch' | 'bomb' | 'combo' | 'powerup' | 'gameover' | 'rare') => {
+    if (!soundEnabledRef.current || !audioContextRef.current) return;
+    try {
+      const ctx = audioContextRef.current;
+      switch (type) {
+        case 'catch': {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+          osc1.type = 'sine'; osc2.type = 'sine';
+          osc1.frequency.setValueAtTime(880, ctx.currentTime);
+          osc2.frequency.setValueAtTime(1320, ctx.currentTime);
+          gain.gain.setValueAtTime(0.25, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+          osc1.start(ctx.currentTime); osc2.start(ctx.currentTime);
+          osc1.stop(ctx.currentTime + 0.15); osc2.stop(ctx.currentTime + 0.15);
+          break;
+        }
+        case 'bomb': {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.5);
+          gain.gain.setValueAtTime(0.5, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+          osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
+          break;
+        }
+        case 'combo': {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+          osc1.type = 'sine'; osc2.type = 'triangle';
+          osc1.frequency.setValueAtTime(523, ctx.currentTime);
+          osc1.frequency.exponentialRampToValueAtTime(1046, ctx.currentTime + 0.2);
+          osc2.frequency.setValueAtTime(784, ctx.currentTime);
+          osc2.frequency.exponentialRampToValueAtTime(1568, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+          osc1.start(ctx.currentTime); osc2.start(ctx.currentTime);
+          osc1.stop(ctx.currentTime + 0.25); osc2.stop(ctx.currentTime + 0.25);
+          break;
+        }
+        case 'powerup': {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.4);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+          osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+          break;
+        }
+        case 'rare': {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const osc3 = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc1.connect(gain); osc2.connect(gain); osc3.connect(gain); gain.connect(ctx.destination);
+          osc1.type = 'sine'; osc2.type = 'triangle'; osc3.type = 'sine';
+          osc1.frequency.setValueAtTime(659, ctx.currentTime);
+          osc2.frequency.setValueAtTime(988, ctx.currentTime);
+          osc3.frequency.setValueAtTime(1318, ctx.currentTime);
+          gain.gain.setValueAtTime(0.35, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+          osc1.start(ctx.currentTime); osc2.start(ctx.currentTime); osc3.start(ctx.currentTime);
+          osc1.stop(ctx.currentTime + 0.4); osc2.stop(ctx.currentTime + 0.4); osc3.stop(ctx.currentTime + 0.4);
+          break;
+        }
+        case 'gameover': {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.8);
+          gain.gain.setValueAtTime(0.4, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+          osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.8);
+          break;
+        }
+      }
+    } catch (e) { console.log('Audio error:', e); }
+  }, []);
 
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
   useEffect(() => {
@@ -187,6 +203,7 @@ export default function MagicalCatchGame() {
     setScore(0); setLives(3); setTimeLeft(60); setItems([]); setParticles([]);
     setBasketState("idle"); setCombo(0); comboRef.current = 0;
     setActivePowerUp(null); powerUpRef.current = null; setMilestone(0); setIsPlaying(true);
+    initAudio(); // ✅ Initialize audio on game start
   };
 
   useEffect(() => {
@@ -198,7 +215,7 @@ export default function MagicalCatchGame() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [isPlaying]);
+  }, [isPlaying, playSound]);
 
   useEffect(() => {
     if (!activePowerUp || powerUpTimer <= 0) {
@@ -312,7 +329,7 @@ export default function MagicalCatchGame() {
       });
     }, 30);
     return () => clearInterval(loop);
-  }, [isPlaying, activePowerUp]);
+  }, [isPlaying, activePowerUp, playSound]);
 
   const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!isPlayingRef.current) return;
@@ -364,7 +381,10 @@ export default function MagicalCatchGame() {
         
         {isPlaying && (
           <div className="flex gap-2 md:gap-3 flex-wrap justify-end items-center">
-            <button onClick={() => setSoundEnabled(!soundEnabled)}
+            <button onClick={() => {
+              setSoundEnabled(!soundEnabled);
+              if (!soundEnabled) initAudio(); // ✅ Ensure audio is ready when turning back on
+            }}
               className="bg-black/40 backdrop-blur-md text-white px-3 py-2 rounded-full font-bold text-sm border-2 border-white/50 shadow-lg hover:bg-black/60 transition touch-manipulation">
               {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
             </button>
@@ -447,7 +467,7 @@ export default function MagicalCatchGame() {
                 style={{ left: 0, top: 0 }}
               >
                 {/* ✅ LARGE 3D GLOSSY ORB (Exactly like Bubble Pop Balloon) */}
-                <div className={`relative w-20 h-20 md:w-24 md:h-24 rounded-full ${orbGradient} shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-4 border-white/50 flex items-center justify-center`}>
+                <div className={`relative w-20 h-20 md:w-24 md:h-24 rounded-full ${orbGradient} shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-4 border-white flex items-center justify-center`}>
                   
                   {/* ✅ Large Blurred Highlight (Glossy reflection) */}
                   <div className="absolute top-3 left-4 w-1/3 h-1/3 bg-white/50 rounded-full blur-md transform -rotate-12" />
@@ -549,8 +569,8 @@ export default function MagicalCatchGame() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">👆</span><span className="font-semibold text-stone-700">Basket move karo</span></div>
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">⭐</span><span className="font-semibold text-stone-700">Items pakdo</span></div>
-                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl"></span><span className="font-semibold text-red-600">Bomb se bacho!</span></div>
-                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl"></span><span className="font-semibold text-stone-700">Combo banao!</span></div>
+                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">💣</span><span className="font-semibold text-red-600">Bomb se bacho!</span></div>
+                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">🔥</span><span className="font-semibold text-stone-700">Combo banao!</span></div>
               </div>
             </div>
             {highScore > 0 && (
