@@ -95,6 +95,27 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
   );
 };
 
+// ✅ CINEMATIC SLIDERS FOR NEW SECTIONS
+const GamesCinematicSlider = () => {
+  const gameImages = ['/images/games-1.jpg', '/images/games-2.jpg', '/images/games-3.jpg', '/images/games-4.jpg', '/images/games-5.jpg'];
+  return (
+    <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
+      <SmoothImageSlider images={gameImages} className="w-full h-full" />
+      <div className="absolute inset-0 bg-gradient-to-t from-purple-950/90 via-purple-950/50 to-transparent" />
+    </div>
+  );
+};
+
+const ToolsCinematicSlider = () => {
+  const toolImages = ['/images/tools-1.jpg', '/images/tools-2.jpg', '/images/tools-3.jpg', '/images/tools-4.jpg', '/images/tools-5.jpg'];
+  return (
+    <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
+      <SmoothImageSlider images={toolImages} className="w-full h-full" />
+      <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/90 via-indigo-950/50 to-transparent" />
+    </div>
+  );
+};
+
 const ADMIN_UIDS = ["5fPCK8mGRTaAvIBTzUn7MEMQ2id2"];
 
 const fadeInUp = {
@@ -177,10 +198,7 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
 };
 
 const NewsletterCinematicSlider = () => {
-  const newsletterImages = [
-    '/images/newsletter-1.jpg', '/images/newsletter-2.jpg', '/images/newsletter-3.jpg',
-    '/images/newsletter-4.jpg', '/images/newsletter-5.jpg'
-  ];
+  const newsletterImages = ['/images/newsletter-1.jpg', '/images/newsletter-2.jpg', '/images/newsletter-3.jpg', '/images/newsletter-4.jpg', '/images/newsletter-5.jpg'];
   return (
     <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
       <SmoothImageSlider images={newsletterImages} className="w-full h-full" />
@@ -190,10 +208,7 @@ const NewsletterCinematicSlider = () => {
 };
 
 const MarketplaceCinematicSlider = () => {
-  const marketplaceImages = [
-    '/images/marketplace-1.jpg', '/images/marketplace-2.jpg', '/images/marketplace-3.jpg',
-    '/images/marketplace-4.jpg', '/images/marketplace-5.jpg'
-  ];
+  const marketplaceImages = ['/images/marketplace-1.jpg', '/images/marketplace-2.jpg', '/images/marketplace-3.jpg', '/images/marketplace-4.jpg', '/images/marketplace-5.jpg'];
   return (
     <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
       <SmoothImageSlider images={marketplaceImages} className="w-full h-full" />
@@ -461,13 +476,11 @@ export default function HomePage() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [newReviewText, setNewReviewText] = useState("");
   
-  const [isToolsExpanded, setIsToolsExpanded] = useState(false);
   const [isLinksExpanded, setIsLinksExpanded] = useState(false);
+  const [isGamesExpanded, setIsGamesExpanded] = useState(false);
+  const [isToolsExpanded, setIsToolsExpanded] = useState(false);
 
-  const heroImages = [
-    '/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg',
-    '/images/hero-4.jpg', '/images/hero-5.jpg'
-  ];
+  const heroImages = ['/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg', '/images/hero-4.jpg', '/images/hero-5.jpg'];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => setCurrentUser(user));
@@ -808,70 +821,99 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 7. KIDS ZONE SECTION ===== */}
-        <section className="relative py-24 px-4 md:px-8 lg:px-12 overflow-hidden bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <FloatingBubble delay={0} size={80} left={10} duration={12} />
-            <FloatingBubble delay={2} size={60} left={25} duration={15} />
-            <FloatingBubble delay={4} size={100} left={50} duration={18} />
-            <FloatingBubble delay={1} size={50} left={70} duration={14} />
-            <FloatingBubble delay={3} size={90} left={85} duration={16} />
-            <FloatingBubble delay={5} size={70} left={40} duration={20} />
-          </div>
-
-          <div className="relative z-10 max-w-6xl mx-auto text-center">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-              <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }} className="inline-block text-7xl md:text-8xl mb-4">🎮</motion.div>
-              <span className="inline-block px-6 py-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-white font-black text-sm tracking-widest uppercase mb-6">✨ Kids Zone ✨</span>
-              <h2 className="text-5xl md:text-7xl font-black text-white mb-6 drop-shadow-2xl">बच्चों की <span className="text-yellow-300">मस्ती की दुनिया</span></h2>
-              <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">आलमनगर के बच्चों के लिए खास गेम्स! यहाँ खेलो, सीखो, और मज़े करो।</p>
+        {/* ===== 7. GAMING ARENA TEASER WITH CINEMATIC SLIDER ===== */}
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-purple-950 text-white relative overflow-hidden">
+          <GamesCinematicSlider />
+          <div className="relative z-10 max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+                <div className="inline-flex items-center gap-2 bg-purple-500/20 backdrop-blur-md border border-purple-500/30 rounded-full px-6 py-3 mb-8">
+                  <Gamepad2 className="w-5 h-5 text-purple-400" />
+                  <span className="text-sm font-black tracking-wide uppercase text-purple-300">Gaming Arena</span>
+                </div>
+                <h2 className="text-4xl md:text-7xl font-black mb-8 leading-tight">मस्ती, एक्शन और <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">रोमांचक दुनिया</span></h2>
+                <p className="text-xl md:text-2xl text-white/80 mb-6 max-w-3xl mx-auto leading-relaxed">आलमनगर के लिए खास तौर पर डिज़ाइन किए गए गेम्स। अभी खेलें और हाई स्कोर बनाएं!</p>
+              </motion.div>
+            </div>
+            
+            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-6 mb-12">
+              {[
+                { icon: "🎈", title: "Bubble Pop", desc: "Balloons pop karo aur magical items collect karo!", href: "/games/bubble-pop", color: "from-pink-500 to-purple-500" },
+                { icon: "🧺", title: "Jadui Tokri", desc: "Girte hue stars aur gifts pakdo, bombs se bacho!", href: "/games/magical-catch", color: "from-indigo-500 to-purple-600" },
+                { icon: "🔫", title: "Alamnagar Strike", desc: "Survival shooter action! Dushmano ko harao aur bachao!", href: "/games/alamnagar-strike", color: "from-red-500 to-orange-600" }
+              ].map((game, i) => (
+                <Link key={i} href={game.href} className="group relative bg-white/10 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-white/20 hover:scale-105 transition-all duration-300 overflow-hidden text-left">
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${game.color} opacity-20 rounded-full blur-2xl -mr-10 -mt-10 group-hover:opacity-40 transition-all`} />
+                  <div className="relative z-10 flex flex-col items-center text-center">
+                    <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">{game.icon}</div>
+                    <h3 className="text-2xl font-black text-white mb-2">{game.title}</h3>
+                    <p className="text-white/70 text-sm mb-4">{game.desc}</p>
+                    <span className={`inline-flex items-center gap-2 bg-gradient-to-r ${game.color} text-white font-bold px-6 py-2 rounded-full group-hover:shadow-lg transition-all`}>
+                      Play Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
             </motion.div>
 
-            <div className="grid md:grid-cols-2 gap-6 mb-12 max-w-4xl mx-auto">
-              <Link href="/games/bubble-pop" className="group relative bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-white/50 hover:scale-105 transition-all duration-300 overflow-hidden text-left">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-yellow-400/40 transition-all" />
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">🎈</div>
-                  <h3 className="text-2xl font-black text-stone-900 mb-2">Bubble Pop</h3>
-                  <p className="text-stone-600 text-sm mb-4">Balloons ko pop karo aur magical items collect karo!</p>
-                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold px-6 py-2 rounded-full group-hover:shadow-lg transition-all">
-                    Play Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </div>
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
+              <Link href="/games" className="inline-flex items-center gap-3 bg-white text-purple-900 font-black px-12 py-5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] text-lg">
+                <Gamepad2 className="w-6 h-6" /> Explore All Games <ArrowRight className="w-6 h-6" />
               </Link>
-
-              <Link href="/games/magical-catch" className="group relative bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-white/50 hover:scale-105 transition-all duration-300 overflow-hidden text-left">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-indigo-400/40 transition-all" />
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">🧺</div>
-                  <h3 className="text-2xl font-black text-stone-900 mb-2">Jadui Tokri</h3>
-                  <p className="text-stone-600 text-sm mb-4">Girte hue stars aur gifts pakdo, bombs se bacho!</p>
-                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold px-6 py-2 rounded-full group-hover:shadow-lg transition-all">
-                    Play Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </div>
-              </Link>
-            </div>
-
-            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
-              {[
-                { icon: Smile, title: "Fun & Safe", desc: "बच्चों के लिए 100% सुरक्षित और मज़ेदार", color: "from-yellow-400 to-orange-400" },
-                { icon: Palette, title: "Colorful World", desc: "रंग-बिरंगी दुनिया में खो जाओ", color: "from-pink-400 to-purple-400" },
-                { icon: Trophy, title: "Win Stars", desc: "हर game में stars जमा करो", color: "from-blue-400 to-cyan-400" }
-              ].map((feature, i) => (
-                <motion.div key={i} variants={fadeInUp} whileHover={{ y: -10, rotate: 2 }} className="bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-2xl border-4 border-white/50">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mx-auto mb-3 shadow-lg`}>
-                    <feature.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-lg font-black text-stone-900 mb-1">{feature.title}</h3>
-                  <p className="text-stone-600 text-xs">{feature.desc}</p>
-                </motion.div>
-              ))}
             </motion.div>
           </div>
         </section>
 
-        {/* ===== 8. WORKING NEWSLETTER WITH CINEMATIC SLIDER ===== */}
+        {/* ===== 8. CREATOR TOOLS TEASER WITH CINEMATIC SLIDER ===== */}
+        <section className="py-24 px-4 md:px-8 lg:px-12 bg-indigo-950 text-white relative overflow-hidden">
+          <ToolsCinematicSlider />
+          <div className="relative z-10 max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+                <div className="inline-flex items-center gap-2 bg-cyan-500/20 backdrop-blur-md border border-cyan-500/30 rounded-full px-6 py-3 mb-8">
+                  <Rocket className="w-5 h-5 text-cyan-400" />
+                  <span className="text-sm font-black tracking-wide uppercase text-cyan-300">Creator Tools & Affiliate</span>
+                </div>
+                <h2 className="text-4xl md:text-7xl font-black mb-8 leading-tight">अपने डिजिटल सफर को <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">बनाएं और भी शानदार</span></h2>
+                <p className="text-xl md:text-2xl text-white/80 mb-6 max-w-3xl mx-auto leading-relaxed">प्रोफेशनल वेबसाइट बनाने और पैसिव इनकम जनरेट करने के लिए बेहतरीन टूल्स।</p>
+              </motion.div>
+            </div>
+            
+            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-2 gap-6 mb-12 max-w-4xl mx-auto">
+              {[
+                { icon: LayoutTemplate, title: "FunnelsBuilder", desc: "मुफ्त में प्रोफेशनल वेबसाइट और लैंडिंग पेज बनाएं।", href: "https://funnelsbuilder.netlify.app", color: "from-purple-500 to-indigo-500", external: true },
+                { icon: Bot, title: "AI Passive System", desc: "ऑटोमेटेड AI टूल्स जो खुद काम करते हैं।", href: "https://aipassivesystem.netlify.app", color: "from-cyan-500 to-blue-500", external: true }
+              ].map((tool, i) => (
+                <Link key={i} href={tool.href} target={tool.external ? "_blank" : "_self"} rel={tool.external ? "noopener noreferrer" : ""} className="group relative bg-white/10 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-white/20 hover:scale-105 transition-all duration-300 overflow-hidden text-left">
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${tool.color} opacity-20 rounded-full blur-2xl -mr-10 -mt-10 group-hover:opacity-40 transition-all`} />
+                  <div className="relative z-10 flex items-start gap-4">
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center shrink-0 shadow-lg`}>
+                      <tool.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-2xl font-black text-white">{tool.title}</h3>
+                        {tool.external && <ExternalLink className="w-4 h-4 text-white/60" />}
+                      </div>
+                      <p className="text-white/70 text-sm mb-4">{tool.desc}</p>
+                      <span className={`inline-flex items-center gap-2 bg-gradient-to-r ${tool.color} text-white font-bold px-5 py-2 rounded-full text-sm group-hover:shadow-lg transition-all`}>
+                        Use Tool <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
+              <Link href="/tools" className="inline-flex items-center gap-3 bg-white text-indigo-900 font-black px-12 py-5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] text-lg">
+                <Rocket className="w-6 h-6" /> Explore All Tools <ArrowRight className="w-6 h-6" />
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ===== 9. WORKING NEWSLETTER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-zinc-800 text-white relative overflow-hidden">
           <NewsletterCinematicSlider />
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
@@ -893,97 +935,90 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        {/* ===== 9. PREMIUM FOOTER WITH EXPENDABLE SECTIONS ===== */}
+        {/* ===== 10. PREMIUM FOOTER WITH SCALABLE SECTIONS ===== */}
         <footer className="bg-stone-950 text-stone-400 py-16 px-4 md:px-8 lg:px-12 border-t border-stone-900 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
           <div className="max-w-7xl mx-auto">
             <CreateraOGBanner />
 
-            <div className="grid md:grid-cols-12 gap-12 mb-12 mt-8">
-              <div className="md:col-span-4">
+            <div className="grid md:grid-cols-12 gap-8 mb-12 mt-8">
+              {/* Brand & Admin */}
+              <div className="md:col-span-3">
                 <div className="mb-6"><FooterBrandLogo /></div>
-                <p className="text-base mb-8 leading-relaxed text-stone-400">मधेपुरा, बिहार, भारत का आधिकारिक डिजिटल प्लेटफॉर्म। हमारी विरासत, हमारा समुदाय, हमारा गौरव।</p>
-                <div className="flex gap-4">
-                  <Link href="/community" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer"><Users className="w-5 h-5" /></Link>
-                  <Link href="/gallery" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors cursor-pointer"><Camera className="w-5 h-5" /></Link>
+                <p className="text-sm mb-6 leading-relaxed text-stone-400">मधेपुरा, बिहार, भारत का आधिकारिक डिजिटल प्लेटफॉर्म। हमारी विरासत, हमारा समुदाय, हमारा गौरव।</p>
+                {isAdmin && (
+                  <Link href="/admin/reports" className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-4 py-2 hover:bg-red-500/30 transition-all group shadow-lg w-fit mb-4">
+                    <Shield className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold text-red-300">Admin Dashboard</span>
+                  </Link>
+                )}
+                <div className="flex gap-3">
+                  <Link href="/community" className="w-9 h-9 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors"><Users className="w-4 h-4" /></Link>
+                  <Link href="/gallery" className="w-9 h-9 rounded-full bg-stone-900 flex items-center justify-center hover:bg-amber-500 hover:text-stone-950 transition-colors"><Camera className="w-4 h-4" /></Link>
                 </div>
               </div>
 
-              {/* ✅ EXPENDABLE QUICK LINKS */}
-              <div className="md:col-span-4">
-                <button onClick={() => setIsLinksExpanded(!isLinksExpanded)} className="w-full flex items-center justify-between text-white font-black mb-6 text-lg hover:text-amber-400 transition-colors group">
-                  <div className="flex items-center gap-2"><ArrowRight className="w-5 h-5 text-amber-500" /> त्वरित लिंक</div>
+              {/* Quick Links */}
+              <div className="md:col-span-3">
+                <button onClick={() => setIsLinksExpanded(!isLinksExpanded)} className="w-full flex items-center justify-between text-white font-black mb-4 text-base hover:text-amber-400 transition-colors group">
+                  <div className="flex items-center gap-2"><ArrowRight className="w-4 h-4 text-amber-500" /> त्वरित लिंक</div>
                   <motion.div animate={{ rotate: isLinksExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                    <ChevronDownIcon className="w-5 h-5 text-stone-500 group-hover:text-amber-400" />
+                    <ChevronDownIcon className="w-4 h-4 text-stone-500 group-hover:text-amber-400" />
                   </motion.div>
                 </button>
                 <AnimatePresence>
                   {isLinksExpanded && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="overflow-hidden">
-                      <ul className="space-y-3 text-base pt-2">
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+                      <ul className="space-y-3 text-sm pt-2">
                         <li><Link href="/about" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> हमारे बारे में</Link></li>
                         <li><Link href="/gallery" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> गैलरी</Link></li>
                         <li><Link href="/community" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> समुदाय</Link></li>
                         <li><Link href="/marketplace" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> बाज़ार</Link></li>
                         <li><Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> संपर्क करें</Link></li>
-                        <li><Link href="/legal" className="hover:text-amber-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> कानूनी जानकारी</Link></li>
                       </ul>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
-              {/* ✅ ALWAYS VISIBLE ADMIN DASHBOARD */}
-              {isAdmin && (
-                <div className="md:col-span-4 mb-6">
-                   <Link href="/admin/reports" className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-4 py-2 hover:bg-red-500/30 transition-all group shadow-lg w-fit">
-                    <Shield className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-bold text-red-300">Admin Dashboard</span>
-                  </Link>
-                </div>
-              )}
+              {/* Gaming Hub */}
+              <div className="md:col-span-3">
+                <button onClick={() => setIsGamesExpanded(!isGamesExpanded)} className="w-full flex items-center justify-between text-white font-black mb-4 text-base hover:text-purple-400 transition-colors group">
+                  <div className="flex items-center gap-2"><Gamepad2 className="w-4 h-4 text-purple-500" /> Gaming Hub</div>
+                  <motion.div animate={{ rotate: isGamesExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                    <ChevronDownIcon className="w-4 h-4 text-stone-500 group-hover:text-purple-400" />
+                  </motion.div>
+                </button>
+                <AnimatePresence>
+                  {isGamesExpanded && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+                      <ul className="space-y-3 text-sm pt-2">
+                        <li><Link href="/games" className="hover:text-purple-400 transition-colors flex items-center gap-2 font-bold text-purple-300"><ArrowRight className="w-3 h-3" /> All Games</Link></li>
+                        <li><Link href="/games/bubble-pop" className="hover:text-purple-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> Bubble Pop</Link></li>
+                        <li><Link href="/games/magical-catch" className="hover:text-purple-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> Jadui Tokri</Link></li>
+                        <li><Link href="/games/alamnagar-strike" className="hover:text-purple-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> Alamnagar Strike</Link></li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-              {/* ✅ EXPENDABLE TOOLS & GAMES */}
-              <div className="md:col-span-4">
-                <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className="w-full flex items-center justify-between text-white font-black mb-6 text-lg hover:text-amber-400 transition-colors group">
-                  <div className="flex items-center gap-2"><Bot className="w-5 h-5 text-purple-500" /> Tools & Games</div>
+              {/* Creator Tools */}
+              <div className="md:col-span-3">
+                <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className="w-full flex items-center justify-between text-white font-black mb-4 text-base hover:text-cyan-400 transition-colors group">
+                  <div className="flex items-center gap-2"><Rocket className="w-4 h-4 text-cyan-500" /> Creator Tools</div>
                   <motion.div animate={{ rotate: isToolsExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                    <ChevronDownIcon className="w-5 h-5 text-stone-500 group-hover:text-amber-400" />
+                    <ChevronDownIcon className="w-4 h-4 text-stone-500 group-hover:text-cyan-400" />
                   </motion.div>
                 </button>
                 <AnimatePresence>
                   {isToolsExpanded && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="overflow-hidden">
-                      <div className="space-y-4 pt-2">
-                        <Link href="https://funnelsbuilder.netlify.app" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-purple-500/50 hover:bg-purple-500/10 transition-all">
-                          <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-colors"><LayoutTemplate className="w-5 h-5 text-purple-400 group-hover:text-white" /></div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1"><h5 className="font-bold text-white text-sm group-hover:text-purple-400 transition-colors">FunnelsBuilder</h5><ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-purple-400" /></div>
-                            <p className="text-xs text-stone-400 leading-relaxed">मुफ्त में प्रोफेशनल वेबसाइट और लैंडिंग पेज बनाएं।</p>
-                          </div>
-                        </Link>
-                        <Link href="https://aipassivesystem.netlify.app" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all">
-                          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center shrink-0 group-hover:bg-cyan-500 transition-colors"><Bot className="w-5 h-5 text-cyan-400 group-hover:text-white" /></div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1"><h5 className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors">AI Passive System</h5><ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-cyan-400" /></div>
-                            <p className="text-xs text-stone-400 leading-relaxed">ऑटोमेटेड AI टूल्स जो खुद काम करते हैं।</p>
-                          </div>
-                        </Link>
-                        <Link href="/games/bubble-pop" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-amber-500/50 hover:bg-amber-500/10 transition-all cursor-pointer">
-                          <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0 group-hover:bg-amber-500 transition-colors"><Gamepad2 className="w-5 h-5 text-amber-400 group-hover:text-white" /></div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1"><h5 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">Bubble Pop Game</h5><Sparkles className="w-3.5 h-3.5 text-amber-400" /></div>
-                            <p className="text-xs text-stone-400 leading-relaxed">Bubbles pop करो और stars जमा करो।</p>
-                          </div>
-                        </Link>
-                        <Link href="/games/magical-catch" className="group flex items-start gap-4 p-4 bg-stone-900/50 rounded-2xl border border-stone-800 hover:border-indigo-500/50 hover:bg-indigo-500/10 transition-all cursor-pointer">
-                          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0 group-hover:bg-indigo-500 transition-colors"><Gamepad2 className="w-5 h-5 text-indigo-400 group-hover:text-white" /></div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1"><h5 className="font-bold text-white text-sm group-hover:text-indigo-400 transition-colors">Jadui Tokri Game</h5><Sparkles className="w-3.5 h-3.5 text-indigo-400" /></div>
-                            <p className="text-xs text-stone-400 leading-relaxed">Stars aur gifts pakdo, bombs se bacho!</p>
-                          </div>
-                        </Link>
-                      </div>
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+                      <ul className="space-y-3 text-sm pt-2">
+                        <li><Link href="/tools" className="hover:text-cyan-400 transition-colors flex items-center gap-2 font-bold text-cyan-300"><ArrowRight className="w-3 h-3" /> All Tools</Link></li>
+                        <li><Link href="https://funnelsbuilder.netlify.app" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> FunnelsBuilder <ExternalLink className="w-3 h-3" /></Link></li>
+                        <li><Link href="https://aipassivesystem.netlify.app" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors flex items-center gap-2"><ArrowRight className="w-3 h-3" /> AI Passive System <ExternalLink className="w-3 h-3" /></Link></li>
+                      </ul>
                     </motion.div>
                   )}
                 </AnimatePresence>
