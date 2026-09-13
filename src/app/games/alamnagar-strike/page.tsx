@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-// ✅ FIX: Added ArrowLeft to the imports
-import { ArrowLeft, Crosshair, Heart, Skull, Trophy, Play, RotateCcw, Volume2, VolumeX, Target } from "lucide-react";
+import { ArrowLeft, Crosshair, Heart, Skull, Trophy, Play, RotateCcw, Volume2, VolumeX, Target, Shield, Zap } from "lucide-react";
 import Link from "next/link";
 
 // ✅ Audio Engine for Punchy Shooter Sounds
@@ -67,7 +66,11 @@ const playSound = (type: 'shoot' | 'hit' | 'kill' | 'gameover' | 'booyah') => {
   } catch (e) {}
 };
 
-interface Entity {
+type EnemyType = 'grunt' | 'tank' | 'boss';
+type WeaponType = 'pistol' | 'rifle' | 'shotgun';
+type PowerUpType = 'health' | 'rifle' | 'shotgun';
+
+interface Enemy {
   id: number;
   x: number;
   y: number;
@@ -76,6 +79,20 @@ interface Entity {
   size: number;
   color: string;
   hp: number;
+  maxHp: number;
+  type: EnemyType;
+  emoji: string;
+}
+
+interface Bullet {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  damage: number;
 }
 
 interface Particle {
@@ -89,6 +106,21 @@ interface Particle {
   size: number;
 }
 
+interface PowerUp {
+  id: number;
+  x: number;
+  y: number;
+  type: PowerUpType;
+  size: number;
+  emoji: string;
+}
+
+const WEAPONS: Record<WeaponType, { fireRate: number; speed: number; damage: number; spread: number; color: string; name: string }> = {
+  pistol: { fireRate: 300, speed: 1.5, damage: 1, spread: 1, color: '#fbbf24', name: 'PISTOL' },
+  rifle: { fireRate: 100, speed: 2.0, damage: 1, spread: 1, color: '#3b82f6', name: 'RIFLE' },
+  shotgun: { fireRate: 600, speed: 1.2, damage: 1, spread: 5, color: '#ef4444', name: 'SHOTGUN' },
+};
+
 export default function AlamnagarStrike() {
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'gameover'>('menu');
   const [score, setScore] = useState(0);
@@ -97,54 +129,87 @@ export default function AlamnagarStrike() {
   const [wave, setWave] = useState(1);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [screenShake, setScreenShake] = useState(0);
+  const [currentWeapon, setCurrentWeapon] = useState<WeaponType>('pistol');
+  const [weaponTimer, setWeaponTimer] = useState(0);
 
-  // Game refs for 60FPS performance without React re-renders
-  const playerRef = useRef({ x: 50, y: 50, size: 20 });
-  const bulletsRef = useRef<Entity[]>([]);
-  const enemiesRef = useRef<Entity[]>([]);
+  const playerRef = useRef({ x: 50, y: 50, size: 24 });
+  const bulletsRef = useRef<Bullet[]>([]);
+  const enemiesRef = useRef<Enemy[]>([]);
   const particlesRef = useRef<Particle[]>([]);
+  const powerUpsRef = useRef<PowerUp[]>([]);
   const mouseRef = useRef({ x: 50, y: 50 });
   const frameRef = useRef<number>(0);
   const lastShotRef = useRef(0);
   const scoreRef = useRef(0);
   const healthRef = useRef(100);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const currentWeaponRef = useRef<WeaponType>('pistol');
+  const weaponTimerRef = useRef(0);
 
   useEffect(() => {
     const saved = localStorage.getItem("alamnagarStrikeHighScore");
     if (saved) setHighScore(parseInt(saved));
   }, []);
 
+  useEffect(() => {
+    currentWeaponRef.current = currentWeapon;
+  }, [currentWeapon]);
+
   const startGame = () => {
     setGameState('playing');
     setScore(0);
     setHealth(100);
     setWave(1);
+    setCurrentWeapon('pistol');
+    setWeaponTimer(0);
     scoreRef.current = 0;
     healthRef.current = 100;
-    playerRef.current = { x: 50, y: 50, size: 20 };
+    playerRef.current = { x: 50, y: 50, size: 24 };
     bulletsRef.current = [];
     enemiesRef.current = [];
     particlesRef.current = [];
+    powerUpsRef.current = [];
     if (soundEnabled) playSound('booyah');
   };
 
   const spawnEnemy = useCallback(() => {
     const side = Math.floor(Math.random() * 4);
     let x = 50, y = 50;
-    if (side === 0) { x = Math.random() * 100; y = -5; } // Top
-    if (side === 1) { x = 105; y = Math.random() * 100; } // Right
-    if (side === 2) { x = Math.random() * 100; y = 105; } // Bottom
-    if (side === 3) { x = -5; y = Math.random() * 100; } // Left
+    if (side === 0) { x = Math.random() * 100; y = -5; }
+    if (side === 1) { x = 105; y = Math.random() * 100; }
+    if (side === 2) { x = Math.random() * 100; y = 105; }
+    if (side === 3) { x = -5; y = Math.random() * 100; }
 
-    const speed = 0.15 + (wave * 0.02);
+    let type: EnemyType = 'grunt';
+    let size = 20;
+    let hp = 1 + Math.floor(wave / 3);
+    let color = '#ef4444';
+    let emoji = '🧟';
+    let speedMultiplier = 1;
+
+    const rand = Math.random();
+    if (wave >= 3 && rand > 0.85) {
+      type = 'boss';
+      size = 40;
+      hp = 5 + wave;
+      color = '#a855f7';
+      emoji = '👿';
+      speedMultiplier = 0.6;
+    } else if (wave >= 2 && rand > 0.6) {
+      type = 'tank';
+      size = 30;
+      hp = 3 + Math.floor(wave / 2);
+      color = '#22c55e';
+      emoji = '🤖';
+      speedMultiplier = 0.8;
+    }
+
+    const speed = (0.15 + (wave * 0.015)) * speedMultiplier;
+    
     enemiesRef.current.push({
       id: Date.now() + Math.random(),
-      x, y,
-      vx: 0, vy: 0, // Calculated in loop
-      size: 15 + Math.random() * 10,
-      color: Math.random() > 0.8 ? '#ef4444' : '#f97316', // Red or Orange
-      hp: 1 + Math.floor(wave / 3)
+      x, y, vx: 0, vy: 0,
+      size, color, hp, maxHp: hp, type, emoji
     });
   }, [wave]);
 
@@ -159,6 +224,7 @@ export default function AlamnagarStrike() {
       const bullets = bulletsRef.current;
       const enemies = enemiesRef.current;
       const particles = particlesRef.current;
+      const powerUps = powerUpsRef.current;
 
       // 1. Move Bullets
       for (let i = bullets.length - 1; i >= 0; i--) {
@@ -176,27 +242,25 @@ export default function AlamnagarStrike() {
         const dx = player.x - e.x;
         const dy = player.y - e.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const speed = 0.15 + (wave * 0.015);
+        const speed = (0.15 + (wave * 0.015)) * (e.type === 'boss' ? 0.6 : e.type === 'tank' ? 0.8 : 1);
         
         e.vx = (dx / dist) * speed;
         e.vy = (dy / dist) * speed;
         e.x += e.vx;
         e.y += e.vy;
 
-        // Hit Player
         if (dist < (player.size + e.size) / 2) {
-          healthRef.current -= 10;
-          setHealth(healthRef.current);
+          healthRef.current -= (e.type === 'boss' ? 20 : e.type === 'tank' ? 15 : 10);
+          setHealth(Math.max(0, healthRef.current));
           enemies.splice(i, 1);
           setScreenShake(10);
           if (soundEnabled) playSound('hit');
           
-          // Blood particles
-          for (let p = 0; p < 5; p++) {
+          for (let p = 0; p < 8; p++) {
             particles.push({
               id: Math.random(), x: player.x, y: player.y,
-              vx: (Math.random() - 0.5) * 1, vy: (Math.random() - 0.5) * 1,
-              life: 1, color: '#ef4444', size: 3
+              vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5,
+              life: 1, color: '#ef4444', size: 4
             });
           }
 
@@ -207,7 +271,7 @@ export default function AlamnagarStrike() {
               setHighScore(scoreRef.current);
               localStorage.setItem("alamnagarStrikeHighScore", scoreRef.current.toString());
             }
-            return; // Stop loop
+            return;
           }
         }
       }
@@ -221,21 +285,42 @@ export default function AlamnagarStrike() {
           const dx = b.x - e.x;
           const dy = b.y - e.y;
           if (Math.sqrt(dx * dx + dy * dy) < (b.size + e.size) / 2) {
-            e.hp -= 1;
+            e.hp -= b.damage;
             hit = true;
+            
+            for (let p = 0; p < 3; p++) {
+              particles.push({
+                id: Math.random(), x: e.x, y: e.y,
+                vx: (Math.random() - 0.5), vy: (Math.random() - 0.5),
+                life: 0.5, color: '#ffffff', size: 2
+              });
+            }
+
             if (e.hp <= 0) {
               enemies.splice(j, 1);
-              scoreRef.current += 10;
+              const points = e.type === 'boss' ? 50 : e.type === 'tank' ? 20 : 10;
+              scoreRef.current += points;
               setScore(scoreRef.current);
               if (soundEnabled) playSound('kill');
-              setScreenShake(3);
+              setScreenShake(e.type === 'boss' ? 15 : 5);
               
-              // Explosion particles
-              for (let p = 0; p < 8; p++) {
+              for (let p = 0; p < 12; p++) {
                 particles.push({
                   id: Math.random(), x: e.x, y: e.y,
-                  vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5,
-                  life: 1, color: e.color, size: 4
+                  vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2,
+                  life: 1, color: e.color, size: 5
+                });
+              }
+
+              // Drop PowerUp Chance (15%)
+              if (Math.random() < 0.15) {
+                const pType = Math.random() > 0.5 ? 'health' : (Math.random() > 0.5 ? 'rifle' : 'shotgun');
+                powerUpsRef.current.push({
+                  id: Date.now() + Math.random(),
+                  x: e.x, y: e.y,
+                  type: pType,
+                  size: 20,
+                  emoji: pType === 'health' ? '❤️' : pType === 'rifle' ? '🔫' : '💥'
                 });
               }
             }
@@ -245,7 +330,27 @@ export default function AlamnagarStrike() {
         if (hit) bullets.splice(i, 1);
       }
 
-      // 4. Update Particles
+      // 4. PowerUp Collection
+      for (let i = powerUps.length - 1; i >= 0; i--) {
+        const p = powerUps[i];
+        const dx = player.x - p.x;
+        const dy = player.y - p.y;
+        if (Math.sqrt(dx * dx + dy * dy) < (player.size + p.size) / 2) {
+          if (p.type === 'health') {
+            healthRef.current = Math.min(100, healthRef.current + 30);
+            setHealth(healthRef.current);
+          } else {
+            currentWeaponRef.current = p.type as WeaponType;
+            setCurrentWeapon(p.type as WeaponType);
+            weaponTimerRef.current = 600; // 10 seconds at 60fps
+            setWeaponTimer(600);
+          }
+          powerUps.splice(i, 1);
+          if (soundEnabled) playSound('booyah');
+        }
+      }
+
+      // 5. Update Particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx;
@@ -254,19 +359,30 @@ export default function AlamnagarStrike() {
         if (p.life <= 0) particles.splice(i, 1);
       }
 
-      // 5. Spawn Enemies
+      // 6. Weapon Timer
+      if (weaponTimerRef.current > 0) {
+        weaponTimerRef.current -= 1;
+        setWeaponTimer(weaponTimerRef.current);
+        if (weaponTimerRef.current <= 0) {
+          currentWeaponRef.current = 'pistol';
+          setCurrentWeapon('pistol');
+        }
+      }
+
+      // 7. Spawn Enemies
       enemySpawnTimer++;
-      if (enemySpawnTimer > Math.max(20, 60 - wave * 2)) {
+      const spawnRate = Math.max(20, 60 - wave * 3);
+      if (enemySpawnTimer > spawnRate) {
         spawnEnemy();
+        if (wave > 3 && Math.random() > 0.7) spawnEnemy();
         enemySpawnTimer = 0;
       }
 
-      // 6. Wave Progression
-      if (scoreRef.current > wave * 100) {
+      // 8. Wave Progression
+      if (scoreRef.current > wave * 150) {
         setWave(w => w + 1);
       }
 
-      // Decrease screen shake
       if (screenShake > 0) setScreenShake(s => Math.max(0, s - 1));
 
       frameRef.current = requestAnimationFrame(loop);
@@ -276,7 +392,6 @@ export default function AlamnagarStrike() {
     return () => cancelAnimationFrame(frameRef.current);
   }, [gameState, wave, highScore, soundEnabled, spawnEnemy, screenShake]);
 
-  // ✅ Mouse/Touch Tracking
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (gameState !== 'playing' || !canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
@@ -285,13 +400,13 @@ export default function AlamnagarStrike() {
     mouseRef.current = { x, y };
   }, [gameState]);
 
-  // ✅ Shooting Mechanic
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (gameState !== 'playing') return;
-    e.preventDefault(); // Prevent zoom/scroll
+    e.preventDefault();
     
     const now = Date.now();
-    if (now - lastShotRef.current < 150) return; // Fire rate limit
+    const weapon = WEAPONS[currentWeaponRef.current];
+    if (now - lastShotRef.current < weapon.fireRate) return;
     lastShotRef.current = now;
 
     const player = playerRef.current;
@@ -300,67 +415,93 @@ export default function AlamnagarStrike() {
     const dy = mouse.y - player.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
     
-    const speed = 1.5;
-    bulletsRef.current.push({
-      id: Date.now(),
-      x: player.x, y: player.y,
-      vx: (dx / dist) * speed,
-      vy: (dy / dist) * speed,
-      size: 4,
-      color: '#fbbf24',
-      hp: 1
-    });
+    if (weapon.spread === 1) {
+      bulletsRef.current.push({
+        id: Date.now(),
+        x: player.x, y: player.y,
+        vx: (dx / dist) * weapon.speed,
+        vy: (dy / dist) * weapon.speed,
+        size: 5,
+        color: weapon.color,
+        damage: weapon.damage
+      });
+    } else {
+      for (let i = 0; i < weapon.spread; i++) {
+        const angleOffset = (i - (weapon.spread - 1) / 2) * 0.15;
+        const cos = Math.cos(angleOffset);
+        const sin = Math.sin(angleOffset);
+        const vx = ((dx / dist) * cos - (dy / dist) * sin) * weapon.speed;
+        const vy = ((dx / dist) * sin + (dy / dist) * cos) * weapon.speed;
+        
+        bulletsRef.current.push({
+          id: Date.now() + i,
+          x: player.x, y: player.y,
+          vx, vy,
+          size: 4,
+          color: weapon.color,
+          damage: weapon.damage
+        });
+      }
+    }
 
     if (soundEnabled) playSound('shoot');
     setScreenShake(2);
   }, [gameState, soundEnabled]);
 
   return (
-    <div className="min-h-screen bg-stone-950 relative overflow-hidden select-none touch-none font-sans">
-      <style>{`
-        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
-      `}</style>
-
-      {/* Tactical Grid Background */}
-      <div 
-        className="absolute inset-0 opacity-20 pointer-events-none"
-        style={{ 
-          backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-          animation: 'gridMove 2s linear infinite'
-        }} 
-      />
+    <div className="min-h-screen bg-stone-950 relative overflow-hidden select-none touch-none font-sans text-white">
+      {/* Tactical Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-800 via-stone-950 to-black" />
+        <div 
+          className="absolute inset-0 opacity-10"
+          style={{ 
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }} 
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
+      </div>
 
       {/* Top HUD */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex justify-between items-start pointer-events-none">
         <div className="flex flex-col gap-2 pointer-events-auto">
-          <Link href="/" className="flex items-center gap-2 text-white bg-black/50 backdrop-blur px-3 py-2 rounded-lg border border-white/20 hover:bg-black/70 transition">
+          <Link href="/" className="flex items-center gap-2 text-white bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 hover:bg-black/80 transition shadow-lg">
             <ArrowLeft className="w-4 h-4" /> Home
           </Link>
-          <div className="flex items-center gap-2 bg-black/50 backdrop-blur px-3 py-2 rounded-lg border border-white/20">
+          <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
             {soundEnabled ? <Volume2 className="w-5 h-5 text-green-400" /> : <VolumeX className="w-5 h-5 text-red-400" />}
             <button onClick={() => setSoundEnabled(!soundEnabled)} className="text-xs text-white font-bold">SOUND</button>
           </div>
         </div>
 
         {gameState === 'playing' && (
-          <div className="flex flex-col items-end gap-2">
-            <div className="bg-black/60 backdrop-blur px-4 py-2 rounded-lg border border-white/20 flex items-center gap-3">
+          <div className="flex flex-col items-end gap-3">
+            <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 flex items-center gap-3 shadow-lg">
               <Target className="w-5 h-5 text-yellow-400" />
               <span className="text-2xl font-black text-white">{score}</span>
             </div>
-            <div className="w-48 h-6 bg-black/60 rounded-full border border-white/20 overflow-hidden relative">
-              <motion.div 
-                className="h-full bg-gradient-to-r from-red-600 to-red-400"
-                initial={{ width: '100%' }}
-                animate={{ width: `${health}%` }}
-                transition={{ type: 'spring', bounce: 0 }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs font-black text-white drop-shadow-md">HP {health}%</span>
+            
+            <div className="flex items-center gap-3">
+              <div className="w-48 h-6 bg-black/60 rounded-full border border-white/10 overflow-hidden relative shadow-lg">
+                <motion.div 
+                  className="h-full bg-gradient-to-r from-red-600 to-red-400"
+                  initial={{ width: '100%' }}
+                  animate={{ width: `${health}%` }}
+                  transition={{ type: 'spring', bounce: 0 }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-black text-white drop-shadow-md">HP {health}%</span>
+                </div>
               </div>
+              {currentWeapon !== 'pistol' && (
+                <div className="bg-blue-500/20 border border-blue-400/50 px-3 py-1 rounded-full flex items-center gap-2 animate-pulse">
+                  <Zap className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-bold text-blue-300">{Math.ceil(weaponTimer / 60)}s</span>
+                </div>
+              )}
             </div>
-            <div className="text-xs font-bold text-stone-400">WAVE {wave}</div>
+            <div className="text-sm font-bold text-stone-400 bg-black/40 px-3 py-1 rounded-full border border-white/5">WAVE {wave}</div>
           </div>
         )}
       </div>
@@ -377,20 +518,65 @@ export default function AlamnagarStrike() {
       >
         {gameState === 'playing' && (
           <>
+            {/* PowerUps */}
+            {powerUpsRef.current.map(p => (
+              <motion.div
+                key={p.id}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1, y: [0, -5, 0] }}
+                transition={{ y: { duration: 1, repeat: Infinity, ease: "easeInOut" } }}
+                className="absolute flex items-center justify-center z-10"
+                style={{ 
+                  left: `${p.x}%`, top: `${p.y}%`, 
+                  width: `${p.size * 1.5}px`, height: `${p.size * 1.5}px`,
+                  marginLeft: `-${p.size * 0.75}px`, marginTop: `-${p.size * 0.75}px`,
+                }}
+              >
+                <div className={`w-full h-full rounded-full flex items-center justify-center text-2xl shadow-[0_0_20px_currentColor] ${
+                  p.type === 'health' ? 'bg-red-500/30 text-red-400' : 
+                  p.type === 'rifle' ? 'bg-blue-500/30 text-blue-400' : 'bg-orange-500/30 text-orange-400'
+                }`}>
+                  {p.emoji}
+                </div>
+              </motion.div>
+            ))}
+
             {/* Player */}
             <div 
-              className="absolute w-10 h-10 -ml-5 -mt-5 rounded-full bg-blue-500 border-4 border-white shadow-[0_0_20px_rgba(59,130,246,0.8)] flex items-center justify-center z-20"
+              className="absolute flex flex-col items-center justify-center z-20"
               style={{ left: `${playerRef.current.x}%`, top: `${playerRef.current.y}%` }}
             >
-              <Crosshair className="w-6 h-6 text-white" />
+              <div className="relative">
+                <div className={`w-12 h-12 rounded-full bg-stone-900 border-2 ${
+                  currentWeapon === 'shotgun' ? 'border-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.5)]' :
+                  currentWeapon === 'rifle' ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)]' :
+                  'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.5)]'
+                } flex items-center justify-center`}>
+                  <Crosshair className={`w-6 h-6 ${
+                    currentWeapon === 'shotgun' ? 'text-orange-400' :
+                    currentWeapon === 'rifle' ? 'text-blue-400' : 'text-yellow-400'
+                  }`} />
+                </div>
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                  <span className="text-[10px] font-black bg-black/70 px-2 py-0.5 rounded text-white border border-white/20">
+                    {WEAPONS[currentWeapon].name}
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Bullets */}
             {bulletsRef.current.map(b => (
               <div
                 key={b.id}
-                className="absolute w-3 h-3 -ml-1.5 -mt-1.5 rounded-full bg-yellow-400 shadow-[0_0_10px_#fbbf24] z-10"
-                style={{ left: `${b.x}%`, top: `${b.y}%` }}
+                className="absolute rounded-full z-10"
+                style={{ 
+                  left: `${b.x}%`, top: `${b.y}%`, 
+                  width: `${b.size * 2}px`, height: `${b.size * 2}px`,
+                  marginLeft: `-${b.size}px`, marginTop: `-${b.size}px`,
+                  backgroundColor: b.color,
+                  boxShadow: `0 0 10px ${b.color}, 0 0 20px ${b.color}`
+                }}
               />
             ))}
 
@@ -398,16 +584,31 @@ export default function AlamnagarStrike() {
             {enemiesRef.current.map(e => (
               <div
                 key={e.id}
-                className="absolute rounded-lg border-2 border-black flex items-center justify-center z-10"
+                className="absolute flex flex-col items-center justify-center z-10"
                 style={{ 
                   left: `${e.x}%`, top: `${e.y}%`, 
-                  width: `${e.size}px`, height: `${e.size}px`, 
-                  marginLeft: `-${e.size/2}px`, marginTop: `-${e.size/2}px`,
-                  backgroundColor: e.color,
-                  boxShadow: `0 0 15px ${e.color}`
+                  width: `${e.size * 1.5}px`, height: `${e.size * 1.5}px`, 
+                  marginLeft: `-${e.size * 0.75}px`, marginTop: `-${e.size * 0.75}px`,
                 }}
               >
-                <Skull className="w-1/2 h-1/2 text-black/50" />
+                {e.maxHp > 1 && (
+                  <div className="w-full h-1.5 bg-black/50 rounded-full mb-1 overflow-hidden border border-white/20">
+                    <div 
+                      className="h-full bg-green-500 transition-all duration-100" 
+                      style={{ width: `${(e.hp / e.maxHp) * 100}%` }} 
+                    />
+                  </div>
+                )}
+                <div 
+                  className="w-full h-full rounded-full flex items-center justify-center text-3xl md:text-4xl border-2 border-black/30"
+                  style={{ 
+                    backgroundColor: `${e.color}30`,
+                    boxShadow: `0 0 25px ${e.color}`,
+                    borderColor: e.color
+                  }}
+                >
+                  {e.emoji}
+                </div>
               </div>
             ))}
 
@@ -418,7 +619,8 @@ export default function AlamnagarStrike() {
                 className="absolute rounded-full pointer-events-none"
                 style={{ 
                   left: `${p.x}%`, top: `${p.y}%`, 
-                  width: `${p.size}px`, height: `${p.size}px`,
+                  width: `${p.size * 2}px`, height: `${p.size * 2}px`,
+                  marginLeft: `-${p.size}px`, marginTop: `-${p.size}px`,
                   backgroundColor: p.color,
                   opacity: p.life
                 }}
@@ -435,25 +637,37 @@ export default function AlamnagarStrike() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
           >
-            <div className="bg-stone-900 border-2 border-yellow-500/50 p-8 md:p-12 rounded-3xl text-center max-w-md w-full shadow-[0_0_50px_rgba(234,179,8,0.3)]">
-              <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity }} className="text-6xl mb-4">🔫</motion.div>
+            <div className="bg-stone-900/90 border border-yellow-500/30 p-8 md:p-12 rounded-3xl text-center max-w-md w-full shadow-[0_0_50px_rgba(234,179,8,0.15)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent" />
+              
+              <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity }} className="text-7xl mb-4 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">🎯</motion.div>
               <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 mb-2">
                 ALAMNAGAR STRIKE
               </h1>
-              <p className="text-stone-400 mb-8 font-medium">Survive the waves. Protect the village.</p>
+              <p className="text-stone-400 mb-8 font-medium">Survive the waves. Protect the village. Collect weapons!</p>
               
-              <div className="bg-stone-800 rounded-xl p-4 mb-8 flex items-center justify-between border border-stone-700">
-                <span className="text-stone-400 font-bold flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500" /> Best Score</span>
-                <span className="text-2xl font-black text-white">{highScore}</span>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700">
+                  <div className="flex items-center justify-center gap-2 text-stone-400 text-sm font-bold mb-1">
+                    <Trophy className="w-4 h-4 text-yellow-500" /> Best Score
+                  </div>
+                  <div className="text-2xl font-black text-white">{highScore}</div>
+                </div>
+                <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700">
+                  <div className="flex items-center justify-center gap-2 text-stone-400 text-sm font-bold mb-1">
+                    <Shield className="w-4 h-4 text-blue-500" /> Weapons
+                  </div>
+                  <div className="text-xs text-stone-300">Pistol, Rifle, Shotgun</div>
+                </div>
               </div>
 
               <button 
                 onClick={startGame}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black text-xl py-4 rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-3 shadow-lg shadow-orange-500/30"
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black text-xl py-4 rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-3 shadow-lg shadow-orange-500/30 group"
               >
-                <Play className="w-6 h-6 fill-black" /> DEPLOY NOW
+                <Play className="w-6 h-6 fill-black group-hover:scale-110 transition-transform" /> DEPLOY NOW
               </button>
-              <p className="text-xs text-stone-500 mt-4">Mouse/Touch to Aim & Shoot • Don't let them touch you!</p>
+              <p className="text-xs text-stone-500 mt-4">Mouse/Touch to Aim & Shoot • Collect ❤️ 🔫 💥</p>
             </div>
           </motion.div>
         )}
@@ -466,28 +680,30 @@ export default function AlamnagarStrike() {
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 z-40 bg-red-950/90 backdrop-blur-md flex items-center justify-center p-4"
           >
-            <div className="bg-stone-900 border-2 border-red-500/50 p-8 md:p-12 rounded-3xl text-center max-w-md w-full shadow-[0_0_50px_rgba(239,68,68,0.4)]">
-              <h1 className="text-5xl font-black text-red-500 mb-2 tracking-tighter">ELIMINATED</h1>
-              <p className="text-stone-400 mb-6">The village has fallen.</p>
+            <div className="bg-stone-900/90 border border-red-500/30 p-8 md:p-12 rounded-3xl text-center max-w-md w-full shadow-[0_0_50px_rgba(239,68,68,0.2)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent" />
+              
+              <h1 className="text-5xl font-black text-red-500 mb-2 tracking-tighter drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">ELIMINATED</h1>
+              <p className="text-stone-400 mb-8">The village has fallen.</p>
               
               <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-stone-800 rounded-xl p-4 border border-stone-700">
-                  <div className="text-xs text-stone-400 font-bold uppercase">Score</div>
+                <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700">
+                  <div className="text-xs text-stone-400 font-bold uppercase mb-1">Score</div>
                   <div className="text-3xl font-black text-white">{score}</div>
                 </div>
-                <div className="bg-stone-800 rounded-xl p-4 border border-stone-700">
-                  <div className="text-xs text-stone-400 font-bold uppercase">Wave</div>
+                <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700">
+                  <div className="text-xs text-stone-400 font-bold uppercase mb-1">Wave Reached</div>
                   <div className="text-3xl font-black text-yellow-400">{wave}</div>
                 </div>
               </div>
 
               <button 
                 onClick={startGame}
-                className="w-full bg-gradient-to-r from-red-600 to-orange-600 text-white font-black text-xl py-4 rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-3 shadow-lg shadow-red-500/30"
+                className="w-full bg-gradient-to-r from-red-600 to-orange-600 text-white font-black text-xl py-4 rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-3 shadow-lg shadow-red-500/30 group"
               >
-                <RotateCcw className="w-6 h-6" /> RETRY MISSION
+                <RotateCcw className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" /> RETRY MISSION
               </button>
-              <Link href="/" className="block mt-4 text-stone-400 hover:text-white font-bold text-sm transition-colors">
+              <Link href="/" className="block mt-6 text-stone-400 hover:text-white font-bold text-sm transition-colors">
                 ← Return to Base
               </Link>
             </div>
