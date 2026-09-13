@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Rocket, LayoutTemplate, Bot, ExternalLink, Sparkles, Lock, Globe, Code } from "lucide-react";
+import { ArrowLeft, Rocket, LayoutTemplate, Bot, ExternalLink, Sparkles, Globe, Code, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -93,6 +93,7 @@ const ToolsCinematicSlider = () => {
   );
 };
 
+// ✅ UPDATED TOOLS ARRAY (No More Coming Soon!)
 const TOOLS = [
   {
     id: 1,
@@ -117,13 +118,13 @@ const TOOLS = [
   {
     id: 3,
     title: "Alamnagar Analytics",
-    description: "Community growth, post views, aur user engagement ko track karne ke liye advanced dashboard.",
-    icon: Lock,
-    href: "#",
+    description: "Community growth, post views, aur user engagement ko track karne ke liye advanced real-time dashboard.",
+    icon: BarChart3, // Changed from Lock to BarChart3 for live analytics feel
+    href: "/analytics", // ✅ Direct link to the indexed analytics page
     color: "from-emerald-500 to-teal-500",
-    tags: ["Analytics", "Dashboard"],
+    tags: ["Analytics", "Real-time", "Dashboard"],
     external: false,
-    comingSoon: true
+    comingSoon: false // ✅ Removed coming soon
   }
 ];
 
@@ -231,18 +232,19 @@ export default function ToolsPage() {
                   ))}
                 </div>
 
+                {/* ✅ Dynamic Button: Live Link or Coming Soon */}
                 {tool.comingSoon ? (
                   <button disabled className="w-full inline-flex items-center justify-center gap-2 bg-stone-800 text-stone-500 font-bold py-3.5 rounded-xl cursor-not-allowed border border-stone-700">
-                    <Lock className="w-4 h-4" /> Coming Soon
+                    Coming Soon
                   </button>
                 ) : (
                   <Link 
                     href={tool.href} 
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target={tool.external ? "_blank" : "_self"}
+                    rel={tool.external ? "noopener noreferrer" : ""}
                     className={`w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r ${tool.color} text-white font-bold py-3.5 rounded-xl hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]`}
                   >
-                    Use Tool <ExternalLink className="w-4 h-4 opacity-70" />
+                    {tool.external ? "Use Tool" : "Open Dashboard"} <ExternalLink className="w-4 h-4 opacity-70" />
                   </Link>
                 )}
               </div>
