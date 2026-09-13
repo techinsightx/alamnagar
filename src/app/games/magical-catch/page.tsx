@@ -316,7 +316,6 @@ export default function MagicalCatchGame() {
   };
 
   return (
-    // ✅ CRITICAL FIX: touch-none prevents double-tap zoom and pinch-zoom on mobile
     <div 
       className={`min-h-screen bg-gradient-to-b from-sky-300 via-sky-400 to-indigo-500 relative overflow-hidden select-none font-sans touch-none ${screenShake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
       onMouseMove={handleMove} onTouchMove={handleMove}
@@ -326,7 +325,7 @@ export default function MagicalCatchGame() {
         @keyframes timerGlow { 0%, 100% { text-shadow: 0 0 10px currentColor; } 50% { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; } }
       `}</style>
 
-      {/* ✅ ANIMATED BACKGROUND CLOUDS (Like Bubble Pop) */}
+      {/* ✅ ANIMATED BACKGROUND CLOUDS */}
       <motion.div animate={{ x: [0, 50, 0] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute top-10 left-10 w-40 h-20 bg-white/30 rounded-full blur-2xl pointer-events-none" />
       <motion.div animate={{ x: [0, -70, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }} className="absolute top-20 right-20 w-60 h-32 bg-white/20 rounded-full blur-3xl pointer-events-none" />
       <motion.div animate={{ x: [0, 30, 0] }} transition={{ duration: 18, repeat: Infinity, ease: "linear" }} className="absolute top-1/2 left-1/4 w-48 h-24 bg-white/25 rounded-full blur-2xl pointer-events-none" />
@@ -415,28 +414,48 @@ export default function MagicalCatchGame() {
         </motion.div>
       )}
 
-      {/* ✅ Game Area - HIGH VISIBILITY GLOSSY ORBS */}
+      {/* ✅ Game Area - MAXIMUM CRYSTAL CLEAR VISIBILITY */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         <AnimatePresence>
           {items.map((item) => {
             const data = ITEM_TYPES[item.type];
+            
+            // ✅ DYNAMIC STRONG STYLING BASED ON ITEM TYPE
+            const orbStyle = item.type === 'bomb' 
+              ? 'bg-gray-900 border-red-500' // Bomb: Dark with red border for danger
+              : item.type === 'slowmo' 
+              ? 'bg-cyan-400 border-white' 
+              : item.type === 'double' 
+              ? 'bg-yellow-400 border-white' 
+              : item.type === 'magnet' 
+              ? 'bg-purple-500 border-white' 
+              : 'bg-white border-blue-400'; // Normal items: Clean white with colored border
+
             return (
               <motion.div key={item.id}
                 initial={{ y: "-10vh", x: `${item.x}vw`, opacity: 0, scale: 0.5 }}
                 animate={{ y: "110vh", opacity: 1, scale: 1 }}
                 transition={{ duration: (100 / item.speed) * 0.1, ease: "linear" }}
-                className="absolute pointer-events-none"
-                style={{ left: 0, top: 0 }}
+                className="absolute pointer-events-none flex items-center justify-center"
+                style={{ left: 0, top: 0, width: '3.5rem', height: '3.5rem' }} // Slightly larger for better tap target
               >
-                {/* ✅ GLOSSY BALLOON/ORB STYLE FOR MAXIMUM VISIBILITY */}
-                <div className={`relative flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full shadow-2xl border-2 border-white/60 ${item.type === 'bomb' ? 'bg-gray-800/90' : item.glow ? 'bg-yellow-100/90' : 'bg-white/90'} backdrop-blur-sm`}>
-                  <div className="absolute top-2 left-3 w-1/3 h-1/3 bg-white/70 rounded-full blur-sm transform -rotate-12" />
-                  <span className="text-2xl md:text-3xl relative z-10 drop-shadow-md">{data.emoji}</span>
+                {/* ✅ CRYSTAL CLEAR ORB CONTAINER */}
+                <div className={`relative w-full h-full rounded-full flex items-center justify-center shadow-[0_6px_12px_rgba(0,0,0,0.5)] border-4 ${orbStyle}`}>
+                  
+                  {/* ✅ SHARP, FRESH HIGHLIGHT (No blur for maximum clarity) */}
+                  <div className="absolute top-2 left-3 w-1/3 h-1/3 bg-white rounded-full opacity-90" />
+                  
+                  {/* ✅ LARGE, SHARP EMOJI */}
+                  <span className="text-3xl md:text-4xl relative z-10 drop-shadow-md filter">
+                    {data.emoji}
+                  </span>
+
+                  {/* ✅ STRONG GLOW FOR RARE/LEGENDARY ITEMS */}
                   {item.glow && (
                     <motion.div 
-                      animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0.9, 0.6] }} 
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="absolute inset-0 bg-yellow-400/60 rounded-full blur-xl" 
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.8, 1, 0.8] }} 
+                      transition={{ duration: 1.2, repeat: Infinity }}
+                      className="absolute -inset-3 bg-yellow-400/90 rounded-full blur-md -z-10" 
                     />
                   )}
                 </div>
