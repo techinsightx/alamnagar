@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, Trophy, Play, RotateCcw, Volume2, VolumeX, Target, 
   MapPin, Trees, Building2, AlertTriangle, Mic, MicOff, Users, 
-  User, LogIn, UserPlus, Mail, Lock, LogOut, Gamepad2
+  User, LogIn, UserPlus, Mail, Lock, LogOut, Gamepad2, Hand
 } from "lucide-react";
 import Link from "next/link";
 import { db, auth } from "@/lib/firebase";
@@ -79,6 +79,7 @@ const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'hit' | 'kill' | 'expl
 type Environment = 'gali' | 'jungle' | 'city';
 type WeaponType = 'pistol' | 'rifle' | 'shotgun' | 'sniper';
 type CharacterType = 'boy' | 'girl';
+type GunHand = 'left' | 'right';
 
 const WEAPONS: Record<WeaponType, { name: string; fireRate: number; damage: number; spread: number; speed: number; color: string }> = {
   pistol: { name: "Pistol", fireRate: 250, damage: 1, spread: 0, speed: 2.5, color: "#fbbf24" },
@@ -87,51 +88,154 @@ const WEAPONS: Record<WeaponType, { name: string; fireRate: number; damage: numb
   sniper: { name: "Sniper", fireRate: 1200, damage: 5, spread: 0, speed: 5.0, color: "#a855f7" },
 };
 
-// ✅ Boy Character SVG
-const BoyCharacter = ({ angle, isHit }: { angle: number; isHit: boolean }) => (
-  <g transform={`rotate(${angle})`} style={{ filter: isHit ? 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none' }}>
-    <ellipse cx="0" cy="35" rx="20" ry="6" fill="rgba(0,0,0,0.4)" />
-    <rect x="-12" y="15" width="10" height="22" rx="4" fill="#1e3a8a" />
-    <rect x="2" y="15" width="10" height="22" rx="4" fill="#1e3a8a" />
-    <rect x="-14" y="32" width="14" height="6" rx="2" fill="#333" />
-    <rect x="0" y="32" width="14" height="6" rx="2" fill="#333" />
-    <rect x="-15" y="-5" width="30" height="25" rx="4" fill="#dc2626" />
-    <rect x="-22" y="-2" width="10" height="20" rx="4" fill="#fbbf24" />
-    <rect x="12" y="-2" width="10" height="20" rx="4" fill="#fbbf24" />
-    <circle cx="0" cy="-18" r="14" fill="#fcd34d" />
-    <path d="M -14 -22 Q -10 -32 0 -30 Q 10 -32 14 -22 Q 12 -26 0 -25 Q -12 -26 -14 -22 Z" fill="#1a1a1a" />
-    <circle cx="-5" cy="-20" r="2" fill="white" /><circle cx="5" cy="-20" r="2" fill="white" />
-    <circle cx="-5" cy="-20" r="1" fill="black" /><circle cx="5" cy="-20" r="1" fill="black" />
-    <path d="M -4 -14 Q 0 -12 4 -14" stroke="black" strokeWidth="1" fill="none" />
-    <rect x="15" y="5" width="25" height="8" rx="2" fill="#333" />
-    <rect x="18" y="13" width="6" height="10" rx="1" fill="#111" />
-    <rect x="38" y="6" width="8" height="6" rx="1" fill="#555" />
+// ✅ Boy Character SVG (Fixed upright, no rotation)
+const BoyCharacter = ({ profilePhoto, isHit }: { profilePhoto?: string; isHit: boolean }) => (
+  <g style={{ filter: isHit ? 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none' }}>
+    {/* Shadow */}
+    <ellipse cx="0" cy="45" rx="25" ry="7" fill="rgba(0,0,0,0.5)" />
+    
+    {/* Legs (Animated) */}
+    <g className="animate-walk">
+      <rect x="-12" y="20" width="10" height="25" rx="4" fill="#1e3a8a" />
+      <rect x="2" y="20" width="10" height="25" rx="4" fill="#1e3a8a" />
+      {/* Boots */}
+      <rect x="-14" y="40" width="14" height="7" rx="3" fill="#333" />
+      <rect x="0" y="40" width="14" height="7" rx="3" fill="#333" />
+    </g>
+    
+    {/* Body (T-shirt) */}
+    <rect x="-18" y="-5" width="36" height="28" rx="5" fill="#dc2626" />
+    {/* Belt */}
+    <rect x="-18" y="18" width="36" height="4" rx="2" fill="#1a1a1a" />
+    
+    {/* Arms (will be positioned based on gun hand) */}
+    <rect x="-26" y="-2" width="10" height="22" rx="4" fill="#fbbf24" />
+    <rect x="16" y="-2" width="10" height="22" rx="4" fill="#fbbf24" />
+    
+    {/* Head */}
+    <circle cx="0" cy="-20" r="16" fill="#fcd34d" />
+    
+    {/* Profile Photo (if available) */}
+    {profilePhoto && (
+      <g>
+        <defs>
+          <clipPath id="boyHeadClip">
+            <circle cx="0" cy="-20" r="15" />
+          </clipPath>
+        </defs>
+        <image 
+          href={profilePhoto} 
+          x="-15" y="-35" 
+          width="30" height="30" 
+          clipPath="url(#boyHeadClip)"
+          preserveAspectRatio="xMidYMid slice"
+        />
+      </g>
+    )}
+    
+    {/* Hair (Boy - short spiky) */}
+    <path d="M -16 -25 Q -12 -36 0 -34 Q 12 -36 16 -25 Q 14 -30 0 -29 Q -14 -30 -16 -25 Z" fill="#1a1a1a" />
+    
+    {/* Eyes */}
+    <circle cx="-6" cy="-22" r="2.5" fill="white" />
+    <circle cx="6" cy="-22" r="2.5" fill="white" />
+    <circle cx="-6" cy="-22" r="1.2" fill="black" />
+    <circle cx="6" cy="-22" r="1.2" fill="black" />
+    
+    {/* Mouth */}
+    <path d="M -5 -14 Q 0 -12 5 -14" stroke="black" strokeWidth="1.5" fill="none" />
   </g>
 );
 
-// ✅ Girl Character SVG
-const GirlCharacter = ({ angle, isHit }: { angle: number; isHit: boolean }) => (
-  <g transform={`rotate(${angle})`} style={{ filter: isHit ? 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none' }}>
-    <ellipse cx="0" cy="35" rx="20" ry="6" fill="rgba(0,0,0,0.4)" />
-    <rect x="-10" y="15" width="9" height="22" rx="4" fill="#4c1d95" />
-    <rect x="1" y="15" width="9" height="22" rx="4" fill="#4c1d95" />
-    <rect x="-12" y="32" width="13" height="6" rx="2" fill="#ec4899" />
-    <rect x="-1" y="32" width="13" height="6" rx="2" fill="#ec4899" />
-    <rect x="-14" y="-5" width="28" height="22" rx="4" fill="#ec4899" />
-    <rect x="-21" y="-2" width="9" height="18" rx="4" fill="#fde68a" />
-    <rect x="12" y="-2" width="9" height="18" rx="4" fill="#fde68a" />
-    <circle cx="0" cy="-18" r="14" fill="#fde68a" />
-    <path d="M -14 -22 Q -10 -32 0 -30 Q 10 -32 14 -22 Q 12 -26 0 -25 Q -12 -26 -14 -22 Z" fill="#7c2d12" />
-    <ellipse cx="-16" cy="-15" rx="5" ry="10" fill="#7c2d12" />
-    <ellipse cx="16" cy="-15" rx="5" ry="10" fill="#7c2d12" />
-    <circle cx="-5" cy="-20" r="2.5" fill="white" /><circle cx="5" cy="-20" r="2.5" fill="white" />
-    <circle cx="-5" cy="-20" r="1.2" fill="black" /><circle cx="5" cy="-20" r="1.2" fill="black" />
-    <path d="M -4 -14 Q 0 -11 4 -14" stroke="black" strokeWidth="1" fill="#ec4899" />
-    <rect x="15" y="5" width="25" height="8" rx="2" fill="#333" />
-    <rect x="18" y="13" width="6" height="10" rx="1" fill="#111" />
-    <rect x="38" y="6" width="8" height="6" rx="1" fill="#555" />
+// ✅ Girl Character SVG (Fixed upright, no rotation)
+const GirlCharacter = ({ profilePhoto, isHit }: { profilePhoto?: string; isHit: boolean }) => (
+  <g style={{ filter: isHit ? 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none' }}>
+    {/* Shadow */}
+    <ellipse cx="0" cy="45" rx="25" ry="7" fill="rgba(0,0,0,0.5)" />
+    
+    {/* Legs (Animated) */}
+    <g className="animate-walk">
+      <rect x="-10" y="20" width="9" height="25" rx="4" fill="#4c1d95" />
+      <rect x="1" y="20" width="9" height="25" rx="4" fill="#4c1d95" />
+      {/* Boots */}
+      <rect x="-12" y="40" width="13" height="7" rx="3" fill="#ec4899" />
+      <rect x="-1" y="40" width="13" height="7" rx="3" fill="#ec4899" />
+    </g>
+    
+    {/* Body (Top) */}
+    <rect x="-16" y="-5" width="32" height="26" rx="5" fill="#ec4899" />
+    {/* Belt */}
+    <rect x="-16" y="18" width="32" height="4" rx="2" fill="#1a1a1a" />
+    
+    {/* Arms */}
+    <rect x="-24" y="-2" width="9" height="20" rx="4" fill="#fde68a" />
+    <rect x="15" y="-2" width="9" height="20" rx="4" fill="#fde68a" />
+    
+    {/* Head */}
+    <circle cx="0" cy="-20" r="16" fill="#fde68a" />
+    
+    {/* Profile Photo (if available) */}
+    {profilePhoto && (
+      <g>
+        <defs>
+          <clipPath id="girlHeadClip">
+            <circle cx="0" cy="-20" r="15" />
+          </clipPath>
+        </defs>
+        <image 
+          href={profilePhoto} 
+          x="-15" y="-35" 
+          width="30" height="30" 
+          clipPath="url(#girlHeadClip)"
+          preserveAspectRatio="xMidYMid slice"
+        />
+      </g>
+    )}
+    
+    {/* Hair (Girl - long with pigtails) */}
+    <path d="M -16 -25 Q -12 -36 0 -34 Q 12 -36 16 -25 Q 14 -30 0 -29 Q -14 -30 -16 -25 Z" fill="#7c2d12" />
+    <ellipse cx="-18" cy="-17" rx="6" ry="12" fill="#7c2d12" />
+    <ellipse cx="18" cy="-17" rx="6" ry="12" fill="#7c2d12" />
+    
+    {/* Eyes */}
+    <circle cx="-6" cy="-22" r="2.8" fill="white" />
+    <circle cx="6" cy="-22" r="2.8" fill="white" />
+    <circle cx="-6" cy="-22" r="1.4" fill="black" />
+    <circle cx="6" cy="-22" r="1.4" fill="black" />
+    
+    {/* Eyelashes */}
+    <path d="M -8 -24 L -9 -26 M -4 -24 L -4 -26" stroke="black" strokeWidth="0.7" />
+    <path d="M 4 -24 L 4 -26 M 8 -24 L 9 -26" stroke="black" strokeWidth="0.7" />
+    
+    {/* Mouth (smile) */}
+    <path d="M -5 -14 Q 0 -11 5 -14" stroke="black" strokeWidth="1.5" fill="#ec4899" />
   </g>
 );
+
+// ✅ Realistic Gun SVG (Rotates independently)
+const GunSVG = ({ weapon, angle, hand }: { weapon: WeaponType; angle: number; hand: GunHand }) => {
+  const color = WEAPONS[weapon].color;
+  const flipX = hand === 'left' ? -1 : 1;
+  
+  return (
+    <g transform={`rotate(${angle}) scale(${flipX}, 1)`} style={{ filter: `drop-shadow(0 0 10px ${color})` }}>
+      {/* Stock */}
+      <rect x="-35" y="-5" width="22" height="10" rx="3" fill="#4a3b2a" />
+      {/* Handle */}
+      <rect x="-18" y="5" width="10" height="15" rx="3" fill="#222" />
+      {/* Body */}
+      <rect x="-12" y="-6" width="35" height="12" rx="3" fill="#333" />
+      {/* Magazine */}
+      <rect x="-8" y="6" width="12" height="18" rx="2" fill="#111" />
+      {/* Barrel */}
+      <rect x="23" y="-4" width="30" height="8" rx="2" fill="#555" />
+      {/* Scope/Detail */}
+      <rect x="-8" y="-10" width="18" height="4" rx="2" fill={color} />
+      {/* Muzzle */}
+      <circle cx="53" cy="0" r="3" fill="#222" />
+    </g>
+  );
+};
 
 const ENVIRONMENTS: Record<Environment, { 
   name: string; hindiName: string; icon: any; bg: string; overlay: string;
@@ -168,6 +272,7 @@ export default function AlamnagarStrike() {
   const [gameState, setGameState] = useState<'auth' | 'menu' | 'select_char' | 'select_env' | 'playing' | 'gameover'>('auth');
   const [selectedEnv, setSelectedEnv] = useState<Environment>('gali');
   const [selectedChar, setSelectedChar] = useState<CharacterType>('boy');
+  const [gunHand, setGunHand] = useState<GunHand>('right');
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [health, setHealth] = useState(100);
@@ -178,10 +283,9 @@ export default function AlamnagarStrike() {
   const [currentWeapon, setCurrentWeapon] = useState<WeaponType>('rifle');
   const [isMicOn, setIsMicOn] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [onlinePlayers, setOnlinePlayers] = useState<any[]>([]);
 
   // Game refs
-  const gunPosRef = useRef({ x: 50, y: 80 });
+  const characterPosRef = useRef({ x: 50, y: 80 });
   const gunAngleRef = useRef(0);
   const mousePosRef = useRef({ x: 50, y: 50 });
   const bulletsRef = useRef<any[]>([]);
@@ -207,7 +311,6 @@ export default function AlamnagarStrike() {
       setAuthLoading(false);
       if (user) {
         setGameState('menu');
-        // Register presence in Firestore
         const presenceId = `players_${user.uid}`;
         playerPresenceRef.current = presenceId;
         const presenceRef = doc(db, 'gamePresence', presenceId);
@@ -215,19 +318,14 @@ export default function AlamnagarStrike() {
           uid: user.uid,
           displayName: user.displayName || 'Player',
           email: user.email,
+          photoURL: user.photoURL || '',
           online: true,
           character: 'boy',
           lastSeen: serverTimestamp()
         });
-        // Cleanup on unload
         window.addEventListener('beforeunload', () => {
           deleteDoc(presenceRef).catch(() => {});
         });
-        // Listen to other players
-        const unsub = onSnapshot(doc(db, 'gamePresence', 'players_list'), (snap) => {
-          // Fallback: just show current user for now
-        });
-        return () => unsub && unsub();
       } else {
         setGameState('auth');
       }
@@ -247,7 +345,6 @@ export default function AlamnagarStrike() {
       }
       const cred = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
       await updateProfile(cred.user, { displayName: authName || authEmail.split('@')[0] });
-      // Save user profile in Firestore
       await setDoc(doc(db, 'users', cred.user.uid), {
         uid: cred.user.uid,
         displayName: authName || authEmail.split('@')[0],
@@ -299,7 +396,7 @@ export default function AlamnagarStrike() {
     setGameState('auth');
   };
 
-  // ✅ Voice Chat (Mic) - Now uses Firestore
+  // ✅ Voice Chat
   const toggleMic = async () => {
     if (isMicOn) {
       if (micStreamRef.current) {
@@ -310,7 +407,6 @@ export default function AlamnagarStrike() {
         audioContextRef.current.close();
         audioContextRef.current = null;
       }
-      // Update presence
       if (currentUser && playerPresenceRef.current) {
         try {
           await setDoc(doc(db, 'gamePresence', playerPresenceRef.current), {
@@ -341,7 +437,6 @@ export default function AlamnagarStrike() {
       setIsMicOn(true);
       if (soundEnabled) playSound('switch');
 
-      // Update presence with mic on
       if (currentUser && playerPresenceRef.current) {
         try {
           await setDoc(doc(db, 'gamePresence', playerPresenceRef.current), {
@@ -354,7 +449,6 @@ export default function AlamnagarStrike() {
         } catch (e) {}
       }
 
-      // Voice activity detection
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
       const detectVoice = () => {
         if (!analyserRef.current) return;
@@ -381,8 +475,8 @@ export default function AlamnagarStrike() {
     setScore(0); setHealth(100); setWave(1);
     setWarningText(null); setCurrentWeapon('rifle');
     scoreRef.current = 0; healthRef.current = 100;
-    gunPosRef.current = { x: 50, y: 80 };
-    gunAngleRef.current = -90;
+    characterPosRef.current = { x: 50, y: 80 };
+    gunAngleRef.current = 0;
     mousePosRef.current = { x: 50, y: 50 };
     bulletsRef.current = []; enemiesRef.current = []; particlesRef.current = [];
     if (soundEnabled) playSound('booyah');
@@ -397,7 +491,7 @@ export default function AlamnagarStrike() {
     const hp = isBoss ? 5 + wave : 1 + Math.floor(wave / 2);
 
     const directionText = side === 'left' ? "बाएं (Left)" : "दाएं (Right)";
-    setWarningText(`️ चेतावनी: ${directionText} से ${isBoss ? 'बॉस ' : ''}दुश्मन आ रहा है!`);
+    setWarningText(`⚠️ चेतावनी: ${directionText} से ${isBoss ? 'बॉस ' : ''}दुश्मन आ रहा है!`);
     setTimeout(() => setWarningText(null), 2500);
 
     enemiesRef.current.push({
@@ -413,17 +507,19 @@ export default function AlamnagarStrike() {
     let enemySpawnTimer = 0;
     
     const loop = () => {
-      const gunPos = gunPosRef.current;
+      const charPos = characterPosRef.current;
       const mousePos = mousePosRef.current;
       const bullets = bulletsRef.current;
       const enemies = enemiesRef.current;
       const particles = particlesRef.current;
 
-      gunPos.x += (mousePos.x - gunPos.x) * 0.15;
-      gunPos.y += (mousePos.y - gunPos.y) * 0.15;
+      // Character moves smoothly
+      charPos.x += (mousePos.x - charPos.x) * 0.15;
+      charPos.y += (mousePos.y - charPos.y) * 0.15;
 
-      const dx = mousePos.x - gunPos.x;
-      const dy = mousePos.y - gunPos.y;
+      // Gun angle calculated from character to mouse
+      const dx = mousePos.x - charPos.x;
+      const dy = mousePos.y - charPos.y;
       if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
         const targetAngle = Math.atan2(dy, dx) * (180 / Math.PI);
         let diff = targetAngle - gunAngleRef.current;
@@ -432,16 +528,18 @@ export default function AlamnagarStrike() {
         gunAngleRef.current += diff * 0.2;
       }
 
+      // Move bullets
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         b.x += b.vx; b.y += b.vy;
         if (b.x < -10 || b.x > 110 || b.y < -10 || b.y > 110) bullets.splice(i, 1);
       }
 
+      // Move enemies
       for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
-        const edx = gunPos.x - e.x;
-        const edy = gunPos.y - e.y;
+        const edx = charPos.x - e.x;
+        const edy = charPos.y - e.y;
         const dist = Math.sqrt(edx * edx + edy * edy);
         const speed = 0.1 + (wave * 0.015);
         
@@ -460,12 +558,11 @@ export default function AlamnagarStrike() {
           if (soundEnabled) playSound('hit');
           
           for (let p = 0; p < 8; p++) {
-            particles.push({ id: Math.random(), x: gunPos.x, y: gunPos.y, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5, life: 1, color: '#ef4444', size: 4 });
+            particles.push({ id: Math.random(), x: charPos.x, y: charPos.y, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5, life: 1, color: '#ef4444', size: 4 });
           }
           if (healthRef.current <= 0) {
             setGameState('gameover');
             if (soundEnabled) playSound('gameover');
-            // Save high score to Firestore
             if (currentUser && scoreRef.current > highScore) {
               setDoc(doc(db, 'users', currentUser.uid), {
                 highScore: scoreRef.current,
@@ -480,6 +577,7 @@ export default function AlamnagarStrike() {
         }
       }
 
+      // Bullet vs Enemy
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         let hit = false;
@@ -517,6 +615,7 @@ export default function AlamnagarStrike() {
         if (hit) bullets.splice(i, 1);
       }
 
+      // Update particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx; p.y += p.vy;
@@ -524,6 +623,7 @@ export default function AlamnagarStrike() {
         if (p.life <= 0) particles.splice(i, 1);
       }
 
+      // Spawn enemies
       enemySpawnTimer++;
       if (enemySpawnTimer > Math.max(30, 80 - wave * 5)) {
         spawnEnemy();
@@ -557,15 +657,15 @@ export default function AlamnagarStrike() {
     if (now - lastShotRef.current < weapon.fireRate) return;
     lastShotRef.current = now;
 
-    const gunPos = gunPosRef.current;
+    const charPos = characterPosRef.current;
     const angleRad = gunAngleRef.current * (Math.PI / 180);
     
     const shoot = (spreadOffset: number) => {
       const finalAngle = angleRad + spreadOffset;
       bulletsRef.current.push({
         id: Date.now() + Math.random(), 
-        x: gunPos.x + Math.cos(finalAngle) * 5, 
-        y: gunPos.y + Math.sin(finalAngle) * 5,
+        x: charPos.x + Math.cos(finalAngle) * 8, 
+        y: charPos.y + Math.sin(finalAngle) * 8,
         vx: Math.cos(finalAngle) * weapon.speed, 
         vy: Math.sin(finalAngle) * weapon.speed,
         size: currentWeapon === 'sniper' ? 8 : 5, 
@@ -592,10 +692,14 @@ export default function AlamnagarStrike() {
     if (soundEnabled) playSound('switch');
   };
 
+  const toggleGunHand = () => {
+    setGunHand(gunHand === 'right' ? 'left' : 'right');
+    if (soundEnabled) playSound('switch');
+  };
+
   const env = ENVIRONMENTS[selectedEnv];
   const EnvIcon = env.icon;
 
-  // ✅ Loading Screen
   if (authLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -604,11 +708,9 @@ export default function AlamnagarStrike() {
     );
   }
 
-  // ✅ Auth Screen (Login/Signup)
   if (gameState === 'auth' || !currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-950 via-purple-950 to-stone-950 flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Animated Background */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-20 w-72 h-72 bg-purple-600 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-amber-600 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -621,7 +723,6 @@ export default function AlamnagarStrike() {
         >
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent rounded-t-3xl" />
           
-          {/* Logo */}
           <div className="text-center mb-6">
             <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="text-6xl mb-3">🎯</motion.div>
             <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500">
@@ -630,7 +731,6 @@ export default function AlamnagarStrike() {
             <p className="text-stone-400 text-sm mt-2">अपना अकाउंट बनाएं या लॉगिन करें</p>
           </div>
 
-          {/* Auth Mode Toggle */}
           <div className="flex gap-2 mb-6 bg-stone-800 p-1 rounded-xl">
             <button
               onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
@@ -650,7 +750,6 @@ export default function AlamnagarStrike() {
             </button>
           </div>
 
-          {/* Form */}
           <form onSubmit={authMode === 'login' ? handleLogin : handleSignup} className="space-y-4">
             {authMode === 'signup' && (
               <div>
@@ -719,7 +818,6 @@ export default function AlamnagarStrike() {
             </button>
           </form>
 
-          {/* Info */}
           <div className="mt-6 pt-6 border-t border-stone-800">
             <div className="flex items-center justify-center gap-4 text-xs text-stone-500">
               <span className="flex items-center gap-1"><Gamepad2 className="w-3 h-3" /> 4 Weapons</span>
@@ -731,7 +829,6 @@ export default function AlamnagarStrike() {
             </p>
           </div>
 
-          {/* Back to Home */}
           <Link href="/" className="block mt-4 text-center text-stone-500 hover:text-yellow-400 text-sm font-bold transition-colors">
             ← मुख्य पृष्ठ पर वापस जाएं
           </Link>
@@ -740,9 +837,18 @@ export default function AlamnagarStrike() {
     );
   }
 
-  // ✅ Main Game UI (after login)
   return (
     <div className="min-h-screen bg-black relative overflow-hidden select-none touch-none font-sans text-white">
+      <style>{`
+        @keyframes walk {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+        .animate-walk {
+          animation: walk 0.4s ease-in-out infinite;
+        }
+      `}</style>
+
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000" style={{ backgroundImage: `url(${env.bg})` }} />
         <div className={`absolute inset-0 ${env.overlay} transition-all duration-1000`} />
@@ -756,11 +862,15 @@ export default function AlamnagarStrike() {
             <ArrowLeft className="w-4 h-4" /> Home
           </Link>
           
-          {/* ✅ User Profile Display */}
+          {/* User Profile */}
           <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-xs font-black text-black">
-              {(currentUser.displayName || currentUser.email || 'P')[0].toUpperCase()}
-            </div>
+            {currentUser.photoURL ? (
+              <img src={currentUser.photoURL} alt="" className="w-8 h-8 rounded-full border-2 border-yellow-500" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-xs font-black text-black">
+                {(currentUser.displayName || currentUser.email || 'P')[0].toUpperCase()}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="text-xs font-bold text-white truncate">{currentUser.displayName || 'Player'}</div>
               <div className="text-[10px] text-stone-400 truncate">{currentUser.email}</div>
@@ -779,7 +889,6 @@ export default function AlamnagarStrike() {
             <button onClick={() => setSoundEnabled(!soundEnabled)} className="text-xs text-white font-bold">SOUND</button>
           </div>
 
-          {/* ✅ Mic Button */}
           <button 
             onClick={toggleMic}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
@@ -789,6 +898,15 @@ export default function AlamnagarStrike() {
             {isMicOn ? <Mic className="w-5 h-5 text-green-400" /> : <MicOff className="w-5 h-5 text-red-400" />}
             <span className="text-xs text-white font-bold">{isMicOn ? 'MIC ON' : 'MIC OFF'}</span>
             {isSpeaking && <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />}
+          </button>
+
+          {/* ✅ Gun Hand Toggle */}
+          <button 
+            onClick={toggleGunHand}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-black/60 hover:bg-black/80 transition-all"
+          >
+            <Hand className="w-5 h-5 text-cyan-400" />
+            <span className="text-xs text-white font-bold">{gunHand === 'right' ? 'RIGHT HAND' : 'LEFT HAND'}</span>
           </button>
         </div>
 
@@ -807,12 +925,6 @@ export default function AlamnagarStrike() {
             <div className="text-sm font-bold text-stone-300 bg-black/40 px-3 py-1 rounded-full border border-white/5 flex items-center gap-2">
               <EnvIcon className="w-4 h-4" /> {env.hindiName} • WAVE {wave}
             </div>
-            {isMicOn && (
-              <div className="flex items-center gap-2 bg-purple-600/40 backdrop-blur-md px-3 py-1 rounded-full border border-purple-400/30">
-                <Mic className="w-4 h-4 text-purple-300" />
-                <span className="text-xs font-bold text-purple-200">{isSpeaking ? 'Speaking...' : 'Mic Active'}</span>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -887,15 +999,24 @@ export default function AlamnagarStrike() {
               </div>
             ))}
 
-            {/* Character with Gun */}
-            <div className="absolute z-30 pointer-events-none" style={{ left: `${gunPosRef.current.x}%`, top: `${gunPosRef.current.y}%`, transform: 'translate(-50%, -50%)' }}>
-              <svg width="100" height="100" viewBox="-50 -50 100 100" className="overflow-visible">
+            {/* ✅ Character (Fixed upright) + Gun (Rotates) */}
+            <div className="absolute z-30 pointer-events-none" style={{ left: `${characterPosRef.current.x}%`, top: `${characterPosRef.current.y}%`, transform: 'translate(-50%, -50%)' }}>
+              {/* Character (No rotation - always upright) */}
+              <svg width="100" height="120" viewBox="-50 -60 100 120" className="overflow-visible">
                 {selectedChar === 'boy' ? (
-                  <BoyCharacter angle={gunAngleRef.current} isHit={false} />
+                  <BoyCharacter profilePhoto={currentUser.photoURL} isHit={false} />
                 ) : (
-                  <GirlCharacter angle={gunAngleRef.current} isHit={false} />
+                  <GirlCharacter profilePhoto={currentUser.photoURL} isHit={false} />
                 )}
               </svg>
+              
+              {/* Gun (Rotates independently) */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ transform: `translate(-50%, -50%)` }}>
+                <svg width="120" height="120" viewBox="-60 -60 120 120" className="overflow-visible">
+                  <GunSVG weapon={currentWeapon} angle={gunAngleRef.current} hand={gunHand} />
+                </svg>
+              </div>
+
               {isMicOn && isSpeaking && (
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-6 h-6 bg-green-500 rounded-full animate-pulse border-2 border-white" />
               )}
@@ -933,8 +1054,8 @@ export default function AlamnagarStrike() {
                       className={`relative p-6 rounded-2xl border-2 bg-blue-950/40 hover:bg-blue-900/60 transition-all group ${
                         selectedChar === 'boy' ? 'border-blue-400 scale-105' : 'border-blue-500/30'
                       }`}>
-                      <svg viewBox="-50 -50 100 100" className="w-32 h-32 mx-auto mb-4">
-                        <BoyCharacter angle={0} isHit={false} />
+                      <svg viewBox="-50 -60 100 120" className="w-32 h-40 mx-auto mb-4">
+                        <BoyCharacter profilePhoto={currentUser.photoURL} isHit={false} />
                       </svg>
                       <div className="font-black text-xl text-blue-300">BOY</div>
                       <div className="text-xs text-stone-400">लड़का योद्धा</div>
@@ -944,8 +1065,8 @@ export default function AlamnagarStrike() {
                       className={`relative p-6 rounded-2xl border-2 bg-pink-950/40 hover:bg-pink-900/60 transition-all group ${
                         selectedChar === 'girl' ? 'border-pink-400 scale-105' : 'border-pink-500/30'
                       }`}>
-                      <svg viewBox="-50 -50 100 100" className="w-32 h-32 mx-auto mb-4">
-                        <GirlCharacter angle={0} isHit={false} />
+                      <svg viewBox="-50 -60 100 120" className="w-32 h-40 mx-auto mb-4">
+                        <GirlCharacter profilePhoto={currentUser.photoURL} isHit={false} />
                       </svg>
                       <div className="font-black text-xl text-pink-300">GIRL</div>
                       <div className="text-xs text-stone-400">लड़की योद्धा</div>
@@ -956,7 +1077,7 @@ export default function AlamnagarStrike() {
               ) : (
                 <>
                   <h2 className="text-3xl font-black text-white mb-2 flex items-center justify-center gap-2"><MapPin className="text-yellow-400" /> युद्धक्षेत्र चुनें</h2>
-                  <p className="text-stone-400 mb-6 text-sm">3 locations • Voice Chat enabled</p>
+                  <p className="text-stone-400 mb-6 text-sm">3 locations • Voice Chat enabled </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     {(['gali', 'jungle', 'city'] as Environment[]).map((envKey) => {
