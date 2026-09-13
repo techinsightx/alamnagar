@@ -93,38 +93,38 @@ const ToolsCinematicSlider = () => {
   );
 };
 
-// ✅ UPDATED TOOLS ARRAY (No More Coming Soon!)
+// ✅ UPDATED TOOLS ARRAY (Fully in Hindi/Devnagari)
 const TOOLS = [
   {
     id: 1,
-    title: "FunnelsBuilder",
-    description: "Mufat mein professional website aur high-converting landing pages banayein. Coding ki zarurat nahi!",
+    title: "फनल बिल्डर",
+    description: "मुफ्त में प्रोफेशनल वेबसाइट और हाई-कन्वर्टिंग लैंडिंग पेज बनाएं। कोडिंग की आवश्यकता नहीं!",
     icon: LayoutTemplate,
     href: "https://funnelsbuilder.netlify.app",
     color: "from-purple-500 to-indigo-500",
-    tags: ["Web Dev", "No-Code", "Free"],
+    tags: ["वेब डेवलपमेंट", "नो-कोड", "मुफ्त"],
     external: true
   },
   {
     id: 2,
-    title: "AI Passive System",
-    description: "Automated AI tools jo khud kaam karte hain. Passive income aur smart work ke liye best solution.",
+    title: "एआई पैसिव सिस्टम",
+    description: "स्वचालित एआई टूल्स जो खुद काम करते हैं। पैसिव इनकम और स्मार्ट वर्क के लिए बेहतरीन समाधान।",
     icon: Bot,
     href: "https://aipassivesystem.netlify.app",
     color: "from-cyan-500 to-blue-500",
-    tags: ["AI", "Automation", "Income"],
+    tags: ["एआई", "ऑटोमेशन", "आय"],
     external: true
   },
   {
     id: 3,
-    title: "Alamnagar Analytics",
-    description: "Community growth, post views, aur user engagement ko track karne ke liye advanced real-time dashboard.",
-    icon: BarChart3, // Changed from Lock to BarChart3 for live analytics feel
-    href: "/analytics", // ✅ Direct link to the indexed analytics page
+    title: "आलमनगर एनालिटिक्स",
+    description: "समुदाय विकास, पोस्ट दृश्य और उपयोगकर्ता सहभागिता को ट्रैक करने के लिए उन्नत रियल-टाइम डैशबोर्ड।",
+    icon: BarChart3,
+    href: "/analytics",
     color: "from-emerald-500 to-teal-500",
-    tags: ["Analytics", "Real-time", "Dashboard"],
+    tags: ["एनालिटिक्स", "रियल-टाइम", "डैशबोर्ड"],
     external: false,
-    comingSoon: false // ✅ Removed coming soon
+    comingSoon: false
   }
 ];
 
@@ -142,7 +142,7 @@ export default function ToolsPage() {
       {/* Top Navigation */}
       <div className="relative z-30 p-4 md:p-6">
         <Link href="/" className="inline-flex items-center gap-2 text-white bg-black/40 hover:bg-black/60 backdrop-blur-md px-4 py-2 rounded-full transition-all border border-white/20 shadow-lg">
-          <ArrowLeft className="w-4 h-4" /> Back to Alamnagar
+          <ArrowLeft className="w-4 h-4" /> आलमनगर पर वापस
         </Link>
       </div>
 
@@ -158,18 +158,18 @@ export default function ToolsPage() {
           >
             <div className="inline-flex items-center gap-2 bg-cyan-500/30 backdrop-blur-md border border-cyan-400/30 rounded-full px-6 py-3 mb-8 shadow-lg shadow-cyan-500/20">
               <Rocket className="w-6 h-6 text-cyan-300" />
-              <span className="text-sm font-black tracking-wider text-white uppercase">Creator Hub</span>
+              <span className="text-sm font-black tracking-wider text-white uppercase">क्रिएटर हब</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight drop-shadow-2xl">
-              Apne Digital Safar Ko <br />
+              अपने डिजिटल सफर को <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400">
-                Banayein Aur Bhi Shandaar
+                बनाएं और भी शानदार
               </span>
             </h1>
             
             <p className="text-lg md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed drop-shadow-lg mb-8">
-              Professional tools, AI automation, aur web development resources ek hi jagah. Apne skills ko next level par le jayein.
+              प्रोफेशनल टूल्स, एआई ऑटोमेशन और वेब डेवलपमेंट संसाधन एक ही जगह। अपने कौशल को अगले स्तर पर ले जाएं।
             </p>
 
             <motion.div 
@@ -179,13 +179,13 @@ export default function ToolsPage() {
               className="flex flex-wrap justify-center gap-4 text-sm text-white/70"
             >
               <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                <Code className="w-4 h-4 text-purple-400" /> Web Development
+                <Code className="w-4 h-4 text-purple-400" /> वेब डेवलपमेंट
               </span>
               <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                <Bot className="w-4 h-4 text-cyan-400" /> AI Tools
+                <Bot className="w-4 h-4 text-cyan-400" /> एआई टूल्स
               </span>
               <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                <Globe className="w-4 h-4 text-blue-400" /> Free Resources
+                <Globe className="w-4 h-4 text-blue-400" /> मुफ्त संसाधन
               </span>
             </motion.div>
           </motion.div>
@@ -235,7 +235,7 @@ export default function ToolsPage() {
                 {/* ✅ Dynamic Button: Live Link or Coming Soon */}
                 {tool.comingSoon ? (
                   <button disabled className="w-full inline-flex items-center justify-center gap-2 bg-stone-800 text-stone-500 font-bold py-3.5 rounded-xl cursor-not-allowed border border-stone-700">
-                    Coming Soon
+                    जल्द आ रहा है
                   </button>
                 ) : (
                   <Link 
@@ -244,7 +244,7 @@ export default function ToolsPage() {
                     rel={tool.external ? "noopener noreferrer" : ""}
                     className={`w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r ${tool.color} text-white font-bold py-3.5 rounded-xl hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]`}
                   >
-                    {tool.external ? "Use Tool" : "Open Dashboard"} <ExternalLink className="w-4 h-4 opacity-70" />
+                    {tool.external ? "टूल का उपयोग करें" : "डैशबोर्ड खोलें"} <ExternalLink className="w-4 h-4 opacity-70" />
                   </Link>
                 )}
               </div>
@@ -256,7 +256,7 @@ export default function ToolsPage() {
       {/* Footer CTA */}
       <section className="relative z-10 border-t border-white/10 bg-stone-950/80 backdrop-blur-md py-16 text-center">
         <p className="text-stone-400 text-base flex items-center justify-center gap-2">
-          <Sparkles className="w-5 h-5 text-cyan-400" /> More powerful tools are being built for the Alamnagar community! 🚀
+          <Sparkles className="w-5 h-5 text-cyan-400" /> आलमनगर समुदाय के लिए और भी शक्तिशाली टूल्स बनाए जा रहे हैं! 🚀
         </p>
       </section>
     </main>

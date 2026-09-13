@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Gamepad2, Sparkles, ExternalLink, Target, Skull, Palette } from "lucide-react";
+import { ArrowLeft, Gamepad2, Sparkles, ExternalLink, Target, Palette, Play } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
 // ═══════════════════════════════════════════════════════════
-// ️ SMOOTH IMAGE SLIDER COMPONENT
+// 🖼️ SMOOTH IMAGE SLIDER COMPONENT
 // ═══════════════════════════════════════════════════════════
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2670&auto=format&fit=crop",
@@ -93,33 +93,34 @@ const GamesCinematicSlider = () => {
   );
 };
 
+// ✅ UPDATED GAMES ARRAY (Fully in Hindi/Devnagari)
 const GAMES = [
   {
     id: 1,
-    title: "Bubble Pop",
-    description: "Balloons ko pop karo aur magical items collect karo! Relaxing aur colorful gameplay.",
+    title: "बबल पॉप",
+    description: "गुब्बारों को फोड़ो और जादुई वस्तुएं इकट्ठा करो! आरामदायक और रंगीन गेमप्ले।",
     icon: "🎈",
     href: "/games/bubble-pop",
     color: "from-pink-500 to-purple-500",
-    tags: ["Casual", "Relaxing", "Kids"]
+    tags: ["आरामदायक", "रिलैक्सिंग", "बच्चों के लिए"]
   },
   {
     id: 2,
-    title: "Jadui Tokri",
-    description: "Girte hue stars aur gifts pakdo, bombs se bacho! Fast-paced magical catching action.",
+    title: "जादुई टोकरी",
+    description: "गिरते हुए तारे और उपहार पकड़ो, बम से बचो! तेज़ गति वाली जादुई एक्शन।",
     icon: "🧺",
     href: "/games/magical-catch",
     color: "from-indigo-500 to-purple-600",
-    tags: ["Action", "Magic", "Fast"]
+    tags: ["एक्शन", "जादू", "तेज़"]
   },
   {
     id: 3,
-    title: "Alamnagar Strike",
-    description: "Survival shooter action! Dushmano ko harao, waves survive karo aur village bachao.",
+    title: "आलमनगर स्ट्राइक",
+    description: "सर्वाइवल शूटर एक्शन! दुश्मनों को हराओ, लहरों का सामना करो और गाँव को बचाओ।",
     icon: "🔫",
     href: "/games/alamnagar-strike",
     color: "from-red-500 to-orange-600",
-    tags: ["Shooter", "Survival", "Hardcore"]
+    tags: ["शूटर", "सर्वाइवल", "हार्डकोर"]
   }
 ];
 
@@ -137,7 +138,7 @@ export default function GamesPage() {
       {/* Top Navigation */}
       <div className="relative z-30 p-4 md:p-6">
         <Link href="/" className="inline-flex items-center gap-2 text-white bg-black/40 hover:bg-black/60 backdrop-blur-md px-4 py-2 rounded-full transition-all border border-white/20 shadow-lg">
-          <ArrowLeft className="w-4 h-4" /> Back to Alamnagar
+          <ArrowLeft className="w-4 h-4" /> आलमनगर पर वापस
         </Link>
       </div>
 
@@ -153,18 +154,18 @@ export default function GamesPage() {
           >
             <div className="inline-flex items-center gap-2 bg-purple-500/30 backdrop-blur-md border border-purple-400/30 rounded-full px-6 py-3 mb-8 shadow-lg shadow-purple-500/20">
               <Gamepad2 className="w-6 h-6 text-purple-300" />
-              <span className="text-sm font-black tracking-wider text-white uppercase">Gaming Arena</span>
+              <span className="text-sm font-black tracking-wider text-white uppercase">गेमिंग एरेना</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight drop-shadow-2xl">
-              Khelo, Jeeto, aur <br />
+              खेलो, जीतो, और <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400">
-                Maza Karo!
+                मज़ा करो!
               </span>
             </h1>
             
             <p className="text-lg md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed drop-shadow-lg mb-8">
-              Alamnagar ke liye specially designed games. Chahe relaxation chahiye ya hardcore action, yahan sab kuch hai!
+              आलमनगर के लिए विशेष रूप से डिज़ाइन किए गए गेम्स। चाहे आराम करना हो या एक्शन, यहाँ सब कुछ है!
             </p>
 
             <motion.div 
@@ -174,13 +175,13 @@ export default function GamesPage() {
               className="flex flex-wrap justify-center gap-4 text-sm text-white/70"
             >
               <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                <Sparkles className="w-4 h-4 text-yellow-400" /> Free to Play
+                <Sparkles className="w-4 h-4 text-yellow-400" /> मुफ्त में खेलें
               </span>
               <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                <Target className="w-4 h-4 text-red-400" /> No Download
+                <Target className="w-4 h-4 text-red-400" /> बिना डाउनलोड के
               </span>
               <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                <Palette className="w-4 h-4 text-blue-400" /> Browser Based
+                <Palette className="w-4 h-4 text-blue-400" /> ब्राउज़र आधारित
               </span>
             </motion.div>
           </motion.div>
@@ -219,7 +220,7 @@ export default function GamesPage() {
                   href={game.href} 
                   className={`w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r ${game.color} text-white font-bold py-3.5 rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 group-hover:scale-[1.02]`}
                 >
-                  <PlayIcon /> Play Now <ExternalLink className="w-4 h-4 opacity-70" />
+                  <Play className="w-5 h-5 fill-white" /> अभी खेलें <ExternalLink className="w-4 h-4 opacity-70" />
                 </Link>
               </div>
             </motion.div>
@@ -230,17 +231,9 @@ export default function GamesPage() {
       {/* Footer CTA */}
       <section className="relative z-10 border-t border-white/10 bg-stone-950/80 backdrop-blur-md py-16 text-center">
         <p className="text-stone-400 text-base flex items-center justify-center gap-2">
-          <Sparkles className="w-5 h-5 text-purple-400" /> More epic games coming soon to the Alamnagar Gaming Arena! 🎮
+          <Sparkles className="w-5 h-5 text-purple-400" /> आलमनगर गेमिंग एरेना में जल्द ही और भी शानदार गेम्स आ रहे हैं! 🎮
         </p>
       </section>
     </main>
-  );
-}
-
-function PlayIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M8 5V19L19 12L8 5Z" />
-    </svg>
   );
 }
