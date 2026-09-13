@@ -95,13 +95,13 @@ const SmoothImageSlider = ({ images, className }: { images: string[], className?
   );
 };
 
-// ✅ CINEMATIC SLIDERS FOR NEW SECTIONS
+// ✅ CINEMATIC SLIDERS FOR DEDICATED SECTIONS
 const GamesCinematicSlider = () => {
   const gameImages = ['/images/games-1.jpg', '/images/games-2.jpg', '/images/games-3.jpg', '/images/games-4.jpg', '/images/games-5.jpg'];
   return (
     <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
       <SmoothImageSlider images={gameImages} className="w-full h-full" />
-      <div className="absolute inset-0 bg-gradient-to-t from-purple-950/90 via-purple-950/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-purple-950/95 via-purple-950/60 to-transparent" />
     </div>
   );
 };
@@ -111,7 +111,27 @@ const ToolsCinematicSlider = () => {
   return (
     <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
       <SmoothImageSlider images={toolImages} className="w-full h-full" />
-      <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/90 via-indigo-950/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/95 via-indigo-950/60 to-transparent" />
+    </div>
+  );
+};
+
+const NewsletterCinematicSlider = () => {
+  const newsletterImages = ['/images/newsletter-1.jpg', '/images/newsletter-2.jpg', '/images/newsletter-3.jpg', '/images/newsletter-4.jpg', '/images/newsletter-5.jpg'];
+  return (
+    <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
+      <SmoothImageSlider images={newsletterImages} className="w-full h-full" />
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/50 to-transparent" />
+    </div>
+  );
+};
+
+const MarketplaceCinematicSlider = () => {
+  const marketplaceImages = ['/images/marketplace-1.jpg', '/images/marketplace-2.jpg', '/images/marketplace-3.jpg', '/images/marketplace-4.jpg', '/images/marketplace-5.jpg'];
+  return (
+    <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
+      <SmoothImageSlider images={marketplaceImages} className="w-full h-full" />
+      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/90 via-neutral-950/50 to-transparent" />
     </div>
   );
 };
@@ -193,26 +213,6 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
-  );
-};
-
-const NewsletterCinematicSlider = () => {
-  const newsletterImages = ['/images/newsletter-1.jpg', '/images/newsletter-2.jpg', '/images/newsletter-3.jpg', '/images/newsletter-4.jpg', '/images/newsletter-5.jpg'];
-  return (
-    <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
-      <SmoothImageSlider images={newsletterImages} className="w-full h-full" />
-      <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/50 to-transparent" />
-    </div>
-  );
-};
-
-const MarketplaceCinematicSlider = () => {
-  const marketplaceImages = ['/images/marketplace-1.jpg', '/images/marketplace-2.jpg', '/images/marketplace-3.jpg', '/images/marketplace-4.jpg', '/images/marketplace-5.jpg'];
-  return (
-    <div className="absolute inset-0 z-0 w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
-      <SmoothImageSlider images={marketplaceImages} className="w-full h-full" />
-      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/90 via-neutral-950/50 to-transparent" />
     </div>
   );
 };
