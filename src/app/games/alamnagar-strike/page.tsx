@@ -50,6 +50,80 @@ const playSound = (type: 'shoot' | 'hit' | 'kill' | 'explode' | 'gameover' | 'bo
 
 type Environment = 'gali' | 'jungle' | 'city';
 
+// ✅ Realistic SVG Enemy Components
+const DakuEnemy = ({ isWalking, color }: { isWalking: boolean; color: string }) => (
+  <svg viewBox="0 0 60 100" className="w-full h-full" style={{ filter: `drop-shadow(0 0 10px ${color})` }}>
+    {/* Head */}
+    <circle cx="30" cy="15" r="12" fill="#8B4513" />
+    {/* Bandana */}
+    <path d="M 18 12 Q 30 8 42 12 L 42 18 Q 30 14 18 18 Z" fill="#DC143C" />
+    {/* Eyes */}
+    <circle cx="26" cy="14" r="2" fill="white" />
+    <circle cx="34" cy="14" r="2" fill="white" />
+    <circle cx="26" cy="14" r="1" fill="black" />
+    <circle cx="34" cy="14" r="1" fill="black" />
+    {/* Body */}
+    <rect x="20" y="27" width="20" height="30" rx="3" fill="#2F4F4F" />
+    {/* Arms */}
+    <rect x="10" y="30" width="10" height="25" rx="5" fill="#8B4513" className={isWalking ? "animate-swing-left" : ""} style={{ transformOrigin: '15px 30px' }} />
+    <rect x="40" y="30" width="10" height="25" rx="5" fill="#8B4513" className={isWalking ? "animate-swing-right" : ""} style={{ transformOrigin: '45px 30px' }} />
+    {/* Legs */}
+    <rect x="22" y="57" width="8" height="30" rx="4" fill="#1a1a1a" className={isWalking ? "animate-walk-left" : ""} style={{ transformOrigin: '26px 57px' }} />
+    <rect x="30" y="57" width="8" height="30" rx="4" fill="#1a1a1a" className={isWalking ? "animate-walk-right" : ""} style={{ transformOrigin: '34px 57px' }} />
+    {/* Weapon (Gun) */}
+    <rect x="45" y="40" width="15" height="6" rx="2" fill="#333" />
+  </svg>
+);
+
+const TigerEnemy = ({ isWalking, color }: { isWalking: boolean; color: string }) => (
+  <svg viewBox="0 0 80 60" className="w-full h-full" style={{ filter: `drop-shadow(0 0 10px ${color})` }}>
+    {/* Body */}
+    <ellipse cx="40" cy="35" rx="25" ry="18" fill="#FF8C00" />
+    {/* Stripes */}
+    <path d="M 25 25 L 30 35 M 35 22 L 38 35 M 45 22 L 42 35 M 55 25 L 50 35" stroke="black" strokeWidth="2" />
+    {/* Head */}
+    <circle cx="15" cy="25" r="12" fill="#FF8C00" />
+    {/* Ears */}
+    <circle cx="8" cy="18" r="4" fill="#FF8C00" />
+    <circle cx="22" cy="18" r="4" fill="#FF8C00" />
+    {/* Eyes */}
+    <circle cx="12" cy="23" r="2" fill="yellow" />
+    <circle cx="18" cy="23" r="2" fill="yellow" />
+    <circle cx="12" cy="23" r="1" fill="black" />
+    <circle cx="18" cy="23" r="1" fill="black" />
+    {/* Legs */}
+    <rect x="25" y="45" width="6" height="15" rx="3" fill="#FF8C00" className={isWalking ? "animate-walk-left" : ""} style={{ transformOrigin: '28px 45px' }} />
+    <rect x="35" y="45" width="6" height="15" rx="3" fill="#FF8C00" className={isWalking ? "animate-walk-right" : ""} style={{ transformOrigin: '38px 45px' }} />
+    <rect x="45" y="45" width="6" height="15" rx="3" fill="#FF8C00" className={isWalking ? "animate-walk-left" : ""} style={{ transformOrigin: '48px 45px' }} />
+    <rect x="55" y="45" width="6" height="15" rx="3" fill="#FF8C00" className={isWalking ? "animate-walk-right" : ""} style={{ transformOrigin: '58px 45px' }} />
+    {/* Tail */}
+    <path d="M 65 35 Q 75 30 78 25" stroke="#FF8C00" strokeWidth="4" fill="none" />
+  </svg>
+);
+
+const AlienEnemy = ({ isWalking, color }: { isWalking: boolean; color: string }) => (
+  <svg viewBox="0 0 60 100" className="w-full h-full" style={{ filter: `drop-shadow(0 0 15px ${color})` }}>
+    {/* Head (Large) */}
+    <ellipse cx="30" cy="20" rx="18" ry="22" fill="#90EE90" />
+    {/* Eyes (Big black) */}
+    <ellipse cx="22" cy="18" rx="6" ry="8" fill="black" />
+    <ellipse cx="38" cy="18" rx="6" ry="8" fill="black" />
+    <circle cx="22" cy="18" r="2" fill="white" />
+    <circle cx="38" cy="18" r="2" fill="white" />
+    {/* Body */}
+    <rect x="20" y="42" width="20" height="35" rx="5" fill="#708090" />
+    {/* Arms (Long) */}
+    <rect x="5" y="45" width="15" height="8" rx="4" fill="#90EE90" className={isWalking ? "animate-swing-left" : ""} style={{ transformOrigin: '12px 45px' }} />
+    <rect x="40" y="45" width="15" height="8" rx="4" fill="#90EE90" className={isWalking ? "animate-swing-right" : ""} style={{ transformOrigin: '48px 45px' }} />
+    {/* Legs */}
+    <rect x="22" y="77" width="8" height="20" rx="4" fill="#708090" className={isWalking ? "animate-walk-left" : ""} style={{ transformOrigin: '26px 77px' }} />
+    <rect x="30" y="77" width="8" height="20" rx="4" fill="#708090" className={isWalking ? "animate-walk-right" : ""} style={{ transformOrigin: '34px 77px' }} />
+    {/* Antenna */}
+    <line x1="30" y1="0" x2="30" y2="10" stroke="#90EE90" strokeWidth="2" />
+    <circle cx="30" cy="0" r="3" fill="yellow" />
+  </svg>
+);
+
 interface Enemy {
   id: number;
   x: number;
@@ -60,8 +134,9 @@ interface Enemy {
   color: string;
   hp: number;
   maxHp: number;
-  emoji: string;
+  type: 'daku' | 'tiger' | 'alien';
   side: 'left' | 'right';
+  walkFrame: number;
 }
 
 interface Bullet {
@@ -95,24 +170,23 @@ interface PowerUp {
   emoji: string;
 }
 
-// ✅ Alamnagar ke teeno ilake - Satellite map based with specific enemies
 const ENVIRONMENTS: Record<Environment, { 
   name: string; 
   hindiName: string;
   icon: any; 
   bg: string; 
   overlay: string;
-  enemies: string[];
+  enemyType: 'daku' | 'tiger' | 'alien';
   enemyColor: string;
 }> = {
   gali: { 
     name: "Gali Muhalla", 
     hindiName: "गली मुहल्ला",
     icon: MapPin, 
-    bg: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?q=80&w=1920&auto=format&fit=crop", // Rural Indian Village
+    bg: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?q=80&w=1920&auto=format&fit=crop",
     overlay: "bg-amber-950/60",
-    enemies: ["🥷", "🦹", "👺", "🧟"], // Daku, Chor
-    enemyColor: "#ef4444"
+    enemyType: 'daku',
+    enemyColor: "#DC143C"
   },
   jungle: { 
     name: "Jadui Jungle", 
@@ -120,8 +194,8 @@ const ENVIRONMENTS: Record<Environment, {
     icon: Trees, 
     bg: "https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1920&auto=format&fit=crop",
     overlay: "bg-emerald-950/70",
-    enemies: ["🐯", "🐻", "🐺", "🐊"], // Tiger, Bear, Wolf
-    enemyColor: "#22c55e"
+    enemyType: 'tiger',
+    enemyColor: "#FF8C00"
   },
   city: { 
     name: "City Center", 
@@ -129,8 +203,8 @@ const ENVIRONMENTS: Record<Environment, {
     icon: Building2, 
     bg: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=1920&auto=format&fit=crop",
     overlay: "bg-slate-900/70",
-    enemies: ["👽", "🤖", "👾", "🛸"], // Aliens, Robots
-    enemyColor: "#a855f7"
+    enemyType: 'alien',
+    enemyColor: "#90EE90"
   }
 };
 
@@ -145,7 +219,7 @@ export default function AlamnagarStrike() {
   const [screenShake, setScreenShake] = useState(0);
   const [warningText, setWarningText] = useState<string | null>(null);
 
-  const playerRef = useRef({ x: 50, y: 80 }); // Gun position
+  const playerRef = useRef({ x: 50, y: 80 });
   const bulletsRef = useRef<Bullet[]>([]);
   const enemiesRef = useRef<Enemy[]>([]);
   const particlesRef = useRef<Particle[]>([]);
@@ -179,14 +253,12 @@ export default function AlamnagarStrike() {
     const env = ENVIRONMENTS[selectedEnv];
     const side = Math.random() > 0.5 ? 'left' : 'right';
     const x = side === 'left' ? -10 : 110;
-    const y = 72 + Math.random() * 8; // Ground level (72% to 80%)
+    const y = 72 + Math.random() * 8;
 
-    const emoji = env.enemies[Math.floor(Math.random() * env.enemies.length)];
     const isBoss = wave >= 3 && Math.random() > 0.8;
-    const size = isBoss ? 60 : 40 + Math.random() * 10; // Big enemies
+    const size = isBoss ? 80 : 60;
     const hp = isBoss ? 5 + wave : 1 + Math.floor(wave / 2);
 
-    // Cinematic Warning
     const directionText = side === 'left' ? "बाएं (Left)" : "दाएं (Right)";
     setWarningText(`⚠️ चेतावनी: ${directionText} से ${isBoss ? 'बॉस ' : ''}दुश्मन आ रहा है!`);
     setTimeout(() => setWarningText(null), 2500);
@@ -194,11 +266,11 @@ export default function AlamnagarStrike() {
     enemiesRef.current.push({
       id: Date.now() + Math.random(), x, y,
       vx: 0, vy: 0,
-      size, color: env.enemyColor, hp, maxHp: hp, emoji, side
+      size, color: env.enemyColor, hp, maxHp: hp, type: env.enemyType, side,
+      walkFrame: 0
     });
   }, [wave, selectedEnv]);
 
-  // ✅ Main 60FPS Game Loop
   useEffect(() => {
     if (gameState !== 'playing') return;
     let enemySpawnTimer = 0;
@@ -209,27 +281,24 @@ export default function AlamnagarStrike() {
       const enemies = enemiesRef.current;
       const particles = particlesRef.current;
 
-      // 1. Move Bullets
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         b.x += b.vx; b.y += b.vy;
         if (b.x < -10 || b.x > 110 || b.y < -10 || b.y > 110) bullets.splice(i, 1);
       }
 
-      // 2. Move Enemies (Walking on Ground towards Player X)
       for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
         const dx = player.x - e.x;
         const dist = Math.abs(dx);
         const speed = 0.15 + (wave * 0.02);
         
-        // Move horizontally towards player, stay on ground
         e.vx = (dx > 0 ? 1 : -1) * speed;
         e.x += e.vx;
+        e.walkFrame += 0.15;
 
-        // Collision with Player
         if (dist < (20 + e.size) / 2 && Math.abs(player.y - e.y) < 20) {
-          healthRef.current -= (e.size > 50 ? 20 : 10);
+          healthRef.current -= (e.size > 70 ? 20 : 10);
           setHealth(Math.max(0, healthRef.current));
           enemies.splice(i, 1);
           setScreenShake(10);
@@ -250,7 +319,6 @@ export default function AlamnagarStrike() {
         }
       }
 
-      // 3. Bullet vs Enemy Collision
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         let hit = false;
@@ -267,7 +335,7 @@ export default function AlamnagarStrike() {
 
             if (e.hp <= 0) {
               enemies.splice(j, 1);
-              const points = e.size > 50 ? 50 : 20;
+              const points = e.size > 70 ? 50 : 20;
               scoreRef.current += points;
               setScore(scoreRef.current);
               if (soundEnabled) playSound('explode');
@@ -294,7 +362,6 @@ export default function AlamnagarStrike() {
         if (hit) bullets.splice(i, 1);
       }
 
-      // 4. PowerUp Collection
       for (let i = powerUpsRef.current.length - 1; i >= 0; i--) {
         const p = powerUpsRef.current[i];
         const dx = player.x - p.x; const dy = player.y - p.y;
@@ -308,7 +375,6 @@ export default function AlamnagarStrike() {
         }
       }
 
-      // 5. Update Particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx; p.y += p.vy;
@@ -316,14 +382,12 @@ export default function AlamnagarStrike() {
         if (p.life <= 0) particles.splice(i, 1);
       }
 
-      // 6. Spawn Enemies
       enemySpawnTimer++;
       if (enemySpawnTimer > Math.max(30, 80 - wave * 5)) {
         spawnEnemy();
         enemySpawnTimer = 0;
       }
 
-      // 7. Wave Progression
       if (scoreRef.current > wave * 150) setWave(w => w + 1);
       if (screenShake > 0) setScreenShake(s => Math.max(0, s - 1));
 
@@ -339,18 +403,17 @@ export default function AlamnagarStrike() {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     mouseRef.current = { x, y };
-    playerRef.current = { x, y }; // Gun follows mouse completely
+    playerRef.current = { x, y };
   }, [gameState]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (gameState !== 'playing') return;
     e.preventDefault();
     const now = Date.now();
-    if (now - lastShotRef.current < 150) return; // Fire rate
+    if (now - lastShotRef.current < 150) return;
     lastShotRef.current = now;
 
     const player = playerRef.current;
-    // Shoot upwards (towards y=0)
     bulletsRef.current.push({
       id: Date.now(), x: player.x, y: player.y - 5,
       vx: 0, vy: -2.5,
@@ -365,14 +428,35 @@ export default function AlamnagarStrike() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden select-none touch-none font-sans text-white">
-      {/* Dynamic Background */}
+      <style>{`
+        @keyframes walk-left {
+          0%, 100% { transform: rotate(-20deg); }
+          50% { transform: rotate(20deg); }
+        }
+        @keyframes walk-right {
+          0%, 100% { transform: rotate(20deg); }
+          50% { transform: rotate(-20deg); }
+        }
+        @keyframes swing-left {
+          0%, 100% { transform: rotate(-30deg); }
+          50% { transform: rotate(30deg); }
+        }
+        @keyframes swing-right {
+          0%, 100% { transform: rotate(30deg); }
+          50% { transform: rotate(-30deg); }
+        }
+        .animate-walk-left { animation: walk-left 0.4s ease-in-out infinite; }
+        .animate-walk-right { animation: walk-right 0.4s ease-in-out infinite; }
+        .animate-swing-left { animation: swing-left 0.4s ease-in-out infinite; }
+        .animate-swing-right { animation: swing-right 0.4s ease-in-out infinite; }
+      `}</style>
+
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000" style={{ backgroundImage: `url(${env.bg})` }} />
         <div className={`absolute inset-0 ${env.overlay} transition-all duration-1000`} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
       </div>
 
-      {/* Top HUD */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex justify-between items-start pointer-events-none">
         <div className="flex flex-col gap-2 pointer-events-auto">
           <Link href="/" className="flex items-center gap-2 text-white bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 hover:bg-black/80 transition shadow-lg">
@@ -403,7 +487,6 @@ export default function AlamnagarStrike() {
         )}
       </div>
 
-      {/* Cinematic Warning Banner */}
       <AnimatePresence>
         {warningText && (
           <motion.div
@@ -420,7 +503,6 @@ export default function AlamnagarStrike() {
         )}
       </AnimatePresence>
 
-      {/* Game Canvas Area */}
       <div 
         ref={canvasRef}
         className="absolute inset-0 z-10 cursor-crosshair"
@@ -430,7 +512,6 @@ export default function AlamnagarStrike() {
       >
         {gameState === 'playing' && (
           <>
-            {/* PowerUps */}
             {powerUpsRef.current.map(p => (
               <motion.div key={p.id} initial={{ scale: 0 }} animate={{ scale: 1, y: [0, -8, 0] }} transition={{ y: { duration: 1.5, repeat: Infinity, ease: "easeInOut" } }}
                 className="absolute flex items-center justify-center z-10"
@@ -441,12 +522,9 @@ export default function AlamnagarStrike() {
               </motion.div>
             ))}
 
-            {/* Realistic Gun (Follows Mouse) */}
             <div className="absolute z-30 pointer-events-none" style={{ left: `${playerRef.current.x}%`, top: `${playerRef.current.y}%`, transform: 'translate(-50%, -50%)' }}>
               <div className="relative">
-                {/* Gun Glow */}
                 <div className="absolute inset-0 bg-yellow-500/30 rounded-full blur-xl" />
-                {/* Realistic Gun SVG */}
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]">
                   <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" fill="#333" stroke="#fbbf24" strokeWidth="1.5"/>
                   <circle cx="12" cy="13" r="3" fill="#fbbf24" />
@@ -454,35 +532,28 @@ export default function AlamnagarStrike() {
               </div>
             </div>
 
-            {/* Bullets */}
             {bulletsRef.current.map(b => (
               <div key={b.id} className="absolute rounded-full z-10"
                 style={{ left: `${b.x}%`, top: `${b.y}%`, width: `${b.size}px`, height: `${b.size * 3}px`, marginLeft: `-${b.size/2}px`, marginTop: `-${b.size * 1.5}px`, backgroundColor: b.color, boxShadow: `0 0 10px ${b.color}, 0 0 20px ${b.color}` }} />
             ))}
 
-            {/* Enemies (Walking on Ground) */}
             {enemiesRef.current.map(e => (
               <div key={e.id} className="absolute flex flex-col items-center justify-center z-20"
-                style={{ left: `${e.x}%`, top: `${e.y}%`, width: `${e.size}px`, height: `${e.size}px`, marginLeft: `-${e.size/2}px`, marginTop: `-${e.size/2}px` }}>
+                style={{ left: `${e.x}%`, top: `${e.y}%`, width: `${e.size}px`, height: `${e.size * 1.5}px`, marginLeft: `-${e.size/2}px`, marginTop: `-${e.size * 0.75}px` }}>
                 {e.maxHp > 1 && (
                   <div className="w-full h-1.5 bg-black/50 rounded-full mb-1 overflow-hidden border border-white/20 absolute -top-3">
                     <div className="h-full bg-green-500 transition-all duration-100" style={{ width: `${(e.hp / e.maxHp) * 100}%` }} />
                   </div>
                 )}
-                {/* Walking Bounce Animation */}
-                <motion.div 
-                  animate={{ y: [0, -6, 0], rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 0.4, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-full h-full rounded-full flex items-center justify-center text-4xl md:text-5xl border-2 border-black/30"
-                  style={{ backgroundColor: `${e.color}20`, boxShadow: `0 0 20px ${e.color}`, borderColor: e.color }}>
-                  {e.emoji}
-                </motion.div>
-                {/* Shadow on ground */}
-                <div className="absolute -bottom-2 w-3/4 h-2 bg-black/50 rounded-full blur-sm" />
+                <div className="w-full h-full relative">
+                  {e.type === 'daku' && <DakuEnemy isWalking={true} color={e.color} />}
+                  {e.type === 'tiger' && <TigerEnemy isWalking={true} color={e.color} />}
+                  {e.type === 'alien' && <AlienEnemy isWalking={true} color={e.color} />}
+                </div>
+                <div className="absolute -bottom-1 w-3/4 h-2 bg-black/50 rounded-full blur-sm" />
               </div>
             ))}
 
-            {/* Particles */}
             {particlesRef.current.map(p => (
               <div key={p.id} className="absolute rounded-full pointer-events-none"
                 style={{ left: `${p.x}%`, top: `${p.y}%`, width: `${p.size * 2}px`, height: `${p.size * 2}px`, marginLeft: `-${p.size}px`, marginTop: `-${p.size}px`, backgroundColor: p.color, opacity: p.life, boxShadow: `0 0 10px ${p.color}` }} />
@@ -491,7 +562,6 @@ export default function AlamnagarStrike() {
         )}
       </div>
 
-      {/* Menu / Environment Selection */}
       <AnimatePresence>
         {(gameState === 'menu' || gameState === 'select_env') && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -541,7 +611,6 @@ export default function AlamnagarStrike() {
         )}
       </AnimatePresence>
 
-      {/* Game Over Screen */}
       <AnimatePresence>
         {gameState === 'gameover' && (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
