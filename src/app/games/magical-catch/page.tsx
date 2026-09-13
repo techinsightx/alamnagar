@@ -7,11 +7,11 @@ import Link from "next/link";
 
 const ITEM_TYPES = {
   star: { emoji: "⭐", score: 10, particle: "✨", weight: 30, type: "good", rarity: "common" },
-  candy: { emoji: "🍬", score: 15, particle: "🍭", weight: 22, type: "good", rarity: "common" },
+  candy: { emoji: "🍬", score: 15, particle: "", weight: 22, type: "good", rarity: "common" },
   gift: { emoji: "🎁", score: 25, particle: "🎉", weight: 15, type: "good", rarity: "uncommon" },
-  potion: { emoji: "🧪", score: 30, particle: "🌟", weight: 10, type: "good", rarity: "uncommon" },
+  potion: { emoji: "", score: 30, particle: "🌟", weight: 10, type: "good", rarity: "uncommon" },
   diamond: { emoji: "💎", score: 50, particle: "💠", weight: 6, type: "good", rarity: "rare" },
-  goldenStar: { emoji: "🌟", score: 100, particle: "⭐", weight: 2, type: "good", rarity: "legendary" },
+  goldenStar: { emoji: "", score: 100, particle: "⭐", weight: 2, type: "good", rarity: "legendary" },
   bomb: { emoji: "💣", score: 0, particle: "💥", weight: 10, type: "bad", rarity: "common" },
   slowmo: { emoji: "⏰", score: 0, particle: "⏳", weight: 2, type: "powerup", effect: "slowmo", rarity: "rare" },
   double: { emoji: "✨", score: 0, particle: "💫", weight: 2, type: "powerup", effect: "double", rarity: "rare" },
@@ -41,6 +41,23 @@ interface Particle {
   text?: string;
   color?: string;
 }
+
+// ✅ Helper to get Bubble-Pop style vibrant gradients for each item
+const getOrbGradient = (type: ItemType) => {
+  switch(type) {
+    case 'star': return 'bg-gradient-to-br from-yellow-300 via-yellow-400 to-orange-500';
+    case 'candy': return 'bg-gradient-to-br from-pink-400 via-pink-500 to-rose-600';
+    case 'gift': return 'bg-gradient-to-br from-purple-400 via-purple-500 to-fuchsia-600';
+    case 'potion': return 'bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600';
+    case 'diamond': return 'bg-gradient-to-br from-cyan-300 via-cyan-400 to-blue-500';
+    case 'goldenStar': return 'bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-500';
+    case 'bomb': return 'bg-gradient-to-br from-gray-700 via-gray-800 to-black';
+    case 'slowmo': return 'bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600';
+    case 'double': return 'bg-gradient-to-br from-rose-400 via-rose-500 to-pink-600';
+    case 'magnet': return 'bg-gradient-to-br from-red-500 via-red-600 to-red-800';
+    default: return 'bg-gradient-to-br from-gray-400 to-gray-600';
+  }
+};
 
 // ✅ EXPLOSIVE & MAGICAL SOUND EFFECTS
 const playSound = (type: 'catch' | 'bomb' | 'combo' | 'powerup' | 'gameover' | 'rare') => {
@@ -323,7 +340,6 @@ export default function MagicalCatchGame() {
       <style>{`
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px) rotate(-1deg); } 75% { transform: translateX(8px) rotate(1deg); } }
         @keyframes timerGlow { 0%, 100% { text-shadow: 0 0 10px currentColor; } 50% { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; } }
-        @keyframes rarePulse { 0%, 100% { box-shadow: 0 0 15px rgba(253, 224, 71, 0.6); } 50% { box-shadow: 0 0 30px rgba(253, 224, 71, 1); } }
       `}</style>
 
       {/* ✅ ANIMATED BACKGROUND CLOUDS */}
@@ -415,42 +431,43 @@ export default function MagicalCatchGame() {
         </motion.div>
       )}
 
-      {/* ✅ Game Area - MAXIMUM CRYSTAL CLEAR VISIBILITY (Notification Style) */}
+      {/* ✅ Game Area - BUBBLE POP STYLE LARGE GLOSSY ORBS */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         <AnimatePresence>
           {items.map((item) => {
             const data = ITEM_TYPES[item.type];
+            const orbGradient = getOrbGradient(item.type);
             
-            // ✅ NOTIFICATION-STYLE HIGH CONTRAST STYLING
-            const isBomb = item.type === 'bomb';
-            const isRare = item.glow;
-            
-            const bgClass = isBomb ? 'bg-red-500' : isRare ? 'bg-yellow-300' : 'bg-white';
-            const borderClass = 'border-4 border-white';
-            const shadowClass = isBomb 
-              ? 'shadow-[0_0_20px_rgba(239,68,68,0.9)] drop-shadow-2xl' 
-              : isRare 
-              ? 'shadow-[0_0_25px_rgba(253,224,71,1)] drop-shadow-2xl animate-[rarePulse_1.5s_ease-in-out_infinite]'
-              : 'shadow-[0_0_15px_rgba(255,255,255,0.9)] drop-shadow-2xl';
-
             return (
               <motion.div key={item.id}
                 initial={{ y: "-10vh", x: `${item.x}vw`, opacity: 0, scale: 0.5 }}
                 animate={{ y: "110vh", opacity: 1, scale: 1 }}
                 transition={{ duration: (100 / item.speed) * 0.1, ease: "linear" }}
                 className="absolute pointer-events-none flex items-center justify-center"
-                style={{ left: 0, top: 0, width: '4rem', height: '4rem' }} // 64px - Large and easy to tap
+                style={{ left: 0, top: 0 }}
               >
-                {/* ✅ SOLID, CRISP CONTAINER (No blur, max contrast) */}
-                <div className={`relative w-full h-full rounded-full flex items-center justify-center ${bgClass} ${borderClass} ${shadowClass}`}>
+                {/* ✅ LARGE 3D GLOSSY ORB (Exactly like Bubble Pop Balloon) */}
+                <div className={`relative w-20 h-20 md:w-24 md:h-24 rounded-full ${orbGradient} shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-4 border-white/50 flex items-center justify-center`}>
                   
-                  {/* ✅ SHARP, SOLID HIGHLIGHT (Like a glossy notification badge) */}
-                  <div className="absolute top-2 left-3 w-1/3 h-1/3 bg-white rounded-full opacity-100" />
+                  {/* ✅ Large Blurred Highlight (Glossy reflection) */}
+                  <div className="absolute top-3 left-4 w-1/3 h-1/3 bg-white/50 rounded-full blur-md transform -rotate-12" />
                   
-                  {/* ✅ LARGE, BOLD EMOJI WITH TEXT SHADOW FOR MAXIMUM POP */}
-                  <span className="text-4xl md:text-5xl relative z-10" style={{ textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
+                  {/* ✅ Small Sharp Highlight (Crisp reflection dot) */}
+                  <div className="absolute top-6 left-7 w-1/5 h-1/5 bg-white/80 rounded-full" />
+
+                  {/* ✅ Large, Popping Emoji with strong drop shadow */}
+                  <span className="text-4xl md:text-5xl relative z-10 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]">
                     {data.emoji}
                   </span>
+
+                  {/* ✅ Rare/Legendary Pulsing Glow */}
+                  {item.glow && (
+                    <motion.div 
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} 
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="absolute -inset-2 bg-yellow-400/80 rounded-full blur-xl -z-10" 
+                    />
+                  )}
                 </div>
               </motion.div>
             );
@@ -532,8 +549,8 @@ export default function MagicalCatchGame() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">👆</span><span className="font-semibold text-stone-700">Basket move karo</span></div>
                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">⭐</span><span className="font-semibold text-stone-700">Items pakdo</span></div>
-                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">💣</span><span className="font-semibold text-red-600">Bomb se bacho!</span></div>
-                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl">🔥</span><span className="font-semibold text-stone-700">Combo banao!</span></div>
+                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl"></span><span className="font-semibold text-red-600">Bomb se bacho!</span></div>
+                <div className="flex items-center gap-2 bg-white/80 p-2 rounded-xl shadow-sm"><span className="text-2xl"></span><span className="font-semibold text-stone-700">Combo banao!</span></div>
               </div>
             </div>
             {highScore > 0 && (
@@ -544,7 +561,7 @@ export default function MagicalCatchGame() {
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startGame} className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 text-white font-black text-xl md:text-2xl px-10 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 border-2 border-white/30 touch-manipulation">
               <Play className="w-7 h-7 fill-white" /> Play Game
             </motion.button>
-            <p className="text-stone-500 text-xs mt-4 font-medium">⏱️ 60 seconds • Lagatar catch karo, combo banao!</p>
+            <p className="text-stone-500 text-xs mt-4 font-medium">️ 60 seconds • Lagatar catch karo, combo banao!</p>
           </motion.div>
         </motion.div>
       )}
