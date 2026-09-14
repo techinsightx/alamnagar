@@ -93,7 +93,7 @@ const GamesCinematicSlider = () => {
   );
 };
 
-// ✅ UPDATED GAMES ARRAY (Fully in Hindi/Devnagari)
+// ✅ UPDATED GAMES ARRAY (Fully in Hindi/Devnagari with Turbo Racer)
 const GAMES = [
   {
     id: 1,
@@ -121,6 +121,15 @@ const GAMES = [
     href: "/games/alamnagar-strike",
     color: "from-red-500 to-orange-600",
     tags: ["शूटर", "सर्वाइवल", "हार्डकोर"]
+  },
+  {
+    id: 4,
+    title: "टर्बो रेसर",
+    description: "जंगल, शहर या हाईवे पर तेज़ रफ़्तार रेस! नाइट्रो बूस्ट के साथ दुश्मनों को पीछे छोड़ो।",
+    icon: "🏎️",
+    href: "/games/turbo-racer",
+    color: "from-emerald-500 to-blue-600",
+    tags: ["रेसिंग", "तेज़ रफ़्तार", "नाइट्रो"]
   }
 ];
 
