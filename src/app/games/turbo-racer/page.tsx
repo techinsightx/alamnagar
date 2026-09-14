@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// ✅ Sound Engine with Multiple Effects
-const playSound = (type: 'coin' | 'crash' | 'nitro' | 'gameover' | 'countdown' | 'go' | 'select') => {
+// ✅ Sound Engine
+const playSound = (type: 'coin' | 'crash' | 'nitro' | 'gameover' | 'countdown' | 'go' | 'select' | 'indicator') => {
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
@@ -65,6 +65,13 @@ const playSound = (type: 'coin' | 'crash' | 'nitro' | 'gameover' | 'countdown' |
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
       osc.start(ctx.currentTime); 
       osc.stop(ctx.currentTime + 0.1);
+    } else if (type === 'indicator') {
+      osc.type = 'sine'; 
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime); 
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+      osc.start(ctx.currentTime); 
+      osc.stop(ctx.currentTime + 0.05);
     }
   } catch (e) {}
 };
@@ -134,14 +141,21 @@ const MODES: Record<GameMode, {
   }
 };
 
-// ✅ World-Class 2D Car SVGs (Full Detail)
-const CarSVG = ({ model, tilt, isNitro, isBlinking }: { model: CarModel; tilt: number; isNitro: boolean; isBlinking: boolean }) => {
+// ✅ MICRO-DETAILED Car SVG with Indicators, Lights, and Details
+const CarSVG = ({ model, tilt, isNitro, isBlinking, isTurningLeft, isTurningRight }: { 
+  model: CarModel; 
+  tilt: number; 
+  isNitro: boolean; 
+  isBlinking: boolean;
+  isTurningLeft: boolean;
+  isTurningRight: boolean;
+}) => {
   const isSports = model === 'sports';
   const isSuv = model === 'suv';
   const isClassic = model === 'classic';
   
   return (
-    <svg viewBox="0 0 100 180" className="w-full h-full drop-shadow-2xl" style={{ transform: `rotate(${tilt}deg)`, transition: 'transform 0.15s ease-out', opacity: isBlinking ? 0.5 : 1 }}>
+    <svg viewBox="0 0 100 180" className="w-full h-full drop-shadow-2xl" style={{ transform: `rotate(${tilt}deg)`, transition: 'transform 0.15s ease-out', opacity: isBlinking ? 0.6 : 1 }}>
       {/* Nitro Flames */}
       {isNitro && (
         <motion.g animate={{ scaleY: [1, 1.8, 1], opacity: [0.7, 1, 0.7] }} transition={{ repeat: Infinity, duration: 0.15 }}>
@@ -161,6 +175,10 @@ const CarSVG = ({ model, tilt, isNitro, isBlinking }: { model: CarModel; tilt: n
       {isSuv && <path d="M 20 35 Q 15 90 20 135 Q 50 148 80 135 Q 85 90 80 35 Q 50 20 20 35 Z" fill="#2563eb" />}
       {isClassic && <path d="M 25 35 Q 15 90 25 135 Q 50 145 75 135 Q 85 90 75 35 Q 50 15 25 35 Z" fill="#ca8a04" />}
 
+      {/* Body Panel Lines */}
+      <path d="M 20 60 L 80 60" stroke="#000000" strokeWidth="0.5" opacity="0.2" />
+      <path d="M 20 100 L 80 100" stroke="#000000" strokeWidth="0.5" opacity="0.2" />
+
       {/* Roof / Cabin */}
       {isSports && <path d="M 30 60 Q 50 65 70 60 L 65 110 Q 50 115 35 110 Z" fill="#991b1b" />}
       {isSuv && <path d="M 25 50 Q 50 55 75 50 L 70 120 Q 50 125 30 120 Z" fill="#1e3a8a" />}
@@ -171,41 +189,69 @@ const CarSVG = ({ model, tilt, isNitro, isBlinking }: { model: CarModel; tilt: n
       <path d="M 36 85 Q 50 90 64 85 L 66 105 Q 50 110 34 105 Z" fill="#1e293b" opacity="0.9" />
 
       {/* Windshield Reflection */}
-      <path d="M 35 65 Q 45 68 55 65 L 53 75 Q 45 78 37 75 Z" fill="#ffffff" opacity="0.2" />
+      <path d="M 35 65 Q 45 68 55 65 L 53 75 Q 45 78 37 75 Z" fill="#ffffff" opacity="0.3" />
+      <path d="M 40 90 Q 50 92 60 90 L 58 100 Q 50 102 42 100 Z" fill="#ffffff" opacity="0.2" />
 
-      {/* Headlights */}
-      <circle cx="25" cy="45" r="5" fill="#fef08a" />
-      <circle cx="75" cy="45" r="5" fill="#fef08a" />
-      <circle cx="25" cy="45" r="3" fill="#ffffff" />
-      <circle cx="75" cy="45" r="3" fill="#ffffff" />
+      {/* Headlights with Glow */}
+      <circle cx="25" cy="45" r="6" fill="#fef08a" opacity="0.3" />
+      <circle cx="75" cy="45" r="6" fill="#fef08a" opacity="0.3" />
+      <circle cx="25" cy="45" r="4" fill="#fef08a" />
+      <circle cx="75" cy="45" r="4" fill="#fef08a" />
+      <circle cx="25" cy="45" r="2" fill="#ffffff" />
+      <circle cx="75" cy="45" r="2" fill="#ffffff" />
 
-      {/* Taillights */}
-      <rect x="22" y="135" width="10" height="5" rx="2" fill="#991b1b" />
-      <rect x="68" y="135" width="10" height="5" rx="2" fill="#991b1b" />
-      <rect x="24" y="136" width="6" height="3" rx="1" fill="#ef4444" />
-      <rect x="70" y="136" width="6" height="3" rx="1" fill="#ef4444" />
+      {/* Taillights with Glow */}
+      <rect x="20" y="133" width="12" height="7" rx="2" fill="#991b1b" opacity="0.3" />
+      <rect x="68" y="133" width="12" height="7" rx="2" fill="#991b1b" opacity="0.3" />
+      <rect x="22" y="135" width="8" height="3" rx="1" fill="#ef4444" />
+      <rect x="70" y="135" width="8" height="3" rx="1" fill="#ef4444" />
 
-      {/* Wheels */}
+      {/* ✅ TURN INDICATORS (Blink when turning) */}
+      {isTurningLeft && (
+        <>
+          <motion.circle cx="18" cy="50" r="3" fill="#f97316" animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 0.5 }} />
+          <motion.circle cx="18" cy="50" r="5" fill="#f97316" opacity="0.3" animate={{ opacity: [0.5, 0.1, 0.5] }} transition={{ repeat: Infinity, duration: 0.5 }} />
+        </>
+      )}
+      {isTurningRight && (
+        <>
+          <motion.circle cx="82" cy="50" r="3" fill="#f97316" animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 0.5 }} />
+          <motion.circle cx="82" cy="50" r="5" fill="#f97316" opacity="0.3" animate={{ opacity: [0.5, 0.1, 0.5] }} transition={{ repeat: Infinity, duration: 0.5 }} />
+        </>
+      )}
+
+      {/* Wheels - Detailed */}
+      {/* Front Left Wheel */}
       <rect x="8" y="50" width="14" height="25" rx="4" fill="#0f172a" />
-      <rect x="78" y="50" width="14" height="25" rx="4" fill="#0f172a" />
-      <rect x="8" y="100" width="14" height="25" rx="4" fill="#0f172a" />
-      <rect x="78" y="100" width="14" height="25" rx="4" fill="#0f172a" />
-      
-      {/* Wheel Details */}
       <rect x="10" y="52" width="10" height="21" rx="3" fill="#1e293b" />
-      <rect x="80" y="52" width="10" height="21" rx="3" fill="#1e293b" />
-      <rect x="10" y="102" width="10" height="21" rx="3" fill="#1e293b" />
-      <rect x="80" y="102" width="10" height="21" rx="3" fill="#1e293b" />
-      
-      {/* Rims */}
       <circle cx="15" cy="62" r="4" fill="#94a3b8" />
-      <circle cx="85" cy="62" r="4" fill="#94a3b8" />
-      <circle cx="15" cy="112" r="4" fill="#94a3b8" />
-      <circle cx="85" cy="112" r="4" fill="#94a3b8" />
       <circle cx="15" cy="62" r="2" fill="#64748b" />
+      <line x1="15" y1="58" x2="15" y2="66" stroke="#475569" strokeWidth="0.5" />
+      <line x1="11" y1="62" x2="19" y2="62" stroke="#475569" strokeWidth="0.5" />
+
+      {/* Front Right Wheel */}
+      <rect x="78" y="50" width="14" height="25" rx="4" fill="#0f172a" />
+      <rect x="80" y="52" width="10" height="21" rx="3" fill="#1e293b" />
+      <circle cx="85" cy="62" r="4" fill="#94a3b8" />
       <circle cx="85" cy="62" r="2" fill="#64748b" />
+      <line x1="85" y1="58" x2="85" y2="66" stroke="#475569" strokeWidth="0.5" />
+      <line x1="81" y1="62" x2="89" y2="62" stroke="#475569" strokeWidth="0.5" />
+
+      {/* Rear Left Wheel */}
+      <rect x="8" y="100" width="14" height="25" rx="4" fill="#0f172a" />
+      <rect x="10" y="102" width="10" height="21" rx="3" fill="#1e293b" />
+      <circle cx="15" cy="112" r="4" fill="#94a3b8" />
       <circle cx="15" cy="112" r="2" fill="#64748b" />
+      <line x1="15" y1="108" x2="15" y2="116" stroke="#475569" strokeWidth="0.5" />
+      <line x1="11" y1="112" x2="19" y2="112" stroke="#475569" strokeWidth="0.5" />
+
+      {/* Rear Right Wheel */}
+      <rect x="78" y="100" width="14" height="25" rx="4" fill="#0f172a" />
+      <rect x="80" y="102" width="10" height="21" rx="3" fill="#1e293b" />
+      <circle cx="85" cy="112" r="4" fill="#94a3b8" />
       <circle cx="85" cy="112" r="2" fill="#64748b" />
+      <line x1="85" y1="108" x2="85" y2="116" stroke="#475569" strokeWidth="0.5" />
+      <line x1="81" y1="112" x2="89" y2="112" stroke="#475569" strokeWidth="0.5" />
 
       {/* Racing Stripe (Sports) */}
       {isSports && <rect x="45" y="30" width="10" height="110" fill="#ffffff" opacity="0.8" />}
@@ -222,7 +268,7 @@ const CarSVG = ({ model, tilt, isNitro, isBlinking }: { model: CarModel; tilt: n
   );
 };
 
-// ✅ Scenery SVGs (Only for sides) - Full Detail
+// ✅ Scenery SVGs
 const ScenerySVG = ({ type }: { type: SideObjectType }) => {
   if (type === 'tree') return (
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl">
@@ -265,7 +311,7 @@ const ScenerySVG = ({ type }: { type: SideObjectType }) => {
   return null;
 };
 
-// ✅ Road Obstacle SVGs - Full Detail
+// ✅ Road Obstacle SVGs
 const ObstacleSVG = ({ type }: { type: RoadObjectType }) => {
   if (type === 'traffic') return (
     <svg viewBox="0 0 100 160" className="w-full h-full drop-shadow-xl">
@@ -336,6 +382,8 @@ export default function AlamnagarTurboRacer() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [countdown, setCountdown] = useState(3);
   const [carTilt, setCarTilt] = useState(0);
+  const [isTurningLeft, setIsTurningLeft] = useState(false);
+  const [isTurningRight, setIsTurningRight] = useState(false);
   
   // ✅ On-Screen Controls State
   const [leftPressed, setLeftPressed] = useState(false);
@@ -347,6 +395,7 @@ export default function AlamnagarTurboRacer() {
   const keysPressed = useRef<Set<string>>(new Set());
   const countdownRef = useRef<number | null>(null);
   const invincibleTimerRef = useRef<number | null>(null);
+  const lastIndicatorSoundRef = useRef(0);
 
   useEffect(() => {
     const saved = localStorage.getItem("alamnagarRacerHighScore");
@@ -367,6 +416,8 @@ export default function AlamnagarTurboRacer() {
     setScreenShake(0);
     setCrashFlash(false);
     setIsInvincible(false);
+    setIsTurningLeft(false);
+    setIsTurningRight(false);
     lastSpawnRef.current = 0;
     setGameState('countdown');
     setCountdown(3);
@@ -402,26 +453,33 @@ export default function AlamnagarTurboRacer() {
     setParticles(prev => [...prev, ...newParticles]);
   }, []);
 
-  // ✅ Game Loop - Full Implementation with Fixed Collisions
+  // ✅ Game Loop
   useEffect(() => {
     if (gameState !== 'playing') return;
 
     const loop = () => {
       const currentSpeed = isNitroActive ? speed * 2.5 : speed;
       
-      // 1. Move Player (Smooth steering)
-      let moving = false;
+      // 1. Move Player with Smooth Steering
       const isLeft = keysPressed.current.has('ArrowLeft') || keysPressed.current.has('a') || leftPressed;
       const isRight = keysPressed.current.has('ArrowRight') || keysPressed.current.has('d') || rightPressed;
 
+      // Update turning indicators
+      setIsTurningLeft(isLeft && !isRight);
+      setIsTurningRight(isRight && !isLeft);
+
+      // Play indicator sound (every 0.5 seconds)
+      if ((isLeft || isRight) && Date.now() - lastIndicatorSoundRef.current > 500) {
+        if (soundEnabled) playSound('indicator');
+        lastIndicatorSoundRef.current = Date.now();
+      }
+
       if (isLeft) {
         playerXRef.current = Math.max(28, playerXRef.current - 2.5);
-        setCarTilt(-12);
-        moving = true;
+        setCarTilt(-15);
       } else if (isRight) {
         playerXRef.current = Math.min(72, playerXRef.current + 2.5);
-        setCarTilt(12);
-        moving = true;
+        setCarTilt(15);
       } else {
         setCarTilt(0);
       }
@@ -435,7 +493,6 @@ export default function AlamnagarTurboRacer() {
         lastSpawnRef.current = 0;
         const modeData = MODES[mode];
         
-        // Spawn Side Scenery
         if (Math.random() > 0.3) {
           const isLeftSide = Math.random() > 0.5;
           const sideType = modeData.sideObjects[Math.floor(Math.random() * modeData.sideObjects.length)];
@@ -443,18 +500,17 @@ export default function AlamnagarTurboRacer() {
             id: Date.now() + Math.random(),
             type: sideType,
             x: isLeftSide ? (5 + Math.random() * 13) : (82 + Math.random() * 13),
-            y: -20, // Spawn higher up for natural feel
+            y: -20,
             speed: currentSpeed * 0.8,
             isSide: true
           }]);
         }
 
-        // Spawn Road Objects (Strictly on road: 30% to 70%)
         const roadType = modeData.roadObjects[Math.floor(Math.random() * modeData.roadObjects.length)];
         setObjects(prev => [...prev, {
           id: Date.now() + Math.random() + 1000,
           type: roadType,
-          x: 32 + Math.random() * 36, // Keep away from extreme edges
+          x: 32 + Math.random() * 36,
           y: -20,
           speed: currentSpeed * (roadType === 'traffic' ? 0.6 : 1),
           isSide: false
@@ -470,12 +526,10 @@ export default function AlamnagarTurboRacer() {
         prev.forEach(obj => {
           const newY = obj.y + obj.speed;
           
-          // Only check collisions for road objects, and only if not invincible
           if (!obj.isSide && !isInvincible) {
             const distX = Math.abs(obj.x - playerXRef.current);
-            const distY = Math.abs(newY - 78); // Player center Y is around 78%
+            const distY = Math.abs(newY - 78);
 
-            // Tighter, fairer hitboxes
             const hitDistX = obj.type === 'traffic' ? 10 : 7;
             const hitDistY = 8;
 
@@ -492,7 +546,6 @@ export default function AlamnagarTurboRacer() {
                 if (soundEnabled) playSound('nitro');
                 spawnParticles(obj.x, newY, '#3b82f6', 12);
               } else {
-                // Real Crash!
                 hitSomething = true;
                 if (soundEnabled) playSound('crash');
                 setScreenShake(20);
@@ -501,7 +554,6 @@ export default function AlamnagarTurboRacer() {
                 spawnParticles(obj.x, newY, '#ffffff', 20, true);
                 spawnParticles(obj.x, newY, '#ef4444', 10, true);
                 
-                // Invincibility frames
                 setIsInvincible(true);
                 if (invincibleTimerRef.current) clearTimeout(invincibleTimerRef.current);
                 invincibleTimerRef.current = window.setTimeout(() => setIsInvincible(false), 1500);
@@ -658,7 +710,7 @@ export default function AlamnagarTurboRacer() {
                     </div>
                   )}
                   <div className="w-32 h-48">
-                    <CarSVG model={car} tilt={0} isNitro={false} isBlinking={false} />
+                    <CarSVG model={car} tilt={0} isNitro={false} isBlinking={false} isTurningLeft={false} isTurningRight={false} />
                   </div>
                   <div className="text-center">
                     <h3 className="text-2xl font-black text-white">{car.toUpperCase()}</h3>
@@ -793,10 +845,10 @@ export default function AlamnagarTurboRacer() {
                 backgroundColor: p.color, opacity: p.life, transform: 'translate(-50%, -50%)' }} />
           ))}
 
-          {/* Player Car */}
+          {/* Player Car with Indicators */}
           <motion.div className="absolute w-20 h-36 md:w-24 md:h-40 z-20"
             style={{ left: `${playerX}%`, top: '78%', transform: 'translate(-50%, -50%)', transition: 'left 0.1s ease-out' }}>
-            <CarSVG model={selectedCar} tilt={carTilt} isNitro={isNitroActive} isBlinking={isInvincible} />
+            <CarSVG model={selectedCar} tilt={carTilt} isNitro={isNitroActive} isBlinking={isInvincible} isTurningLeft={isTurningLeft} isTurningRight={isTurningRight} />
           </motion.div>
 
           {/* ✅ HUD */}
@@ -825,49 +877,62 @@ export default function AlamnagarTurboRacer() {
             </div>
           </div>
 
-          {/* ✅ ON-SCREEN CONTROLS (Mobile Friendly) */}
-          <div className="absolute bottom-8 left-0 right-0 z-40 flex justify-between items-end px-6 pointer-events-none md:hidden">
-            {/* Steering Buttons (Bottom Left) */}
-            <div className="flex gap-4 pointer-events-auto">
-              <button 
-                className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border-2 border-white/40 flex items-center justify-center active:scale-90 active:bg-white/40 transition-all"
-                onTouchStart={(e) => { e.preventDefault(); setLeftPressed(true); }}
-                onTouchEnd={(e) => { e.preventDefault(); setLeftPressed(false); }}
-              >
-                <ChevronLeft className="w-8 h-8 text-white" />
-              </button>
-              <button 
-                className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border-2 border-white/40 flex items-center justify-center active:scale-90 active:bg-white/40 transition-all"
-                onTouchStart={(e) => { e.preventDefault(); setRightPressed(true); }}
-                onTouchEnd={(e) => { e.preventDefault(); setRightPressed(false); }}
-              >
-                <ChevronRight className="w-8 h-8 text-white" />
-              </button>
-            </div>
-
-            {/* Boost Button (Bottom Right) */}
+          {/* ✅ ON-SCREEN STEERING CONTROLS (Perfectly Positioned) */}
+          <div className="absolute bottom-8 left-8 z-40 flex gap-4 pointer-events-auto md:hidden">
+            {/* Left Button */}
             <button 
-              className={`w-20 h-20 rounded-full border-2 flex items-center justify-center active:scale-90 transition-all pointer-events-auto ${
-                nitro <= 0 || isNitroActive ? 'bg-gray-500/20 border-gray-500/40 opacity-50' : 'bg-blue-600/80 border-blue-400 active:bg-blue-500'
+              className={`w-20 h-20 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all ${
+                leftPressed 
+                  ? 'bg-white/40 border-white/60 scale-95' 
+                  : 'bg-white/20 border-white/40 hover:bg-white/30'
               }`}
-              disabled={nitro <= 0 || isNitroActive}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                if (nitro > 0 && !isNitroActive) {
-                  setIsNitroActive(true); setNitro(n => n - 100);
-                  if (soundEnabled) playSound('nitro');
-                  setTimeout(() => setIsNitroActive(false), 3000);
-                }
-              }}
+              onTouchStart={(e) => { e.preventDefault(); setLeftPressed(true); }}
+              onTouchEnd={(e) => { e.preventDefault(); setLeftPressed(false); }}
+              onTouchCancel={(e) => { e.preventDefault(); setLeftPressed(false); }}
             >
-              <Zap className={`w-10 h-10 ${isNitroActive ? 'text-yellow-300 fill-yellow-300' : 'text-white'}`} />
+              <ChevronLeft className="w-10 h-10 text-white" strokeWidth={3} />
+            </button>
+            
+            {/* Right Button */}
+            <button 
+              className={`w-20 h-20 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all ${
+                rightPressed 
+                  ? 'bg-white/40 border-white/60 scale-95' 
+                  : 'bg-white/20 border-white/40 hover:bg-white/30'
+              }`}
+              onTouchStart={(e) => { e.preventDefault(); setRightPressed(true); }}
+              onTouchEnd={(e) => { e.preventDefault(); setRightPressed(false); }}
+              onTouchCancel={(e) => { e.preventDefault(); setRightPressed(false); }}
+            >
+              <ChevronRight className="w-10 h-10 text-white" strokeWidth={3} />
             </button>
           </div>
+
+          {/* ✅ BOOST BUTTON (Bottom Right - Perfectly Positioned) */}
+          <button 
+            className={`absolute bottom-8 right-8 z-40 w-24 h-24 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all pointer-events-auto md:hidden ${
+              nitro <= 0 || isNitroActive 
+                ? 'bg-gray-500/20 border-gray-500/40 opacity-50' 
+                : 'bg-blue-600/80 border-blue-400 active:bg-blue-500 shadow-lg shadow-blue-500/50'
+            }`}
+            disabled={nitro <= 0 || isNitroActive}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              if (nitro > 0 && !isNitroActive) {
+                setIsNitroActive(true);
+                setNitro(n => n - 100);
+                if (soundEnabled) playSound('nitro');
+                setTimeout(() => setIsNitroActive(false), 3000);
+              }
+            }}
+          >
+            <Zap className={`w-12 h-12 ${isNitroActive ? 'text-yellow-300 fill-yellow-300' : 'text-white'}`} strokeWidth={3} />
+          </button>
 
           {/* Desktop Controls Hint */}
           <div className="absolute bottom-8 left-8 hidden md:block pointer-events-none">
             <div className="bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10 text-xs text-stone-400 space-y-1">
-              <div>️ ➡️ या A / D : स्टीयरिंग</div>
+              <div>⬅️ ➡️ या A / D : स्टीयरिंग</div>
               <div>SPACE : नाइट्रो बूस्ट 🚀</div>
               <div>ESC : रोकें (Pause)</div>
             </div>
