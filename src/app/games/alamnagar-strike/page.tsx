@@ -21,7 +21,7 @@ import {
 } from "firebase/auth";
 
 // ✅ Audio Engine with Enemy-Specific Sounds
-const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'pistol' | 'rifle' | 'hit' | 'kill' | 'explode' | 'boss_hit' | 'gameover' | 'booyah' | 'switch' | 'login' | 'shell' | 'zombie_groan') => {
+const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'pistol' | 'rifle' | 'hit' | 'kill' | 'explode' | 'boss_hit' | 'gameover' | 'booyah' | 'switch' | 'login' | 'shell' | 'roar' | 'ghost_wail') => {
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
@@ -77,11 +77,17 @@ const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'pistol' | 'rifle' | '
         gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
         osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
         break;
-      case 'zombie_groan':
-        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
+      case 'roar': // Tiger/Boss sound
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+        break;
+      case 'ghost_wail': // Ghost sound
+        osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(400, ctx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
         break;
       case 'switch':
       case 'login':
@@ -113,6 +119,7 @@ const playSound = (type: 'shoot' | 'shotgun' | 'sniper' | 'pistol' | 'rifle' | '
 
 type Environment = 'gali' | 'jungle' | 'city';
 type WeaponType = 'pistol' | 'rifle' | 'shotgun' | 'sniper';
+type EnemyType = 'zombie' | 'thug' | 'tiger' | 'ghost' | 'alien';
 
 const WEAPONS: Record<WeaponType, { name: string; fireRate: number; damage: number; spread: number; speed: number; color: string; size: number; muzzleOffset: number; recoil: number }> = {
   pistol: { name: "Pistol", fireRate: 250, damage: 1, spread: 0, speed: 2.5, color: "#fbbf24", size: 6, muzzleOffset: 3.5, recoil: 2 },
@@ -121,45 +128,32 @@ const WEAPONS: Record<WeaponType, { name: string; fireRate: number; damage: numb
   sniper: { name: "Sniper", fireRate: 1200, damage: 5, spread: 0, speed: 5.0, color: "#a855f7", size: 10, muzzleOffset: 5, recoil: 5 },
 };
 
-// ✅ Unique Gun SVGs for Each Weapon
+// ✅ Unique Gun SVGs for Each Weapon (Full Detail)
 const PistolSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
   <g transform={`rotate(${angle}) translate(${-recoil}, 0)`} style={{ filter: 'drop-shadow(0 0 10px #fbbf24)' }}>
-    {/* Grip */}
     <rect x="-20" y="5" width="15" height="25" rx="3" fill="#2a2a2a" />
     <rect x="-17" y="8" width="9" height="18" rx="2" fill="#3a3a3a" />
-    {/* Body */}
     <rect x="-15" y="-8" width="35" height="16" rx="3" fill="#444" />
     <rect x="-10" y="-6" width="25" height="12" rx="2" fill="#555" />
-    {/* Barrel */}
     <rect x="20" y="-5" width="20" height="10" rx="2" fill="#666" />
-    {/* Muzzle */}
     <circle cx="40" cy="0" r="3" fill="#222" />
-    {/* Details */}
     <rect x="-5" y="-4" width="8" height="8" rx="1" fill="#777" />
     <circle cx="5" cy="0" r="1.5" fill="#888" />
-    {/* Trigger */}
     <path d="M -10 8 Q -8 12 -5 8" stroke="#333" strokeWidth="1" fill="none" />
   </g>
 );
 
 const RifleSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
   <g transform={`rotate(${angle}) translate(${-recoil}, 0)`} style={{ filter: 'drop-shadow(0 0 10px #3b82f6)' }}>
-    {/* Stock */}
     <rect x="-40" y="-6" width="25" height="12" rx="3" fill="#4a3b2a" />
     <rect x="-35" y="-4" width="15" height="8" rx="2" fill="#6b5344" />
-    {/* Body */}
     <rect x="-15" y="-8" width="40" height="16" rx="3" fill="#333" />
     <rect x="-10" y="-6" width="30" height="12" rx="2" fill="#444" />
-    {/* Magazine */}
     <rect x="-8" y="8" width="12" height="18" rx="2" fill="#222" />
-    {/* Barrel */}
     <rect x="25" y="-5" width="35" height="10" rx="2" fill="#555" />
-    {/* Scope */}
     <rect x="-5" y="-14" width="20" height="6" rx="2" fill="#222" />
     <circle cx="5" cy="-11" r="2" fill="#444" />
-    {/* Muzzle */}
     <circle cx="60" cy="0" r="3" fill="#222" />
-    {/* Details */}
     <rect x="10" y="-3" width="10" height="6" rx="1" fill="#666" />
     <circle cx="-5" cy="0" r="2" fill="#777" />
   </g>
@@ -167,49 +161,35 @@ const RifleSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
 
 const ShotgunSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
   <g transform={`rotate(${angle}) translate(${-recoil}, 0)`} style={{ filter: 'drop-shadow(0 0 10px #ef4444)' }}>
-    {/* Stock */}
     <rect x="-45" y="-7" width="30" height="14" rx="4" fill="#4a3b2a" />
     <rect x="-40" y="-5" width="20" height="10" rx="2" fill="#6b5344" />
-    {/* Body */}
     <rect x="-15" y="-9" width="35" height="18" rx="3" fill="#333" />
     <rect x="-10" y="-7" width="25" height="14" rx="2" fill="#444" />
-    {/* Pump */}
     <rect x="5" y="-6" width="15" height="12" rx="2" fill="#555" />
-    {/* Double Barrel */}
     <rect x="20" y="-7" width="40" height="6" rx="2" fill="#666" />
     <rect x="20" y="1" width="40" height="6" rx="2" fill="#666" />
-    {/* Muzzles */}
     <circle cx="60" cy="-4" r="2.5" fill="#222" />
     <circle cx="60" cy="4" r="2.5" fill="#222" />
-    {/* Details */}
     <rect x="-5" y="-4" width="10" height="8" rx="1" fill="#777" />
   </g>
 );
 
 const SniperSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
   <g transform={`rotate(${angle}) translate(${-recoil}, 0)`} style={{ filter: 'drop-shadow(0 0 10px #a855f7)' }}>
-    {/* Stock */}
     <rect x="-50" y="-7" width="30" height="14" rx="4" fill="#2a2a2a" />
     <rect x="-45" y="-5" width="20" height="10" rx="2" fill="#3a3a3a" />
-    {/* Body */}
     <rect x="-20" y="-8" width="45" height="16" rx="3" fill="#333" />
     <rect x="-15" y="-6" width="35" height="12" rx="2" fill="#444" />
-    {/* Magazine */}
     <rect x="-10" y="8" width="15" height="20" rx="2" fill="#222" />
-    {/* Long Barrel */}
     <rect x="25" y="-5" width="50" height="10" rx="2" fill="#555" />
     <rect x="30" y="-3" width="40" height="6" rx="1" fill="#666" />
-    {/* Scope */}
     <rect x="-10" y="-16" width="30" height="8" rx="3" fill="#222" />
     <circle cx="5" cy="-12" r="3" fill="#444" />
     <circle cx="5" cy="-12" r="1.5" fill="#666" />
-    {/* Muzzle Brake */}
     <rect x="70" y="-6" width="8" height="12" rx="1" fill="#333" />
     <circle cx="75" cy="0" r="2" fill="#222" />
-    {/* Bipod */}
     <line x1="20" y1="8" x2="15" y2="18" stroke="#555" strokeWidth="2" />
     <line x1="20" y1="8" x2="25" y2="18" stroke="#555" strokeWidth="2" />
-    {/* Details */}
     <rect x="0" y="-3" width="12" height="6" rx="1" fill="#777" />
     <circle cx="-5" cy="0" r="2" fill="#888" />
   </g>
@@ -224,54 +204,33 @@ const GunSVG = ({ weapon, angle, recoil }: { weapon: WeaponType; angle: number; 
   }
 };
 
-// ✅ Realistic 2D Zombie Enemy SVG
+// ✅ Realistic 2D Enemy SVGs (Full Detail)
 const ZombieEnemy = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean; walkFrame: number }) => {
-  const size = isBoss ? 1.5 : 1;
+  const size = isBoss ? 1.8 : 1;
   const legSwing = Math.sin(walkFrame * 8) * 15;
   const armSwing = Math.sin(walkFrame * 8) * 20;
   const bob = Math.abs(Math.sin(walkFrame * 8)) * 2;
   
   return (
     <g transform={`scale(${size}) translate(0, ${-bob})`} style={{ filter: isHit ? 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none' }}>
-      {/* Shadow */}
       <ellipse cx="0" cy="45" rx="20" ry="5" fill="rgba(0,0,0,0.5)" />
-      
-      {/* Back Leg */}
       <rect x="-8" y="20" width="8" height="25" rx="3" fill="#2d4a3e" transform={`rotate(${legSwing} -4 20)`} />
-      {/* Back Arm */}
       <rect x="-18" y="-5" width="8" height="22" rx="3" fill="#4a6b5e" transform={`rotate(${-armSwing} -14 -5)`} />
-      
-      {/* Body */}
       <rect x="-12" y="-10" width="24" height="32" rx="4" fill="#3d5a4e" />
-      {/* Torn Shirt */}
       <path d="M -12 -5 L 12 -5 L 12 5 L -12 5 Z" fill="#5a3d3d" />
       <path d="M -10 0 L -5 8 M 5 0 L 10 8" stroke="#3d5a4e" strokeWidth="1" />
-      
-      {/* Front Leg */}
       <rect x="0" y="20" width="8" height="25" rx="3" fill="#2d4a3e" transform={`rotate(${-legSwing} 4 20)`} />
-      {/* Front Arm */}
       <rect x="10" y="-5" width="8" height="22" rx="3" fill="#4a6b5e" transform={`rotate(${armSwing} 14 -5)`} />
-      
-      {/* Head */}
       <circle cx="0" cy="-20" r="12" fill="#4a6b5e" />
-      {/* Hair (messy) */}
       <path d="M -10 -25 Q -5 -30 0 -28 Q 5 -30 10 -25 Q 8 -28 0 -27 Q -8 -28 -10 -25 Z" fill="#2d3d2e" />
-      
-      {/* Eyes (glowing red) */}
       <circle cx="-4" cy="-22" r="2.5" fill="#ff0000" />
       <circle cx="4" cy="-22" r="2.5" fill="#ff0000" />
       <circle cx="-4" cy="-22" r="1" fill="#ff6666" />
       <circle cx="4" cy="-22" r="1" fill="#ff6666" />
-      
-      {/* Mouth (open, teeth) */}
       <path d="M -5 -16 Q 0 -14 5 -16" stroke="#2d3d2e" strokeWidth="1.5" fill="#1a1a1a" />
       <path d="M -4 -16 L -3 -14 M 0 -16 L 0 -14 M 4 -16 L 3 -14" stroke="white" strokeWidth="0.8" />
-      
-      {/* Wounds */}
       <circle cx="-6" cy="-10" r="2" fill="#8b0000" />
       <circle cx="6" cy="-5" r="1.5" fill="#8b0000" />
-      
-      {/* Boss Crown */}
       {isBoss && (
         <g>
           <path d="M -8 -30 L -6 -35 L -3 -32 L 0 -36 L 3 -32 L 6 -35 L 8 -30 Z" fill="#ffd700" />
@@ -284,23 +243,110 @@ const ZombieEnemy = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boo
   );
 };
 
+const ThugEnemy = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean; walkFrame: number }) => {
+  const size = isBoss ? 2.0 : 1.3;
+  const legSwing = Math.sin(walkFrame * 6) * 12;
+  const armSwing = Math.sin(walkFrame * 6) * 15;
+  return (
+    <g transform={`scale(${size})`} style={{ filter: isHit ? 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none' }}>
+      <ellipse cx="0" cy="50" rx="25" ry="6" fill="rgba(0,0,0,0.6)" />
+      <rect x="-10" y="20" width="10" height="30" rx="4" fill="#1a1a1a" transform={`rotate(${legSwing} -5 20)`} />
+      <rect x="0" y="20" width="10" height="30" rx="4" fill="#1a1a1a" transform={`rotate(${-legSwing} 5 20)`} />
+      <rect x="-15" y="-10" width="30" height="35" rx="5" fill="#333" />
+      <rect x="-22" y="-5" width="10" height="25" rx="4" fill="#d4a373" transform={`rotate(${-armSwing} -17 -5)`} />
+      <rect x="12" y="-5" width="10" height="25" rx="4" fill="#d4a373" transform={`rotate(${armSwing} 17 -5)`} />
+      <circle cx="0" cy="-25" r="14" fill="#d4a373" />
+      <path d="M -14 -30 Q 0 -35 14 -30 L 12 -25 Q 0 -28 -12 -25 Z" fill="#111" />
+      <circle cx="-5" cy="-26" r="2" fill="#000" />
+      <circle cx="5" cy="-26" r="2" fill="#000" />
+      <path d="M -6 -18 Q 0 -15 6 -18" stroke="#000" strokeWidth="1.5" fill="none" />
+      {isBoss && <circle cx="0" cy="-38" r="3" fill="#f00" />}
+    </g>
+  );
+};
+
+const TigerEnemy = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean; walkFrame: number }) => {
+  const size = isBoss ? 2.2 : 1.4;
+  const legSwing = Math.sin(walkFrame * 10) * 10;
+  const bob = Math.abs(Math.sin(walkFrame * 10)) * 3;
+  return (
+    <g transform={`scale(${size}) translate(0, ${-bob})`} style={{ filter: isHit ? 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none' }}>
+      <ellipse cx="0" cy="40" rx="30" ry="8" fill="rgba(0,0,0,0.5)" />
+      <ellipse cx="0" cy="10" rx="25" ry="18" fill="#f97316" />
+      <path d="M -15 0 L -10 10 M -5 0 L 0 10 M 5 0 L 10 10 M 15 0 L 20 10" stroke="#000" strokeWidth="3" />
+      <rect x="-15" y="20" width="8" height="20" rx="3" fill="#f97316" transform={`rotate(${legSwing} -11 20)`} />
+      <rect x="-5" y="20" width="8" height="20" rx="3" fill="#f97316" transform={`rotate(${-legSwing} -1 20)`} />
+      <rect x="5" y="20" width="8" height="20" rx="3" fill="#f97316" transform={`rotate(${legSwing} 9 20)`} />
+      <rect x="15" y="20" width="8" height="20" rx="3" fill="#f97316" transform={`rotate(${-legSwing} 19 20)`} />
+      <circle cx="0" cy="-15" r="16" fill="#f97316" />
+      <path d="M -10 -25 L -12 -30 L -6 -28 M 10 -25 L 12 -30 L 6 -28" fill="#f97316" stroke="#000" strokeWidth="1" />
+      <circle cx="-6" cy="-18" r="3" fill="#fff" />
+      <circle cx="6" cy="-18" r="3" fill="#fff" />
+      <circle cx="-6" cy="-18" r="1.5" fill="#000" />
+      <circle cx="6" cy="-18" r="1.5" fill="#000" />
+      <path d="M -4 -10 Q 0 -8 4 -10" stroke="#000" strokeWidth="1" fill="none" />
+      <path d="M -6 -8 L -8 -5 M 6 -8 L 8 -5" stroke="#fff" strokeWidth="1" />
+      <path d={`M 25 10 Q 35 ${5 + Math.sin(walkFrame*5)*5} 40 0`} stroke="#f97316" strokeWidth="4" fill="none" />
+    </g>
+  );
+};
+
+const GhostEnemy = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean; walkFrame: number }) => {
+  const size = isBoss ? 2.5 : 1.5;
+  const floatY = Math.sin(walkFrame * 4) * 15;
+  return (
+    <g transform={`scale(${size}) translate(0, ${floatY})`} style={{ filter: isHit ? 'brightness(3) drop-shadow(0 0 10px #fff)' : 'drop-shadow(0 0 15px rgba(255,255,255,0.3))' }}>
+      <path d="M -20 -20 Q -20 -40 0 -40 Q 20 -40 20 -20 L 20 10 Q 10 0 0 10 Q -10 0 -20 10 Z" fill="rgba(255, 255, 255, 0.8)" />
+      <circle cx="-8" cy="-25" r="4" fill="#000" />
+      <circle cx="8" cy="-25" r="4" fill="#000" />
+      <circle cx="-8" cy="-25" r="1.5" fill="#f00" />
+      <circle cx="8" cy="-25" r="1.5" fill="#f00" />
+      <ellipse cx="0" cy="-15" rx="6" ry="8" fill="#000" />
+      {isBoss && <path d="M -15 -35 L 0 -50 L 15 -35" fill="none" stroke="#f00" strokeWidth="2" />}
+    </g>
+  );
+};
+
+const AlienEnemy = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean; walkFrame: number }) => {
+  const size = isBoss ? 2.0 : 1.3;
+  const legSwing = Math.sin(walkFrame * 8) * 15;
+  return (
+    <g transform={`scale(${size})`} style={{ filter: isHit ? 'brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none' }}>
+      <ellipse cx="0" cy="45" rx="20" ry="5" fill="rgba(0,0,0,0.5)" />
+      <rect x="-8" y="20" width="8" height="25" rx="3" fill="#4a6b5e" transform={`rotate(${legSwing} -4 20)`} />
+      <rect x="0" y="20" width="8" height="25" rx="3" fill="#4a6b5e" transform={`rotate(${-legSwing} 4 20)`} />
+      <ellipse cx="0" cy="5" rx="18" ry="22" fill="#8b5cf6" />
+      <circle cx="0" cy="-20" r="16" fill="#a78bfa" />
+      <ellipse cx="-6" cy="-22" rx="5" ry="7" fill="#000" />
+      <ellipse cx="6" cy="-22" rx="5" ry="7" fill="#000" />
+      <circle cx="-6" cy="-22" r="2" fill="#0f0" />
+      <circle cx="6" cy="-22" r="2" fill="#0f0" />
+      <path d="M -10 -30 Q 0 -35 10 -30" stroke="#8b5cf6" strokeWidth="4" fill="none" />
+      <circle cx="0" cy="-32" r="3" fill="#0f0" />
+    </g>
+  );
+};
+
 const ENVIRONMENTS: Record<Environment, { 
-  name: string; hindiName: string; icon: any; bg: string; overlay: string;
+  name: string; hindiName: string; icon: any; bg: string; overlay: string; enemyTypes: EnemyType[];
 }> = {
   gali: { 
     name: "Gali Muhalla", hindiName: "गली मुहल्ला", icon: MapPin, 
     bg: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?q=80&w=1920&auto=format&fit=crop",
-    overlay: "bg-amber-950/60"
+    overlay: "bg-amber-950/60",
+    enemyTypes: ['thug', 'zombie']
   },
   jungle: { 
     name: "Jadui Jungle", hindiName: "जादुई जंगल", icon: Trees, 
     bg: "https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1920&auto=format&fit=crop",
-    overlay: "bg-emerald-950/70"
+    overlay: "bg-emerald-950/70",
+    enemyTypes: ['tiger', 'ghost', 'zombie']
   },
   city: { 
     name: "City Center", hindiName: "शहर का केंद्र", icon: Building2, 
     bg: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=1920&auto=format&fit=crop",
-    overlay: "bg-slate-900/70"
+    overlay: "bg-slate-900/70",
+    enemyTypes: ['alien', 'zombie']
   }
 };
 
@@ -536,20 +582,37 @@ export default function AlamnagarStrike() {
     const x = side === 'left' ? -10 : 110;
     const y = 60 + Math.random() * 20;
     const isBoss = wave >= 3 && Math.random() > 0.8;
+    
+    const availableTypes = ENVIRONMENTS[selectedEnv].enemyTypes;
+    const enemyType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+
+    let warningName = "दुश्मन";
+    if (enemyType === 'tiger') warningName = "खूंखार शेर";
+    else if (enemyType === 'ghost') warningName = "डरावना भूत";
+    else if (enemyType === 'thug') warningName = "खतरनाक गुंडा";
+    else if (enemyType === 'alien') warningName = "एलियन";
+    
+    if (isBoss) warningName = "बॉस " + warningName;
 
     const directionText = side === 'left' ? "बाएं (Left)" : "दाएं (Right)";
-    setWarningText(`⚠️ चेतावनी: ${directionText} से ${isBoss ? 'बॉस ज़ोंबी' : 'ज़ोंबी'} आ रहा है!`);
+    setWarningText(`⚠️ चेतावनी: ${directionText} से ${warningName} आ रहा है!`);
+    
+    if (isBoss && soundEnabled) {
+        if (enemyType === 'tiger') playSound('roar');
+        else if (enemyType === 'ghost') playSound('ghost_wail');
+    }
+
     setTimeout(() => setWarningText(null), 2500);
 
     enemiesRef.current.push({
       id: Date.now() + Math.random(), x, y, vx: 0, vy: 0,
-      size: isBoss ? 80 : 60, color: "#4a6b5e", 
+      size: isBoss ? 90 : 60, color: "#4a6b5e", 
       hp: isBoss ? 5 + wave : 1 + Math.floor(wave / 2), 
       maxHp: isBoss ? 5 + wave : 1 + Math.floor(wave / 2), 
-      side, isBoss,
+      side, isBoss, type: enemyType,
       walkFrame: Math.random() * 10, isHit: false
     });
-  }, [wave]);
+  }, [wave, selectedEnv, soundEnabled]);
 
   useEffect(() => {
     if (gameState !== 'playing') return;
@@ -564,11 +627,9 @@ export default function AlamnagarStrike() {
       const muzzleFlashes = muzzleFlashesRef.current;
       const shellCasings = shellCasingsRef.current;
 
-      // Gun moves smoothly
       gunPos.x += (mousePos.x - gunPos.x) * 0.15;
       gunPos.y += (mousePos.y - gunPos.y) * 0.15;
 
-      // Gun angle
       const dx = mousePos.x - gunPos.x;
       const dy = mousePos.y - gunPos.y;
       if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
@@ -579,12 +640,10 @@ export default function AlamnagarStrike() {
         gunAngleRef.current += diff * 0.2;
       }
 
-      // Gun recoil recovery
       if (gunRecoil > 0) {
         setGunRecoil(r => Math.max(0, r - 0.3));
       }
 
-      // Move bullets (fast with trails)
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         b.x += b.vx; b.y += b.vy;
@@ -593,30 +652,27 @@ export default function AlamnagarStrike() {
         if (b.x < -10 || b.x > 110 || b.y < -10 || b.y > 110) bullets.splice(i, 1);
       }
 
-      // Update muzzle flashes
       for (let i = muzzleFlashes.length - 1; i >= 0; i--) {
         muzzleFlashes[i].life -= 0.2;
         if (muzzleFlashes[i].life <= 0) muzzleFlashes.splice(i, 1);
       }
 
-      // Update shell casings
       for (let i = shellCasings.length - 1; i >= 0; i--) {
         const s = shellCasings[i];
         s.x += s.vx;
         s.y += s.vy;
-        s.vy += 0.15; // Gravity
+        s.vy += 0.15;
         s.rotation += s.rotationSpeed;
         s.life -= 0.02;
         if (s.life <= 0 || s.y > 110) shellCasings.splice(i, 1);
       }
 
-      // Move enemies
       for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
         const edx = gunPos.x - e.x;
         const edy = gunPos.y - e.y;
         const dist = Math.sqrt(edx * edx + edy * edy);
-        const speed = 0.08 + (wave * 0.01);
+        const speed = (0.08 + (wave * 0.01)) * (e.type === 'ghost' ? 1.3 : 1);
         
         e.vx = (edx / dist) * speed;
         e.vy = (edy / dist) * speed;
@@ -652,7 +708,6 @@ export default function AlamnagarStrike() {
         }
       }
 
-      // Bullet vs Enemy
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         let hit = false;
@@ -664,13 +719,11 @@ export default function AlamnagarStrike() {
             e.isHit = true;
             hit = true;
             
-            // Enemy-specific hit sound
             if (soundEnabled) {
               if (e.isBoss) playSound('boss_hit');
               else playSound('hit');
             }
             
-            // Impact particles
             for (let p = 0; p < 6; p++) {
               particles.push({ 
                 id: Math.random(), x: e.x, y: e.y, 
@@ -687,14 +740,13 @@ export default function AlamnagarStrike() {
               if (soundEnabled) playSound('explode');
               setScreenShake(e.isBoss ? 12 : 8);
               
-              // Death explosion
               for (let p = 0; p < 25; p++) {
                 const angle = (Math.PI * 2 * p) / 25;
                 const speed = 1 + Math.random() * 2.5;
                 particles.push({
                   id: Math.random(), x: e.x, y: e.y,
                   vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-                  life: 1.5, color: e.isBoss ? '#ffd700' : '#4a6b5e', size: 4 + Math.random() * 4
+                  life: 1.5, color: e.isBoss ? '#ffd700' : (e.type === 'tiger' ? '#f97316' : e.type === 'ghost' ? '#fff' : '#4a6b5e'), size: 4 + Math.random() * 4
                 });
               }
             }
@@ -704,7 +756,6 @@ export default function AlamnagarStrike() {
         if (hit) bullets.splice(i, 1);
       }
 
-      // Update particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx; p.y += p.vy;
@@ -713,7 +764,6 @@ export default function AlamnagarStrike() {
         if (p.life <= 0) particles.splice(i, 1);
       }
 
-      // Spawn enemies
       enemySpawnTimer++;
       if (enemySpawnTimer > Math.max(30, 80 - wave * 5)) {
         spawnEnemy();
@@ -750,11 +800,9 @@ export default function AlamnagarStrike() {
     const gunPos = gunPosRef.current;
     const angleRad = gunAngleRef.current * (Math.PI / 180);
     
-    // Calculate muzzle position
     const muzzleX = gunPos.x + Math.cos(angleRad) * weapon.muzzleOffset;
     const muzzleY = gunPos.y + Math.sin(angleRad) * weapon.muzzleOffset;
     
-    // Add muzzle flash
     muzzleFlashesRef.current.push({
       id: Date.now(),
       x: muzzleX,
@@ -763,7 +811,6 @@ export default function AlamnagarStrike() {
       size: currentWeapon === 'shotgun' ? 3 : 2
     });
     
-    // Add shell casing
     const shellAngle = angleRad + Math.PI / 2 + (Math.random() - 0.5) * 0.3;
     shellCasingsRef.current.push({
       id: Date.now() + Math.random(),
@@ -776,7 +823,6 @@ export default function AlamnagarStrike() {
       life: 1
     });
     
-    // Gun recoil
     setGunRecoil(weapon.recoil);
     
     const shoot = (spreadOffset: number) => {
@@ -1133,7 +1179,7 @@ export default function AlamnagarStrike() {
                 }} />
             ))}
 
-            {/* Realistic 2D Zombie Enemies */}
+            {/* Realistic 2D Enemies */}
             {enemiesRef.current.map(e => (
               <div key={e.id} className="absolute z-20 pointer-events-none"
                 style={{ left: `${e.x}%`, top: `${e.y}%`, width: `${e.size}px`, height: `${e.size * 1.5}px`, marginLeft: `-${e.size/2}px`, marginTop: `-${e.size * 0.75}px`, transform: e.side === 'left' ? 'scaleX(1)' : 'scaleX(-1)' }}>
@@ -1143,7 +1189,11 @@ export default function AlamnagarStrike() {
                   </div>
                 )}
                 <svg viewBox="-30 -40 60 90" className="w-full h-full overflow-visible">
-                  <ZombieEnemy isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />
+                  {e.type === 'zombie' && <ZombieEnemy isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
+                  {e.type === 'thug' && <ThugEnemy isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
+                  {e.type === 'tiger' && <TigerEnemy isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
+                  {e.type === 'ghost' && <GhostEnemy isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
+                  {e.type === 'alien' && <AlienEnemy isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
                 </svg>
               </div>
             ))}
@@ -1175,7 +1225,7 @@ export default function AlamnagarStrike() {
                   <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity }} className="text-7xl mb-4 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">🎯</motion.div>
                   <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 mb-2">आलमनगर स्ट्राइक</h1>
                   <p className="text-stone-400 mb-2 font-medium">स्वागत है, <span className="text-yellow-400 font-bold">{currentUser.displayName || 'Player'}</span>!</p>
-                  <p className="text-stone-500 mb-8 text-sm">युद्धक्षेत्र चुनें और ज़ोंबियों को खत्म करें</p>
+                  <p className="text-stone-500 mb-8 text-sm">युद्धक्षेत्र चुनें और दुश्मनों को खत्म करें</p>
                   <button onClick={() => setGameState('select_env')}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black text-xl py-4 rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-3 shadow-lg shadow-orange-500/30 group">
                     <Play className="w-6 h-6 fill-black group-hover:scale-110 transition-transform" /> खेल शुरू करें
@@ -1221,7 +1271,7 @@ export default function AlamnagarStrike() {
             <div className="bg-stone-900/90 border border-red-500/30 p-8 md:p-12 rounded-3xl text-center max-w-md w-full shadow-[0_0_50px_rgba(239,68,68,0.2)]">
               <h1 className="text-5xl font-black text-red-500 mb-2">समाप्त</h1>
               <p className="text-stone-400 mb-2">अच्छा प्रयास, <span className="text-yellow-400">{currentUser.displayName || 'Player'}</span>!</p>
-              <p className="text-stone-500 mb-8 text-sm">ज़ोंबी apocalypse में आप गिर गए।</p>
+              <p className="text-stone-500 mb-8 text-sm">दुश्मनों ने आपको घेर लिया।</p>
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700">
                   <div className="text-xs text-stone-400 font-bold uppercase mb-1">अंक</div>
