@@ -794,11 +794,16 @@ export default function AlamnagarTurboRacer() {
         )}
       </AnimatePresence>
 
-      {/* ✅ GAME VIEW */}
+      {/* ✅ GAME VIEW - with touch-action: none to prevent scrolling */}
       {gameState === 'playing' && (
-        <div className="relative w-full h-screen overflow-hidden"
-          style={{ transform: `translate(${(Math.random()-0.5)*screenShake}px, ${(Math.random()-0.5)*screenShake}px)` }}>
-          
+        <div 
+          className="relative w-full h-screen overflow-hidden touch-none"
+          style={{ 
+            transform: `translate(${(Math.random()-0.5)*screenShake}px, ${(Math.random()-0.5)*screenShake}px)`,
+            touchAction: 'none',
+            msTouchAction: 'none'
+          }}
+        >
           {/* Side Scenery Background */}
           <div className={`absolute left-0 top-0 bottom-0 w-[25%] ${MODES[mode].sideBg}`} />
           <div className={`absolute right-0 top-0 bottom-0 w-[25%] ${MODES[mode].sideBg}`} />
@@ -846,7 +851,7 @@ export default function AlamnagarTurboRacer() {
           ))}
 
           {/* Player Car with Indicators */}
-          <motion.div className="absolute w-20 h-36 md:w-24 md:h-40 z-20"
+          <motion.div className="absolute w-20 h-36 md:w-24 md:h-40 z-20 pointer-events-none"
             style={{ left: `${playerX}%`, top: '78%', transform: 'translate(-50%, -50%)', transition: 'left 0.1s ease-out' }}>
             <CarSVG model={selectedCar} tilt={carTilt} isNitro={isNitroActive} isBlinking={isInvincible} isTurningLeft={isTurningLeft} isTurningRight={isTurningRight} />
           </motion.div>
@@ -866,7 +871,11 @@ export default function AlamnagarTurboRacer() {
                   <motion.div className={`h-full ${isNitroActive ? 'bg-yellow-400' : 'bg-blue-500'}`} initial={{ width: '100%' }} animate={{ width: `${nitro}%` }} />
                 </div>
               </div>
-              <button onClick={() => setGameState('paused')} className="bg-black/60 backdrop-blur-md p-2 rounded-full border border-white/10 hover:bg-white/20 transition-colors">
+              <button 
+                onClick={() => setGameState('paused')} 
+                className="bg-black/60 backdrop-blur-md p-2 rounded-full border border-white/10 hover:bg-white/20 transition-colors"
+                onTouchStart={(e) => { e.preventDefault(); setGameState('paused'); }}
+              >
                 <Pause className="w-5 h-5 text-white" />
               </button>
             </div>
@@ -877,46 +886,65 @@ export default function AlamnagarTurboRacer() {
             </div>
           </div>
 
-          {/* ✅ ON-SCREEN STEERING CONTROLS (Perfectly Positioned) */}
-          <div className="absolute bottom-8 left-8 z-40 flex gap-4 pointer-events-auto md:hidden">
-            {/* Left Button */}
+          {/* ✅ ON-SCREEN STEERING CONTROLS - ALWAYS VISIBLE, BIG BUTTONS */}
+          <div className="absolute bottom-6 left-4 z-40 flex gap-3 pointer-events-auto">
+            {/* Left Button - BIG */}
             <button 
-              className={`w-20 h-20 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all ${
+              className={`w-24 h-24 md:w-20 md:h-20 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all select-none ${
                 leftPressed 
-                  ? 'bg-white/40 border-white/60 scale-95' 
-                  : 'bg-white/20 border-white/40 hover:bg-white/30'
+                  ? 'bg-white/40 border-white/60 scale-95 shadow-lg shadow-white/30' 
+                  : 'bg-white/20 border-white/40 hover:bg-white/30 shadow-md'
               }`}
-              onTouchStart={(e) => { e.preventDefault(); setLeftPressed(true); }}
-              onTouchEnd={(e) => { e.preventDefault(); setLeftPressed(false); }}
-              onTouchCancel={(e) => { e.preventDefault(); setLeftPressed(false); }}
+              style={{ touchAction: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); setLeftPressed(true); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setLeftPressed(false); }}
+              onTouchCancel={(e) => { e.preventDefault(); e.stopPropagation(); setLeftPressed(false); }}
+              onMouseDown={(e) => { e.preventDefault(); setLeftPressed(true); }}
+              onMouseUp={(e) => { e.preventDefault(); setLeftPressed(false); }}
+              onMouseLeave={() => setLeftPressed(false)}
             >
-              <ChevronLeft className="w-10 h-10 text-white" strokeWidth={3} />
+              <ChevronLeft className="w-12 h-12 md:w-10 md:h-10 text-white" strokeWidth={3} />
             </button>
             
-            {/* Right Button */}
+            {/* Right Button - BIG */}
             <button 
-              className={`w-20 h-20 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all ${
+              className={`w-24 h-24 md:w-20 md:h-20 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all select-none ${
                 rightPressed 
-                  ? 'bg-white/40 border-white/60 scale-95' 
-                  : 'bg-white/20 border-white/40 hover:bg-white/30'
+                  ? 'bg-white/40 border-white/60 scale-95 shadow-lg shadow-white/30' 
+                  : 'bg-white/20 border-white/40 hover:bg-white/30 shadow-md'
               }`}
-              onTouchStart={(e) => { e.preventDefault(); setRightPressed(true); }}
-              onTouchEnd={(e) => { e.preventDefault(); setRightPressed(false); }}
-              onTouchCancel={(e) => { e.preventDefault(); setRightPressed(false); }}
+              style={{ touchAction: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); setRightPressed(true); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setRightPressed(false); }}
+              onTouchCancel={(e) => { e.preventDefault(); e.stopPropagation(); setRightPressed(false); }}
+              onMouseDown={(e) => { e.preventDefault(); setRightPressed(true); }}
+              onMouseUp={(e) => { e.preventDefault(); setRightPressed(false); }}
+              onMouseLeave={() => setRightPressed(false)}
             >
-              <ChevronRight className="w-10 h-10 text-white" strokeWidth={3} />
+              <ChevronRight className="w-12 h-12 md:w-10 md:h-10 text-white" strokeWidth={3} />
             </button>
           </div>
 
-          {/* ✅ BOOST BUTTON (Bottom Right - Perfectly Positioned) */}
+          {/* ✅ BOOST BUTTON - BIG, BOTTOM RIGHT */}
           <button 
-            className={`absolute bottom-8 right-8 z-40 w-24 h-24 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all pointer-events-auto md:hidden ${
+            className={`absolute bottom-6 right-4 z-40 w-24 h-24 md:w-20 md:h-20 rounded-full border-4 flex items-center justify-center active:scale-90 transition-all pointer-events-auto select-none ${
               nitro <= 0 || isNitroActive 
                 ? 'bg-gray-500/20 border-gray-500/40 opacity-50' 
-                : 'bg-blue-600/80 border-blue-400 active:bg-blue-500 shadow-lg shadow-blue-500/50'
+                : 'bg-blue-600/80 border-blue-400 active:bg-blue-500 shadow-lg shadow-blue-500/50 hover:bg-blue-500/80'
             }`}
+            style={{ touchAction: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
             disabled={nitro <= 0 || isNitroActive}
             onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (nitro > 0 && !isNitroActive) {
+                setIsNitroActive(true);
+                setNitro(n => n - 100);
+                if (soundEnabled) playSound('nitro');
+                setTimeout(() => setIsNitroActive(false), 3000);
+              }
+            }}
+            onMouseDown={(e) => {
               e.preventDefault();
               if (nitro > 0 && !isNitroActive) {
                 setIsNitroActive(true);
@@ -926,15 +954,15 @@ export default function AlamnagarTurboRacer() {
               }
             }}
           >
-            <Zap className={`w-12 h-12 ${isNitroActive ? 'text-yellow-300 fill-yellow-300' : 'text-white'}`} strokeWidth={3} />
+            <Zap className={`w-12 h-12 md:w-10 md:h-10 ${isNitroActive ? 'text-yellow-300 fill-yellow-300' : 'text-white'}`} strokeWidth={3} />
           </button>
 
           {/* Desktop Controls Hint */}
-          <div className="absolute bottom-8 left-8 hidden md:block pointer-events-none">
-            <div className="bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10 text-xs text-stone-400 space-y-1">
-              <div>⬅️ ➡️ या A / D : स्टीयरिंग</div>
-              <div>SPACE : नाइट्रो बूस्ट 🚀</div>
-              <div>ESC : रोकें (Pause)</div>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:block pointer-events-none">
+            <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-xs text-stone-400 flex gap-4">
+              <span>⬅️ ➡️ : स्टीयरिंग</span>
+              <span>SPACE : बूस्ट 🚀</span>
+              <span>ESC : रोकें</span>
             </div>
           </div>
         </div>
