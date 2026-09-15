@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, Trophy, Play, RotateCcw, Volume2, VolumeX, Target, 
   MapPin, Trees, Building2, AlertTriangle, Mic, MicOff, Wind,
-  RefreshCw, Zap, Skull, Crosshair
+  RefreshCw, Zap, Skull, Crosshair, Bird
 } from "lucide-react";
 import Link from "next/link";
 import { db, auth } from "@/lib/firebase";
@@ -21,7 +21,7 @@ import {
 } from "firebase/auth";
 
 // ═══════════════════════════════════════════════════════════
-// 🔊 ADVANCED AUDIO ENGINE WITH MULTIPLE SOUND EFFECTS
+// 🔊 ADVANCED AUDIO ENGINE - 20+ SOUND EFFECTS
 // ═══════════════════════════════════════════════════════════
 const playSound = (type: string, volume: number = 1.0) => {
   try {
@@ -159,6 +159,90 @@ const playSound = (type: string, volume: number = 1.0) => {
         osc.start(ctx.currentTime); 
         osc.stop(ctx.currentTime + 1);
         break;
+      case 'zombie_die':
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(50, ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.3);
+        break;
+      case 'thug_die':
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.5, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.4);
+        break;
+      case 'tiger_die':
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(400, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.6, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.5);
+        break;
+      case 'ghost_die':
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1000, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.6);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.6);
+        break;
+      case 'alien_die':
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.setValueAtTime(400, ctx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(1200, ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.3);
+        break;
+      case 'snake_die':
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.4);
+        osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.6);
+        gain.gain.setValueAtTime(0.5, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.6);
+        break;
+      case 'snake_hiss':
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(2000, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(1500, ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.2);
+        break;
+      case 'bullet_impact':
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.2);
+        break;
+      case 'bird_tweet':
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1500, ctx.currentTime);
+        osc.frequency.setValueAtTime(2000, ctx.currentTime + 0.05);
+        osc.frequency.setValueAtTime(1500, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.15);
+        break;
     }
   } catch (e) {
     console.log('Audio error:', e);
@@ -170,8 +254,8 @@ const playSound = (type: string, volume: number = 1.0) => {
 // ═══════════════════════════════════════════════════════════
 type Environment = 'gali' | 'jungle' | 'city';
 type WeaponType = 'pistol' | 'rifle' | 'shotgun' | 'sniper';
-type EnemyType = 'zombie' | 'thug' | 'tiger' | 'ghost' | 'alien';
-type ParticleType = 'blood' | 'spark' | 'shell' | 'dust' | 'explosion';
+type EnemyType = 'zombie' | 'thug' | 'tiger' | 'ghost' | 'alien' | 'snake';
+type ParticleType = 'blood' | 'spark' | 'shell' | 'dust' | 'explosion' | 'smoke';
 
 interface WeaponStats {
   name: string;
@@ -250,125 +334,128 @@ interface Bullet {
   color: string;
   damage: number;
   trail: { x: number; y: number }[];
+  startX: number;
+  startY: number;
+}
+
+interface Bird {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  wingPhase: number;
+  size: number;
+}
+
+interface BulletImpact {
+  id: number;
+  x: number;
+  y: number;
+  life: number;
 }
 
 // ═══════════════════════════════════════════════════════════
 // 🔫 MICRO-LEVEL HEAVY METAL GUN SVGs
 // ═══════════════════════════════════════════════════════════
-const PistolSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
-  <g transform={`rotate(${angle}) translate(${-recoil * 0.5}, 0)`} style={{ filter: 'drop-shadow(0 0 8px #fbbf24)' }}>
-    {/* Grip with texture */}
+const PistolSVG = ({ recoil }: { recoil: number }) => (
+  <g transform={`translate(${-recoil * 0.5}, 0)`} style={{ filter: 'drop-shadow(0 0 8px #fbbf24)' }}>
     <path d="M -15 5 L -15 25 Q -15 30 -10 30 L -5 30 L -5 5 Z" fill="#1a1a1a" />
-    <path d="M -14 8 L -14 22 M -10 8 L -10 22" stroke="#333" strokeWidth="1" />
-    {/* Frame & Trigger Guard */}
+    <path d="M -14 8 L -14 22 M -10 8 L -10 22 M -12 10 L -12 20" stroke="#333" strokeWidth="0.8" />
     <path d="M -15 5 L 15 5 L 15 10 L -5 10 L -5 25 L -15 25 Z" fill="#2a2a2a" />
     <path d="M -5 10 Q 0 20 5 10" stroke="#111" strokeWidth="2" fill="none" />
-    {/* Slide */}
     <rect x="-15" y="-5" width="35" height="10" rx="2" fill="#3a3a3a" />
     <path d="M 15 -5 L 20 -2 L 20 2 L 15 5 Z" fill="#4a4a4a" />
-    {/* Serrations */}
-    <path d="M -10 -5 L -10 5 M -5 -5 L -5 5 M 0 -5 L 0 5" stroke="#111" strokeWidth="1" />
-    {/* Front Sight */}
+    <path d="M -10 -5 L -10 5 M -5 -5 L -5 5 M 0 -5 L 0 5 M 5 -5 L 5 5" stroke="#111" strokeWidth="1" />
     <rect x="18" y="-7" width="2" height="2" fill="#111" />
-    {/* Ejection Port */}
     <rect x="5" y="-4" width="8" height="4" rx="1" fill="#111" />
+    <circle cx="-10" cy="15" r="1" fill="#555" />
+    <circle cx="-10" cy="20" r="1" fill="#555" />
   </g>
 );
 
-const RifleSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
-  <g transform={`rotate(${angle}) translate(${-recoil}, 0)`} style={{ filter: 'drop-shadow(0 0 10px #3b82f6)' }}>
-    {/* Tactical Stock */}
+const RifleSVG = ({ recoil }: { recoil: number }) => (
+  <g transform={`translate(${-recoil}, 0)`} style={{ filter: 'drop-shadow(0 0 10px #3b82f6)' }}>
     <path d="M -45 -5 L -30 -5 L -30 5 L -45 5 Q -50 5 -50 0 Q -50 -5 -45 -5 Z" fill="#2a2a2a" />
     <rect x="-42" y="-3" width="10" height="2" fill="#1a1a1a" />
-    {/* Receiver */}
     <rect x="-30" y="-6" width="30" height="12" rx="1" fill="#1a1a1a" />
     <rect x="-25" y="-8" width="15" height="4" rx="1" fill="#333" />
-    {/* Curved Magazine */}
     <path d="M -10 6 L -5 6 L -5 20 Q -5 22 -7 22 L -8 22 Q -10 22 -10 20 Z" fill="#111" />
-    {/* Pistol Grip */}
     <path d="M -15 6 L -15 20 Q -15 24 -10 24 L -8 24 L -8 6 Z" fill="#2a2a2a" />
-    {/* Handguard with Rails */}
     <rect x="0" y="-5" width="25" height="10" rx="1" fill="#3a3a3a" />
-    <path d="M 5 -5 L 5 5 M 10 -5 L 10 5 M 15 -5 L 15 5" stroke="#111" strokeWidth="1" />
-    {/* Barrel & Flash Hider */}
+    <path d="M 5 -5 L 5 5 M 10 -5 L 10 5 M 15 -5 L 15 5 M 20 -5 L 20 5" stroke="#111" strokeWidth="1" />
     <rect x="25" y="-3" width="25" height="6" fill="#4a4a4a" />
     <path d="M 50 -4 L 55 -2 L 55 2 L 50 4 Z" fill="#111" />
-    {/* Front Sight */}
     <rect x="48" y="-6" width="2" height="3" fill="#111" />
-    {/* Charging Handle */}
     <rect x="-20" y="-9" width="6" height="2" rx="1" fill="#444" />
+    <circle cx="-35" cy="0" r="1.5" fill="#555" />
   </g>
 );
 
-const ShotgunSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
-  <g transform={`rotate(${angle}) translate(${-recoil * 1.2}, 0)`} style={{ filter: 'drop-shadow(0 0 10px #ef4444)' }}>
-    {/* Wooden Stock */}
+const ShotgunSVG = ({ recoil }: { recoil: number }) => (
+  <g transform={`translate(${-recoil * 1.2}, 0)`} style={{ filter: 'drop-shadow(0 0 10px #ef4444)' }}>
     <path d="M -45 -4 L -25 -4 L -25 4 L -45 4 Q -50 4 -50 0 Q -50 -4 -45 -4 Z" fill="#5c3a21" />
-    <path d="M -45 0 L -40 0" stroke="#3e2716" strokeWidth="1" />
-    <path d="M -42 -2 L -42 2" stroke="#3e2716" strokeWidth="0.5" />
-    {/* Metal Receiver */}
+    <path d="M -45 0 L -40 0 M -42 -2 L -42 2 M -38 -2 L -38 2" stroke="#3e2716" strokeWidth="0.8" />
     <rect x="-25" y="-7" width="20" height="14" rx="2" fill="#2a2a2a" />
     <rect x="-20" y="-5" width="10" height="2" fill="#1a1a1a" />
-    {/* Pump Action Forend (Wood) */}
     <rect x="0" y="-5" width="15" height="10" rx="3" fill="#5c3a21" />
-    <path d="M 2 -5 L 2 5 M 13 -5 L 13 5" stroke="#3e2716" strokeWidth="1" />
-    {/* Barrel & Tube */}
+    <path d="M 2 -5 L 2 5 M 13 -5 L 13 5 M 7 -5 L 7 5" stroke="#3e2716" strokeWidth="0.8" />
     <rect x="15" y="-4" width="35" height="3" fill="#3a3a3a" />
     <rect x="15" y="1" width="35" height="3" fill="#3a3a3a" />
-    {/* Wide Choke */}
     <rect x="50" y="-5" width="4" height="10" fill="#111" />
-    {/* Bead Sight */}
     <circle cx="48" cy="-4" r="1" fill="#fbbf24" />
-    {/* Shell Ejection Port */}
     <rect x="-15" y="-6" width="8" height="4" rx="1" fill="#111" />
+    <circle cx="-30" cy="0" r="2" fill="#444" />
   </g>
 );
 
-const SniperSVG = ({ angle, recoil }: { angle: number; recoil: number }) => (
-  <g transform={`rotate(${angle}) translate(${-recoil * 1.5}, 0)`} style={{ filter: 'drop-shadow(0 0 12px #a855f7)' }}>
-    {/* Heavy Stock with Cheek Rest */}
+const SniperSVG = ({ recoil }: { recoil: number }) => (
+  <g transform={`translate(${-recoil * 1.5}, 0)`} style={{ filter: 'drop-shadow(0 0 12px #a855f7)' }}>
     <path d="M -50 -6 L -20 -6 L -20 6 L -50 6 Q -55 6 -55 0 Q -55 -6 -50 -6 Z" fill="#1a1a1a" />
     <rect x="-45" y="-2" width="20" height="4" fill="#2a2a2a" />
     <rect x="-48" y="-4" width="8" height="2" fill="#333" />
-    {/* Receiver & Bolt */}
     <rect x="-20" y="-7" width="25" height="14" rx="1" fill="#222" />
     <rect x="-10" y="-9" width="8" height="3" rx="1" fill="#444" />
-    {/* Box Magazine */}
     <rect x="-5" y="7" width="8" height="12" rx="1" fill="#111" />
-    {/* High-Magnification Scope */}
     <rect x="-15" y="-14" width="30" height="8" rx="4" fill="#111" />
     <circle cx="-12" cy="-10" r="3" fill="#0a3a5c" opacity="0.8" />
     <circle cx="12" cy="-10" r="4" fill="#0a3a5c" opacity="0.8" />
-    <circle cx="12" cy="-10" r="1.5" fill="rgba(255,255,255,0.4)" /> {/* Lens Reflection */}
-    {/* Scope Mounts */}
+    <circle cx="12" cy="-10" r="1.5" fill="rgba(255,255,255,0.4)" />
     <rect x="-10" y="-12" width="3" height="4" fill="#333" />
     <rect x="7" y="-12" width="3" height="4" fill="#333" />
-    {/* Heavy Barrel */}
     <rect x="5" y="-4" width="45" height="8" fill="#333" />
     <rect x="10" y="-3" width="35" height="6" fill="#444" />
-    {/* Muzzle Brake */}
     <path d="M 50 -5 L 58 -3 L 58 3 L 50 5 Z" fill="#111" />
     <rect x="52" y="-4" width="2" height="8" fill="#000" />
     <rect x="55" y="-4" width="2" height="8" fill="#000" />
-    {/* Bipod */}
     <line x1="15" y1="4" x2="10" y2="18" stroke="#444" strokeWidth="2" />
     <line x1="20" y1="4" x2="25" y2="18" stroke="#444" strokeWidth="2" />
     <circle cx="10" cy="18" r="1.5" fill="#333" />
     <circle cx="25" cy="18" r="1.5" fill="#333" />
+    <circle cx="-30" cy="0" r="2" fill="#555" />
   </g>
 );
 
 const GunSVG = ({ weapon, angle, recoil }: { weapon: WeaponType; angle: number; recoil: number }) => {
-  switch (weapon) {
-    case 'pistol': return <PistolSVG angle={angle} recoil={recoil} />;
-    case 'rifle': return <RifleSVG angle={angle} recoil={recoil} />;
-    case 'shotgun': return <ShotgunSVG angle={angle} recoil={recoil} />;
-    case 'sniper': return <SniperSVG angle={angle} recoil={recoil} />;
-  }
+  // FIX: Gun ko flip nahi karna, sirf rotate karna hai
+  // Angle ko properly handle karna hai taaki gun kabhi ulta na dikhe
+  const normalizedAngle = ((angle % 360) + 360) % 360;
+  const shouldFlip = normalizedAngle > 90 && normalizedAngle < 270;
+  const displayAngle = shouldFlip ? 180 - angle : angle;
+  const scaleX = shouldFlip ? -1 : 1;
+  
+  return (
+    <g transform={`rotate(${displayAngle}) scale(${scaleX}, 1)`}>
+      {weapon === 'pistol' && <PistolSVG recoil={recoil} />}
+      {weapon === 'rifle' && <RifleSVG recoil={recoil} />}
+      {weapon === 'shotgun' && <ShotgunSVG recoil={recoil} />}
+      {weapon === 'sniper' && <SniperSVG recoil={recoil} />}
+    </g>
+  );
 };
 
 // ═══════════════════════════════════════════════════════════
-// 👹 HYPER-DETAILED ENEMY SVGs WITH ANIMATIONS
+// 👹 HYPER-DETAILED ENEMY SVGs - 6 TYPES
 // ═══════════════════════════════════════════════════════════
 const ZombieEnemySVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean; walkFrame: number }) => {
   const size = isBoss ? 1.8 : 1;
@@ -379,47 +466,26 @@ const ZombieEnemySVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: 
 
   return (
     <g transform={`scale(${size}) translate(0, ${-bob})`} style={{ filter: isHit ? 'brightness(3) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none', transition: 'filter 0.1s' }}>
-      {/* Shadow */}
       <ellipse cx="0" cy="45" rx="20" ry="5" fill="rgba(0,0,0,0.5)" />
-      
-      {/* Back Leg */}
       <motion.rect x="-8" y={20 + breathe} width="8" height="25" rx="3" fill="#2d4a3e" 
         animate={{ rotate: legSwing }} style={{ transformOrigin: '16px 20px' }} />
-      
-      {/* Back Arm */}
       <motion.rect x="-18" y={-5 + breathe} width="8" height="22" rx="3" fill="#4a6b5e" 
         animate={{ rotate: -armSwing }} style={{ transformOrigin: '14px -5px' }} />
-      
-      {/* Body */}
       <rect x="-12" y={-10 + breathe} width="24" height="32" rx="4" fill="#3d5a4e" />
       <path d="M -12 -5 L 12 -5 L 12 5 L -12 5 Z" fill="#5a3d3d" />
-      
-      {/* Front Leg */}
       <motion.rect x="0" y={20 + breathe} width="8" height="25" rx="3" fill="#2d4a3e" 
         animate={{ rotate: -legSwing }} style={{ transformOrigin: '-16px 20px' }} />
-      
-      {/* Front Arm */}
       <motion.rect x="10" y={-5 + breathe} width="8" height="22" rx="3" fill="#4a6b5e" 
         animate={{ rotate: armSwing }} style={{ transformOrigin: '-14px -5px' }} />
-      
-      {/* Head */}
       <circle cx="0" cy={-20 + breathe} r="12" fill="#4a6b5e" />
       <path d="M -10 -25 Q -5 -30 0 -28 Q 5 -30 10 -25 Q 8 -28 0 -27 Q -8 -28 -10 -25 Z" fill="#2d3d2e" />
-      
-      {/* Glowing Eyes */}
       <motion.circle cx="-4" cy="-22" r="2.5" fill="#ff0000" 
         animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 2 }} />
       <motion.circle cx="4" cy="-22" r="2.5" fill="#ff0000" 
         animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 2 }} />
-      
-      {/* Mouth */}
       <path d="M -5 -16 Q 0 -14 5 -16" stroke="#2d3d2e" strokeWidth="1.5" fill="#1a1a1a" />
-      
-      {/* Wounds */}
       <circle cx="-6" cy="-10" r="2" fill="#8b0000" />
       <circle cx="6" cy="-5" r="1.5" fill="#8b0000" />
-      
-      {/* Boss Crown */}
       {isBoss && (
         <g>
           <path d="M -8 -30 L -6 -35 L -3 -32 L 0 -36 L 3 -32 L 6 -35 L 8 -30 Z" fill="#ffd700" />
@@ -556,9 +622,60 @@ const AlienEnemySVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: b
   );
 };
 
+const SnakeEnemySVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean; walkFrame: number }) => {
+  const size = isBoss ? 2.5 : 1.5;
+  const wave = Math.sin(walkFrame * 6) * 8;
+  const wave2 = Math.sin(walkFrame * 6 + 1) * 8;
+  const wave3 = Math.sin(walkFrame * 6 + 2) * 8;
+
+  return (
+    <g transform={`scale(${size})`} style={{ filter: isHit ? 'brightness(3) sepia(1) hue-rotate(-50deg) saturate(5)' : 'none', transition: 'filter 0.1s' }}>
+      {/* Snake Body - Wavy */}
+      <path d={`M -30 0 Q -20 ${wave} -10 0 Q 0 ${wave2} 10 0 Q 20 ${wave3} 30 0`} 
+        stroke="#2d5016" strokeWidth="8" fill="none" strokeLinecap="round" />
+      <path d={`M -30 0 Q -20 ${wave} -10 0 Q 0 ${wave2} 10 0 Q 20 ${wave3} 30 0`} 
+        stroke="#4a7c2c" strokeWidth="5" fill="none" strokeLinecap="round" />
+      
+      {/* Snake Head */}
+      <ellipse cx="30" cy="0" rx="8" ry="6" fill="#2d5016" />
+      <ellipse cx="32" cy="-2" rx="3" ry="2" fill="#ff0" />
+      <circle cx="33" cy="-2" r="1" fill="#000" />
+      
+      {/* Tongue */}
+      <motion.path d="M 38 0 L 42 -1 M 38 0 L 42 1" 
+        stroke="#f00" strokeWidth="1" fill="none"
+        animate={{ d: ["M 38 0 L 42 -1 M 38 0 L 42 1", "M 38 0 L 44 0 M 38 0 L 44 0", "M 38 0 L 42 -1 M 38 0 L 42 1"] }}
+        transition={{ repeat: Infinity, duration: 0.5 }} />
+      
+      {/* Pattern on body */}
+      <circle cx="-20" cy={wave/2} r="2" fill="#1a3008" />
+      <circle cx="-5" cy={wave2/2} r="2" fill="#1a3008" />
+      <circle cx="15" cy={wave3/2} r="2" fill="#1a3008" />
+      
+      {isBoss && (
+        <g>
+          <circle cx="30" cy="-8" r="2" fill="#ffd700" />
+          <circle cx="25" cy="-8" r="2" fill="#ffd700" />
+        </g>
+      )}
+    </g>
+  );
+};
+
 // ═══════════════════════════════════════════════════════════
-// 🏮 ENVIRONMENTAL EFFECTS
+// 🐦 BIRDS & ENVIRONMENTAL EFFECTS
 // ═══════════════════════════════════════════════════════════
+const BirdSVG = ({ wingPhase, size }: { wingPhase: number; size: number }) => {
+  const wingY = Math.sin(wingPhase) * 3;
+  return (
+    <g transform={`scale(${size})`}>
+      <path d={`M 0 0 Q -5 ${wingY} -10 0`} stroke="#1a1a1a" strokeWidth="1.5" fill="none" />
+      <path d={`M 0 0 Q 5 ${wingY} 10 0`} stroke="#1a1a1a" strokeWidth="1.5" fill="none" />
+      <circle cx="0" cy="0" r="1.5" fill="#1a1a1a" />
+    </g>
+  );
+};
+
 const FloatingLantern = ({ delay, x, y }: { delay: number; x: number; y: number }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -597,7 +714,7 @@ const ENVIRONMENTS: Record<Environment, {
     icon: Trees, 
     bg: "https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=1920&auto=format&fit=crop",
     overlay: "bg-emerald-950/80",
-    enemyTypes: ['tiger', 'ghost', 'zombie']
+    enemyTypes: ['tiger', 'ghost', 'zombie', 'snake']
   },
   city: { 
     name: "City Center", 
@@ -613,7 +730,6 @@ const ENVIRONMENTS: Record<Environment, {
 // 🎮 MAIN GAME COMPONENT
 // ═══════════════════════════════════════════════════════════
 export default function AlamnagarStrike() {
-  // Auth States
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -623,7 +739,6 @@ export default function AlamnagarStrike() {
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
 
-  // Game States
   const [gameState, setGameState] = useState<'auth' | 'menu' | 'select_env' | 'playing' | 'paused' | 'gameover'>('auth');
   const [selectedEnv, setSelectedEnv] = useState<Environment>('gali');
   const [score, setScore] = useState(0);
@@ -638,16 +753,15 @@ export default function AlamnagarStrike() {
   const [isMicOn, setIsMicOn] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [gunRecoil, setGunRecoil] = useState(0);
-  
-  // Premium Features State
   const [ammo, setAmmo] = useState(WEAPONS.rifle.magSize);
   const [isReloading, setIsReloading] = useState(false);
   const [isDashing, setIsDashing] = useState(false);
   const [dashCooldown, setDashCooldown] = useState(0);
   const [combo, setCombo] = useState(0);
   const [muzzleFlashOpacity, setMuzzleFlashOpacity] = useState(0);
+  const [birds, setBirds] = useState<Bird[]>([]);
+  const [bulletImpacts, setBulletImpacts] = useState<BulletImpact[]>([]);
 
-  // Refs
   const gunPosRef = useRef({ x: 50, y: 80 });
   const gunAngleRef = useRef(0);
   const mousePosRef = useRef({ x: 50, y: 50 });
@@ -666,19 +780,19 @@ export default function AlamnagarStrike() {
   const playerPresenceRef = useRef<string | null>(null);
   const ambientIntervalRef = useRef<number | null>(null);
   const lastKillTimeRef = useRef(0);
+  const birdSpawnRef = useRef<number>(0);
 
-  // Load high score
   useEffect(() => {
     const saved = localStorage.getItem("alamnagarStrikeHighScore");
     if (saved) setHighScore(parseInt(saved));
   }, []);
 
-  // Ambient sound loop
   useEffect(() => {
     if (gameState === 'playing' && ambientEnabled && soundEnabled) {
       ambientIntervalRef.current = window.setInterval(() => {
         if (Math.random() > 0.6) playSound('ambient_wind', 0.3);
         if (Math.random() > 0.85) playSound('ghost_wail', 0.2);
+        if (Math.random() > 0.7) playSound('bird_tweet', 0.15);
       }, 4000);
     }
     return () => {
@@ -686,7 +800,6 @@ export default function AlamnagarStrike() {
     };
   }, [gameState, ambientEnabled, soundEnabled]);
 
-  // Auth listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -713,7 +826,6 @@ export default function AlamnagarStrike() {
     return () => unsubscribe();
   }, []);
 
-  // Auth handlers
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
@@ -822,6 +934,8 @@ export default function AlamnagarStrike() {
     setIsDashing(false);
     setDashCooldown(0);
     setCombo(0);
+    setBirds([]);
+    setBulletImpacts([]);
     scoreRef.current = 0;
     healthRef.current = 100;
     gunPosRef.current = { x: 50, y: 80 };
@@ -832,6 +946,7 @@ export default function AlamnagarStrike() {
     particlesRef.current = [];
     lastShotRef.current = 0;
     lastKillTimeRef.current = 0;
+    birdSpawnRef.current = 0;
     if (soundEnabled) playSound('combo');
   };
 
@@ -866,6 +981,8 @@ export default function AlamnagarStrike() {
     else if (enemyType === 'ghost') warningName = "डरावना भूत";
     else if (enemyType === 'thug') warningName = "खतरनाक गुंडा";
     else if (enemyType === 'alien') warningName = "एलियन";
+    else if (enemyType === 'snake') warningName = "खतरनाक अजगर";
+    else if (enemyType === 'zombie') warningName = "ज़ोंबी";
     
     if (isBoss) warningName = "बॉस " + warningName;
 
@@ -875,6 +992,7 @@ export default function AlamnagarStrike() {
       playSound('boss_spawn');
       if (enemyType === 'tiger') playSound('roar');
       else if (enemyType === 'ghost') playSound('ghost_wail');
+      else if (enemyType === 'snake') playSound('snake_hiss');
     }
     
     setTimeout(() => setWarningText(null), 2500);
@@ -915,7 +1033,6 @@ export default function AlamnagarStrike() {
     setTimeout(() => setIsDashing(false), 300);
   }, [isDashing, dashCooldown, gameState, soundEnabled]);
 
-  // Main game loop
   useEffect(() => {
     if (gameState !== 'playing') return;
     let enemySpawnTimer = 0;
@@ -929,7 +1046,6 @@ export default function AlamnagarStrike() {
       const enemies = enemiesRef.current;
       const particles = particlesRef.current;
 
-      // Dash cooldown
       if (dashCooldown > 0) {
         dashCooldownTimer += 16;
         if (dashCooldownTimer >= dashCooldown) {
@@ -938,7 +1054,6 @@ export default function AlamnagarStrike() {
         }
       }
 
-      // Combo timer
       if (combo > 0) {
         comboTimerInterval += 16;
         if (comboTimerInterval > 3000) {
@@ -947,7 +1062,6 @@ export default function AlamnagarStrike() {
         }
       }
 
-      // Gun movement
       const lerpFactor = isDashing ? 0.05 : 0.15;
       gunPos.x += (mousePos.x - gunPos.x) * lerpFactor;
       gunPos.y += (mousePos.y - gunPos.y) * lerpFactor;
@@ -971,9 +1085,25 @@ export default function AlamnagarStrike() {
         b.x += b.vx;
         b.y += b.vy;
         b.trail.push({ x: b.x, y: b.y });
-        if (b.trail.length > 10) b.trail.shift();
-        if (b.x < -10 || b.x > 110 || b.y < -10 || b.y > 110) bullets.splice(i, 1);
+        if (b.trail.length > 15) b.trail.shift();
+        
+        // Check if bullet went off-screen - create impact effect
+        if (b.x < -10 || b.x > 110 || b.y < -10 || b.y > 110) {
+          // Create bullet impact at the edge
+          setBulletImpacts(prev => [...prev, {
+            id: Date.now() + Math.random(),
+            x: Math.max(0, Math.min(100, b.x)),
+            y: Math.max(0, Math.min(100, b.y)),
+            life: 1
+          }]);
+          if (soundEnabled) playSound('bullet_impact', 0.3);
+          spawnParticles(b.x, b.y, '#888', 5, 'dust');
+          bullets.splice(i, 1);
+        }
       }
+
+      // Update bullet impacts
+      setBulletImpacts(prev => prev.map(imp => ({ ...imp, life: imp.life - 0.05 })).filter(imp => imp.life > 0));
 
       // Update particles
       for (let i = particles.length - 1; i >= 0; i--) {
@@ -986,15 +1116,39 @@ export default function AlamnagarStrike() {
         if (p.life <= 0) particles.splice(i, 1);
       }
 
+      // Update birds
+      birdSpawnRef.current++;
+      if (birdSpawnRef.current > 300 && birds.length < 5) {
+        birdSpawnRef.current = 0;
+        const fromLeft = Math.random() > 0.5;
+        setBirds(prev => [...prev, {
+          id: Date.now() + Math.random(),
+          x: fromLeft ? -5 : 105,
+          y: 10 + Math.random() * 30,
+          vx: fromLeft ? 0.3 : -0.3,
+          vy: (Math.random() - 0.5) * 0.1,
+          wingPhase: Math.random() * Math.PI * 2,
+          size: 0.8 + Math.random() * 0.5
+        }]);
+      }
+
+      setBirds(prev => prev.map(bird => ({
+        ...bird,
+        x: bird.x + bird.vx,
+        y: bird.y + bird.vy + Math.sin(bird.wingPhase) * 0.05,
+        wingPhase: bird.wingPhase + 0.3
+      })).filter(bird => bird.x > -10 && bird.x < 110));
+
       // Update enemies
       for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
         const edx = gunPos.x - e.x;
         const edy = gunPos.y - e.y;
         const dist = Math.sqrt(edx * edx + edy * edy);
-        const speed = (0.08 + (wave * 0.01)) * (e.type === 'ghost' ? 1.3 : 1);
+        const baseSpeed = 0.08 + (wave * 0.01);
+        const speedMultiplier = e.type === 'ghost' ? 1.3 : e.type === 'snake' ? 0.9 : 1;
+        const speed = baseSpeed * speedMultiplier;
         
-        // Aggressive lunge when close
         if (dist < 25) {
           e.vx = (edx / dist) * speed * 2.5;
           e.vy = (edy / dist) * speed * 2.5;
@@ -1010,7 +1164,6 @@ export default function AlamnagarStrike() {
         e.walkFrame += 0.04;
         if (e.isHit) e.isHit = false;
 
-        // Collision with player
         if (dist < (15 + e.size/2) && !isDashing) {
           healthRef.current -= (e.isBoss ? 20 : 10);
           setHealth(Math.max(0, healthRef.current));
@@ -1048,7 +1201,16 @@ export default function AlamnagarStrike() {
             if (e.hp <= 0) {
               enemies.splice(j, 1);
               
-              // Combo logic
+              // Play enemy-specific death sound
+              if (soundEnabled) {
+                if (e.type === 'zombie') playSound('zombie_die');
+                else if (e.type === 'thug') playSound('thug_die');
+                else if (e.type === 'tiger') playSound('tiger_die');
+                else if (e.type === 'ghost') playSound('ghost_die');
+                else if (e.type === 'alien') playSound('alien_die');
+                else if (e.type === 'snake') playSound('snake_die');
+              }
+              
               const now = Date.now();
               if (now - lastKillTimeRef.current < 3000) {
                 setCombo(c => c + 1);
@@ -1063,12 +1225,11 @@ export default function AlamnagarStrike() {
               scoreRef.current += (e.isBoss ? 100 : 20) * multiplier;
               setScore(scoreRef.current);
               
-              if (soundEnabled) playSound('kill');
               setScreenShake(e.isBoss ? 15 : 8);
               
-              // Massive blood explosion
               spawnParticles(e.x, e.y, '#ff0000', 15, 'blood');
               spawnParticles(e.x, e.y, '#8b0000', 10, 'blood');
+              spawnParticles(e.x, e.y, '#333', 8, 'smoke');
             }
             break;
           }
@@ -1076,14 +1237,12 @@ export default function AlamnagarStrike() {
         if (hit) bullets.splice(i, 1);
       }
 
-      // Spawn enemies
       enemySpawnTimer++;
       if (enemySpawnTimer > Math.max(30, 80 - wave * 5)) {
         spawnEnemy();
         enemySpawnTimer = 0;
       }
 
-      // Wave progression
       if (scoreRef.current > wave * 150) setWave(w => w + 1);
       if (screenShake > 0) setScreenShake(s => Math.max(0, s - 0.5));
 
@@ -1096,9 +1255,8 @@ export default function AlamnagarStrike() {
       cancelAnimationFrame(frameRef.current);
       setCombo(0);
     };
-  }, [gameState, wave, highScore, soundEnabled, spawnEnemy, screenShake, spawnParticles, isDashing, dashCooldown, combo, muzzleFlashOpacity]);
+  }, [gameState, wave, highScore, soundEnabled, spawnEnemy, screenShake, spawnParticles, isDashing, dashCooldown, combo, muzzleFlashOpacity, birds.length]);
 
-  // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -1159,7 +1317,9 @@ export default function AlamnagarStrike() {
         size: weapon.size,
         color: weapon.color,
         damage: weapon.damage,
-        trail: []
+        trail: [],
+        startX: muzzleX,
+        startY: muzzleY
       });
     };
 
@@ -1181,7 +1341,6 @@ export default function AlamnagarStrike() {
       if (soundEnabled) playSound('rifle');
     }
     
-    // Shell casing
     const shellAngle = angleRad + Math.PI / 2 + (Math.random() - 0.5) * 0.3;
     particlesRef.current.push({
       id: Date.now(),
@@ -1208,7 +1367,6 @@ export default function AlamnagarStrike() {
 
   const env = ENVIRONMENTS[selectedEnv];
 
-  // Loading screen
   if (authLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -1221,7 +1379,6 @@ export default function AlamnagarStrike() {
     );
   }
 
-  // Auth screen
   if (gameState === 'auth' || !currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-950 via-purple-950 to-stone-950 flex items-center justify-center p-4 relative overflow-hidden">
@@ -1316,10 +1473,8 @@ export default function AlamnagarStrike() {
     );
   }
 
-  // Main game
   return (
     <div className="min-h-screen bg-black relative overflow-hidden select-none touch-none font-sans text-white">
-      {/* Night atmosphere background */}
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
@@ -1336,7 +1491,25 @@ export default function AlamnagarStrike() {
         <FloatingLantern delay={3} x={50} y={15} />
       </div>
 
-      {/* HUD */}
+      {/* Birds in background */}
+      <div className="absolute inset-0 pointer-events-none z-5">
+        {birds.map(bird => (
+          <div
+            key={bird.id}
+            className="absolute"
+            style={{
+              left: `${bird.x}%`,
+              top: `${bird.y}%`,
+              transform: `scaleX(${bird.vx > 0 ? 1 : -1})`
+            }}
+          >
+            <svg width="30" height="20" viewBox="-15 -10 30 20">
+              <BirdSVG wingPhase={bird.wingPhase} size={bird.size} />
+            </svg>
+          </div>
+        ))}
+      </div>
+
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex justify-between items-start pointer-events-none">
         <div className="flex flex-col gap-2 pointer-events-auto">
           <Link href="/" className="flex items-center gap-2 text-white bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 hover:bg-black/80 transition shadow-lg">
@@ -1415,7 +1588,6 @@ export default function AlamnagarStrike() {
         )}
       </div>
 
-      {/* Game canvas */}
       <div
         ref={canvasRef}
         className="absolute inset-0 z-10 cursor-crosshair"
@@ -1429,7 +1601,6 @@ export default function AlamnagarStrike() {
       >
         {gameState === 'playing' && (
           <>
-            {/* Particles */}
             {particlesRef.current.map(p => (
               <div
                 key={p.id}
@@ -1448,7 +1619,27 @@ export default function AlamnagarStrike() {
               />
             ))}
 
-            {/* Bullets */}
+            {/* Bullet Impacts */}
+            {bulletImpacts.map(imp => (
+              <motion.div
+                key={imp.id}
+                initial={{ scale: 0, opacity: 1 }}
+                animate={{ scale: 2, opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute pointer-events-none"
+                style={{
+                  left: `${imp.x}%`,
+                  top: `${imp.y}%`,
+                  width: '20px',
+                  height: '20px',
+                  marginLeft: '-10px',
+                  marginTop: '-10px',
+                  background: 'radial-gradient(circle, rgba(255,200,100,0.8) 0%, rgba(100,100,100,0.5) 50%, transparent 100%)',
+                  borderRadius: '50%'
+                }}
+              />
+            ))}
+
             {bulletsRef.current.map(b => (
               <div key={b.id} className="absolute pointer-events-none">
                 {b.trail.map((t, idx) => (
@@ -1463,8 +1654,8 @@ export default function AlamnagarStrike() {
                       marginLeft: `-${b.size * 0.25}px`,
                       marginTop: `-${b.size * 0.25}px`,
                       backgroundColor: b.color,
-                      opacity: (idx / b.trail.length) * 0.7,
-                      boxShadow: `0 0 6px ${b.color}`
+                      opacity: (idx / b.trail.length) * 0.8,
+                      boxShadow: `0 0 8px ${b.color}`
                     }}
                   />
                 ))}
@@ -1473,10 +1664,10 @@ export default function AlamnagarStrike() {
                   style={{
                     left: `${b.x}%`,
                     top: `${b.y}%`,
-                    width: `${b.size * 2}px`,
-                    height: `${b.size * 2}px`,
-                    marginLeft: `-${b.size}px`,
-                    marginTop: `-${b.size}px`,
+                    width: `${b.size * 2.5}px`,
+                    height: `${b.size * 2.5}px`,
+                    marginLeft: `-${b.size * 1.25}px`,
+                    marginTop: `-${b.size * 1.25}px`,
                     backgroundColor: 'white',
                     boxShadow: `0 0 15px ${b.color}, 0 0 30px ${b.color}, 0 0 45px ${b.color}`
                   }}
@@ -1484,7 +1675,6 @@ export default function AlamnagarStrike() {
               </div>
             ))}
 
-            {/* Enemies */}
             {enemiesRef.current.map(e => (
               <div
                 key={e.id}
@@ -1510,17 +1700,17 @@ export default function AlamnagarStrike() {
                     />
                   </div>
                 )}
-                <svg viewBox="-30 -40 60 90" className="w-full h-full overflow-visible">
+                <svg viewBox="-40 -50 80 100" className="w-full h-full overflow-visible">
                   {e.type === 'zombie' && <ZombieEnemySVG isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
                   {e.type === 'thug' && <ThugEnemySVG isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
                   {e.type === 'tiger' && <TigerEnemySVG isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
                   {e.type === 'ghost' && <GhostEnemySVG isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
                   {e.type === 'alien' && <AlienEnemySVG isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
+                  {e.type === 'snake' && <SnakeEnemySVG isHit={e.isHit} isBoss={e.isBoss} walkFrame={e.walkFrame} />}
                 </svg>
               </div>
             ))}
 
-            {/* Player gun */}
             <div
               className="absolute z-30 pointer-events-none"
               style={{
@@ -1529,10 +1719,10 @@ export default function AlamnagarStrike() {
                 transform: 'translate(-50%, -50%)'
               }}
             >
-              <svg width="180" height="180" viewBox="-90 -90 180 180" className="overflow-visible">
+              <svg width="200" height="200" viewBox="-100 -100 200 200" className="overflow-visible">
                 <GunSVG weapon={currentWeapon} angle={gunAngleRef.current} recoil={gunRecoil} />
                 {isReloading && (
-                  <text x="-20" y="5" fill="white" fontSize="12" fontWeight="bold">
+                  <text x="-30" y="5" fill="white" fontSize="14" fontWeight="bold">
                     RELOAD
                   </text>
                 )}
@@ -1546,7 +1736,6 @@ export default function AlamnagarStrike() {
         )}
       </div>
 
-      {/* Bottom controls */}
       {gameState === 'playing' && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-4 pointer-events-auto">
           {(Object.keys(WEAPONS) as WeaponType[]).map((w) => (
@@ -1592,7 +1781,6 @@ export default function AlamnagarStrike() {
         </div>
       )}
 
-      {/* Warning banner */}
       <AnimatePresence>
         {warningText && (
           <motion.div
@@ -1609,7 +1797,6 @@ export default function AlamnagarStrike() {
         )}
       </AnimatePresence>
 
-      {/* Menu screens */}
       <AnimatePresence>
         {(gameState === 'menu' || gameState === 'select_env') && (
           <motion.div
@@ -1688,7 +1875,6 @@ export default function AlamnagarStrike() {
         )}
       </AnimatePresence>
 
-      {/* Game over screen */}
       <AnimatePresence>
         {gameState === 'gameover' && (
           <motion.div
