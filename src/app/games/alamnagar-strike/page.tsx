@@ -66,7 +66,6 @@ const playSound = (soundType: string, volume: number = 1.0) => {
         oscillator.start(currentTime);
         oscillator.stop(currentTime + 0.35);
         
-        // Secondary explosion sound
         const oscillator2 = audioContext.createOscillator();
         const gainNode2 = audioContext.createGain();
         oscillator2.connect(gainNode2);
@@ -90,7 +89,6 @@ const playSound = (soundType: string, volume: number = 1.0) => {
         oscillator.start(currentTime);
         oscillator.stop(currentTime + 0.6);
         
-        // Deep bass impact
         const oscillator2 = audioContext.createOscillator();
         const gainNode2 = audioContext.createGain();
         oscillator2.connect(gainNode2);
@@ -143,7 +141,6 @@ const playSound = (soundType: string, volume: number = 1.0) => {
         oscillator.start(currentTime);
         oscillator.stop(currentTime + 0.5);
         
-        // Secondary explosion
         const oscillator2 = audioContext.createOscillator();
         const gainNode2 = audioContext.createGain();
         oscillator2.connect(gainNode2);
@@ -476,186 +473,100 @@ interface BirdObject {
 // ═══════════════════════════════════════════════════════════════════════════════
 const PistolSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   <g transform={`translate(${-recoilAmount}, 0)`}>
-    {/* Grip with texture lines */}
     <path d="M -8 8 L -12 28 Q -12 32 -8 32 L 0 32 L 2 8 Z" fill="#1a1a1a" stroke="#111" strokeWidth="0.5" />
     <line x1="-9" y1="12" x2="-9" y2="26" stroke="#2a2a2a" strokeWidth="0.8" />
     <line x1="-6" y1="12" x2="-6" y2="26" stroke="#2a2a2a" strokeWidth="0.8" />
     <line x1="-3" y1="12" x2="-3" y2="26" stroke="#2a2a2a" strokeWidth="0.8" />
-    
-    {/* Trigger Guard */}
     <path d="M 2 8 Q 6 18 10 8" stroke="#111" strokeWidth="1.5" fill="none" />
-    
-    {/* Trigger */}
     <path d="M 5 10 L 4 15" stroke="#333" strokeWidth="1.5" />
-    
-    {/* Frame */}
     <rect x="-12" y="-2" width="30" height="10" rx="1" fill="#2a2a2a" stroke="#111" strokeWidth="0.5" />
-    
-    {/* Slide */}
     <rect x="-14" y="-6" width="36" height="8" rx="1.5" fill="#3a3a3a" stroke="#222" strokeWidth="0.5" />
-    
-    {/* Slide Serrations */}
     <line x1="-8" y1="-6" x2="-8" y2="-2" stroke="#222" strokeWidth="0.8" />
     <line x1="-4" y1="-6" x2="-4" y2="-2" stroke="#222" strokeWidth="0.8" />
     <line x1="0" y1="-6" x2="0" y2="-2" stroke="#222" strokeWidth="0.8" />
     <line x1="4" y1="-6" x2="4" y2="-2" stroke="#222" strokeWidth="0.8" />
     <line x1="8" y1="-6" x2="8" y2="-2" stroke="#222" strokeWidth="0.8" />
-    
-    {/* Barrel */}
     <rect x="22" y="-4" width="22" height="4" rx="1" fill="#444" stroke="#333" strokeWidth="0.5" />
-    
-    {/* Muzzle */}
     <rect x="44" y="-5" width="3" height="6" rx="0.5" fill="#222" />
-    
-    {/* Front Sight */}
     <rect x="42" y="-7" width="2" height="3" fill="#111" />
-    
-    {/* Rear Sight */}
     <rect x="-10" y="-8" width="4" height="2" fill="#111" />
-    
-    {/* Ejection Port */}
     <rect x="8" y="-5" width="6" height="3" rx="0.5" fill="#111" />
-    
-    {/* Hammer */}
     <rect x="-14" y="-8" width="3" height="4" rx="0.5" fill="#333" />
   </g>
 );
 
 const RifleSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   <g transform={`translate(${-recoilAmount}, 0)`}>
-    {/* Stock */}
     <path d="M -50 -4 L -30 -4 L -28 4 L -50 4 Q -54 4 -54 0 Q -54 -4 -50 -4 Z" fill="#2a2a2a" stroke="#111" strokeWidth="0.5" />
     <rect x="-48" y="-2" width="16" height="1.5" fill="#222" />
     <rect x="-48" y="1" width="16" height="1.5" fill="#222" />
-    
-    {/* Buffer Tube */}
     <rect x="-30" y="-3" width="8" height="6" rx="1" fill="#333" stroke="#222" strokeWidth="0.5" />
-    
-    {/* Receiver */}
     <rect x="-22" y="-6" width="28" height="12" rx="1" fill="#1a1a1a" stroke="#111" strokeWidth="0.5" />
-    
-    {/* Ejection Port */}
     <rect x="-10" y="-5" width="8" height="4" rx="0.5" fill="#111" />
-    
-    {/* Charging Handle */}
     <rect x="-22" y="-8" width="8" height="2" rx="0.5" fill="#444" />
-    
-    {/* Pistol Grip */}
     <path d="M -8 6 L -10 22 Q -10 26 -6 26 L -2 26 L 0 6 Z" fill="#2a2a2a" stroke="#111" strokeWidth="0.5" />
-    
-    {/* Trigger Guard */}
     <path d="M 0 6 Q 4 14 8 6" stroke="#111" strokeWidth="1.2" fill="none" />
-    
-    {/* Magazine */}
     <path d="M -4 6 L -6 24 Q -6 26 -4 26 L 2 26 Q 4 26 4 24 L 2 6 Z" fill="#111" stroke="#0a0a0a" strokeWidth="0.5" />
-    
-    {/* Handguard */}
     <rect x="6" y="-5" width="28" height="10" rx="1" fill="#333" stroke="#222" strokeWidth="0.5" />
-    
-    {/* Rail Lines */}
     <line x1="10" y1="-5" x2="10" y2="5" stroke="#222" strokeWidth="0.6" />
     <line x1="14" y1="-5" x2="14" y2="5" stroke="#222" strokeWidth="0.6" />
     <line x1="18" y1="-5" x2="18" y2="5" stroke="#222" strokeWidth="0.6" />
     <line x1="22" y1="-5" x2="22" y2="5" stroke="#222" strokeWidth="0.6" />
     <line x1="26" y1="-5" x2="26" y2="5" stroke="#222" strokeWidth="0.6" />
     <line x1="30" y1="-5" x2="30" y2="5" stroke="#222" strokeWidth="0.6" />
-    
-    {/* Barrel */}
     <rect x="34" y="-3" width="22" height="6" rx="1" fill="#444" stroke="#333" strokeWidth="0.5" />
-    
-    {/* Flash Hider */}
     <path d="M 56 -4 L 62 -2 L 62 2 L 56 4 Z" fill="#222" stroke="#111" strokeWidth="0.5" />
     <line x1="58" y1="-3" x2="58" y2="3" stroke="#111" strokeWidth="0.5" />
     <line x1="60" y1="-3" x2="60" y2="3" stroke="#111" strokeWidth="0.5" />
-    
-    {/* Front Sight */}
     <rect x="54" y="-6" width="2" height="3" fill="#111" />
   </g>
 );
 
 const ShotgunSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   <g transform={`translate(${-recoilAmount}, 0)`}>
-    {/* Wooden Stock */}
     <path d="M -50 -3 L -28 -3 L -26 3 L -50 3 Q -54 3 -54 0 Q -54 -3 -50 -3 Z" fill="#6b4226" stroke="#4a2e18" strokeWidth="0.5" />
     <line x1="-48" y1="-1" x2="-30" y2="-1" stroke="#5a3820" strokeWidth="0.5" />
     <line x1="-48" y1="1" x2="-30" y2="1" stroke="#5a3820" strokeWidth="0.5" />
-    
-    {/* Receiver */}
     <rect x="-28" y="-6" width="22" height="12" rx="1.5" fill="#2a2a2a" stroke="#111" strokeWidth="0.5" />
     <rect x="-22" y="-4" width="10" height="2" fill="#1a1a1a" />
-    
-    {/* Trigger Guard */}
     <path d="M -6 6 Q -2 14 2 6" stroke="#111" strokeWidth="1.2" fill="none" />
-    
-    {/* Pump Forend */}
     <rect x="-2" y="-5" width="18" height="10" rx="2" fill="#6b4226" stroke="#4a2e18" strokeWidth="0.5" />
     <line x1="2" y1="-5" x2="2" y2="5" stroke="#5a3820" strokeWidth="0.6" />
     <line x1="6" y1="-5" x2="6" y2="5" stroke="#5a3820" strokeWidth="0.6" />
     <line x1="10" y1="-5" x2="10" y2="5" stroke="#5a3820" strokeWidth="0.6" />
     <line x1="14" y1="-5" x2="14" y2="5" stroke="#5a3820" strokeWidth="0.6" />
-    
-    {/* Top Barrel */}
     <rect x="16" y="-5" width="38" height="4" rx="1" fill="#3a3a3a" stroke="#222" strokeWidth="0.5" />
-    
-    {/* Bottom Barrel */}
     <rect x="16" y="1" width="38" height="4" rx="1" fill="#3a3a3a" stroke="#222" strokeWidth="0.5" />
-    
-    {/* Choke */}
     <rect x="54" y="-6" width="4" height="12" rx="0.5" fill="#222" stroke="#111" strokeWidth="0.5" />
-    
-    {/* Bead Sight */}
     <circle cx="52" cy="-5" r="1.2" fill="#e5e5e5" />
-    
-    {/* Ejection Port */}
     <rect x="-18" y="-5" width="6" height="3" rx="0.5" fill="#111" />
   </g>
 );
 
 const SniperSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   <g transform={`translate(${-recoilAmount}, 0)`}>
-    {/* Heavy Stock */}
     <path d="M -55 -5 L -25 -5 L -23 5 L -55 5 Q -60 5 -60 0 Q -60 -5 -55 -5 Z" fill="#1a1a1a" stroke="#111" strokeWidth="0.5" />
     <rect x="-52" y="-2" width="22" height="4" fill="#222" />
-    
-    {/* Cheek Rest */}
     <rect x="-48" y="-5" width="14" height="3" rx="1" fill="#2a2a2a" />
-    
-    {/* Receiver */}
     <rect x="-25" y="-6" width="30" height="12" rx="1" fill="#1a1a1a" stroke="#111" strokeWidth="0.5" />
-    
-    {/* Bolt Handle */}
     <rect x="-12" y="-9" width="10" height="3" rx="1" fill="#444" />
     <circle cx="-2" cy="-8" r="2" fill="#555" />
-    
-    {/* Magazine */}
     <rect x="-8" y="6" width="10" height="14" rx="1" fill="#111" stroke="#0a0a0a" strokeWidth="0.5" />
-    
-    {/* Scope */}
     <rect x="-18" y="-14" width="35" height="8" rx="4" fill="#111" stroke="#0a0a0a" strokeWidth="0.5" />
     <circle cx="-14" cy="-10" r="3.5" fill="#0a2a4a" stroke="#111" strokeWidth="0.5" />
     <circle cx="13" cy="-10" r="4.5" fill="#0a2a4a" stroke="#111" strokeWidth="0.5" />
     <circle cx="13" cy="-10" r="2" fill="rgba(200,220,255,0.3)" />
-    
-    {/* Scope Mounts */}
     <rect x="-12" y="-12" width="4" height="4" fill="#333" />
     <rect x="8" y="-12" width="4" height="4" fill="#333" />
-    
-    {/* Heavy Barrel */}
     <rect x="5" y="-4" width="50" height="8" rx="1" fill="#333" stroke="#222" strokeWidth="0.5" />
     <rect x="10" y="-3" width="40" height="6" rx="0.5" fill="#3a3a3a" />
-    
-    {/* Barrel Fluting */}
     <line x1="15" y1="-2" x2="45" y2="-2" stroke="#2a2a2a" strokeWidth="0.5" />
     <line x1="15" y1="0" x2="45" y2="0" stroke="#2a2a2a" strokeWidth="0.5" />
     <line x1="15" y1="2" x2="45" y2="2" stroke="#2a2a2a" strokeWidth="0.5" />
-    
-    {/* Muzzle Brake */}
     <path d="M 55 -5 L 64 -3 L 64 3 L 55 5 Z" fill="#222" stroke="#111" strokeWidth="0.5" />
     <line x1="57" y1="-4" x2="57" y2="4" stroke="#111" strokeWidth="0.8" />
     <line x1="60" y1="-4" x2="60" y2="4" stroke="#111" strokeWidth="0.8" />
     <line x1="62" y1="-4" x2="62" y2="4" stroke="#111" strokeWidth="0.8" />
-    
-    {/* Bipod */}
     <line x1="18" y1="4" x2="12" y2="20" stroke="#444" strokeWidth="2" />
     <line x1="24" y1="4" x2="30" y2="20" stroke="#444" strokeWidth="2" />
     <circle cx="12" cy="20" r="1.5" fill="#333" />
@@ -663,14 +574,24 @@ const SniperSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   </g>
 );
 
-const GunSVG = ({ weapon, angle, recoil }: { weapon: WeaponType; angle: number; recoil: number }) => (
-  <g transform={`rotate(${angle})`}>
-    {weapon === 'pistol' && <PistolSVG recoilAmount={recoil} />}
-    {weapon === 'rifle' && <RifleSVG recoilAmount={recoil} />}
-    {weapon === 'shotgun' && <ShotgunSVG recoilAmount={recoil} />}
-    {weapon === 'sniper' && <SniperSVG recoilAmount={recoil} />}
-  </g>
-);
+// ✅ CRITICAL FIX: Gun rotation with proper flipping
+const GunSVG = ({ weapon, angle, recoil }: { weapon: WeaponType; angle: number; recoil: number }) => {
+  // Normalize angle to 0-360 range
+  const normalizedAngle = ((angle % 360) + 360) % 360;
+  
+  // When gun points left (90-270 degrees), flip horizontally so it always looks correct
+  const shouldFlipHorizontally = normalizedAngle > 90 && normalizedAngle < 270;
+  const horizontalScale = shouldFlipHorizontally ? -1 : 1;
+  
+  return (
+    <g transform={`rotate(${angle}) scale(${horizontalScale}, 1)`}>
+      {weapon === 'pistol' && <PistolSVG recoilAmount={recoil} />}
+      {weapon === 'rifle' && <RifleSVG recoilAmount={recoil} />}
+      {weapon === 'shotgun' && <ShotgunSVG recoilAmount={recoil} />}
+      {weapon === 'sniper' && <SniperSVG recoilAmount={recoil} />}
+    </g>
+  );
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 👹 ENEMY SVGs - 6 UNIQUE ENEMY TYPES
@@ -1875,7 +1796,7 @@ export default function AlamnagarStrike() {
               </div>
             ))}
 
-            {/* Player Gun */}
+            {/* Player Gun - FIXED: No more flipping issue */}
             <div
               className="absolute z-30 pointer-events-none"
               style={{
