@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 
 // ═══════════════════════════════════════════════════════════
-// 🔊 SOUND ENGINE - Web Audio API based
+// 🔊 SOUND ENGINE - Web Audio API based sound effects
 // ═══════════════════════════════════════════════════════════
 const playSound = (type: 'coin' | 'crash' | 'nitro' | 'gameover' | 'countdown' | 'go' | 'select' | 'indicator') => {
   try {
@@ -287,7 +287,6 @@ const CarSVG = ({
       )}
 
       {/* 🛞 Wheels - Detailed */}
-      {/* Front Left Wheel */}
       <rect x="8" y="50" width="14" height="25" rx="4" fill="#0f172a" />
       <rect x="10" y="52" width="10" height="21" rx="3" fill="#1e293b" />
       <circle cx="15" cy="62" r="4" fill="#94a3b8" />
@@ -295,7 +294,6 @@ const CarSVG = ({
       <line x1="15" y1="58" x2="15" y2="66" stroke="#475569" strokeWidth="0.5" />
       <line x1="11" y1="62" x2="19" y2="62" stroke="#475569" strokeWidth="0.5" />
 
-      {/* Front Right Wheel */}
       <rect x="78" y="50" width="14" height="25" rx="4" fill="#0f172a" />
       <rect x="80" y="52" width="10" height="21" rx="3" fill="#1e293b" />
       <circle cx="85" cy="62" r="4" fill="#94a3b8" />
@@ -303,7 +301,6 @@ const CarSVG = ({
       <line x1="85" y1="58" x2="85" y2="66" stroke="#475569" strokeWidth="0.5" />
       <line x1="81" y1="62" x2="89" y2="62" stroke="#475569" strokeWidth="0.5" />
 
-      {/* Rear Left Wheel */}
       <rect x="8" y="100" width="14" height="25" rx="4" fill="#0f172a" />
       <rect x="10" y="102" width="10" height="21" rx="3" fill="#1e293b" />
       <circle cx="15" cy="112" r="4" fill="#94a3b8" />
@@ -311,7 +308,6 @@ const CarSVG = ({
       <line x1="15" y1="108" x2="15" y2="116" stroke="#475569" strokeWidth="0.5" />
       <line x1="11" y1="112" x2="19" y2="112" stroke="#475569" strokeWidth="0.5" />
 
-      {/* Rear Right Wheel */}
       <rect x="78" y="100" width="14" height="25" rx="4" fill="#0f172a" />
       <rect x="80" y="102" width="10" height="21" rx="3" fill="#1e293b" />
       <circle cx="85" cy="112" r="4" fill="#94a3b8" />
@@ -527,7 +523,6 @@ export default function AlamnagarTurboRacer() {
   const countdownRef = useRef<number | null>(null);
   const invincibleTimerRef = useRef<number | null>(null);
   const lastIndicatorSoundRef = useRef(0);
-  const gameAreaRef = useRef<HTMLDivElement>(null);
 
   // ✅ Load high score from localStorage
   useEffect(() => {
@@ -537,22 +532,29 @@ export default function AlamnagarTurboRacer() {
 
   // ✅ Prevent page scroll during gameplay - CRITICAL FIX
   useEffect(() => {
-    if (gameState === 'playing') {
+    if (gameState === 'playing' || gameState === 'countdown') {
       document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.top = `-${window.scrollY}px`;
       document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.touchAction = 'none';
     } else {
+      const scrollY = document.body.style.top;
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
       document.documentElement.style.overflow = '';
-      document.documentElement.style.touchAction = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
     }
     return () => {
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
       document.documentElement.style.overflow = '';
-      document.documentElement.style.touchAction = '';
     };
   }, [gameState]);
 
@@ -838,105 +840,109 @@ export default function AlamnagarTurboRacer() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-stone-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 md:p-8"
+            className="fixed inset-0 z-50 bg-stone-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 md:p-8 overflow-y-auto"
           >
-            <motion.div initial={{ y: -50 }} animate={{ y: 0 }} className="text-center mb-12">
-              <div className="inline-block p-4 rounded-full bg-gradient-to-br from-emerald-500 to-blue-600 mb-4 shadow-2xl shadow-emerald-500/30">
-                <Trophy className="w-16 h-16 text-white" />
+            <div className="w-full max-w-4xl flex flex-col items-center">
+              <motion.div initial={{ y: -50 }} animate={{ y: 0 }} className="text-center mb-8 md:mb-12">
+                <div className="inline-block p-4 rounded-full bg-gradient-to-br from-emerald-500 to-blue-600 mb-4 shadow-2xl shadow-emerald-500/30">
+                  <Trophy className="w-12 h-12 md:w-16 md:h-16 text-white" />
+                </div>
+                <h1 className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 mb-2">
+                  टर्बो रेसर
+                </h1>
+                <p className="text-stone-400 text-base md:text-lg">
+                  High Score: <span className="text-yellow-400 font-bold">{highScore}</span>
+                </p>
+              </motion.div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full mb-6 md:mb-8">
+                {(['jungle', 'city', 'highway'] as GameMode[]).map((m) => (
+                  <ModeCard key={m} m={m} icon={MODES[m].icon} />
+                ))}
               </div>
-              <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 mb-2">
-                टर्बो रेसर
-              </h1>
-              <p className="text-stone-400 text-lg">
-                High Score: <span className="text-yellow-400 font-bold">{highScore}</span>
-              </p>
-            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mb-8">
-              {(['jungle', 'city', 'highway'] as GameMode[]).map((m) => (
-                <ModeCard key={m} m={m} icon={MODES[m].icon} />
-              ))}
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-stone-800 hover:bg-stone-700 transition-colors text-sm font-bold"
-              >
-                {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-red-400" />}
-                {soundEnabled ? "Sound On" : "Sound Off"}
-              </button>
-              <Link
-                href="/"
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-stone-800 hover:bg-stone-700 transition-colors text-sm font-bold"
-              >
-                <ArrowLeft className="w-4 h-4" /> Home
-              </Link>
+              <div className="flex items-center gap-3 md:gap-4">
+                <button
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-stone-800 hover:bg-stone-700 transition-colors text-xs md:text-sm font-bold"
+                >
+                  {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-red-400" />}
+                  <span className="hidden sm:inline">{soundEnabled ? "Sound On" : "Sound Off"}</span>
+                </button>
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-stone-800 hover:bg-stone-700 transition-colors text-xs md:text-sm font-bold"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Home
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 🚗 CAR SELECTION SCREEN */}
+      {/* 🚗 CAR SELECTION SCREEN - FIXED: Scrollable on mobile */}
       <AnimatePresence>
         {gameState === 'carSelect' && (
           <motion.div
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
-            className="fixed inset-0 z-50 bg-stone-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-stone-950/95 backdrop-blur-xl overflow-y-auto"
           >
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-8">अपनी कार चुनें</h2>
+            <div className="min-h-full flex flex-col items-center justify-center p-4 py-8">
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-6 md:mb-8 text-center">अपनी कार चुनें</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mb-10">
-              {(Object.keys(CARS) as CarModel[]).map((car) => (
-                <motion.button
-                  key={car}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCar(car)}
-                  className={`relative p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-4 ${
-                    selectedCar === car
-                      ? 'border-emerald-500 bg-emerald-500/10'
-                      : 'border-stone-700 bg-stone-800/50 hover:border-stone-500'
-                  }`}
-                >
-                  {selectedCar === car && (
-                    <div className="absolute top-4 right-4 bg-emerald-500 rounded-full p-1">
-                      <Check className="w-4 h-4 text-white" />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 w-full max-w-5xl mb-6 md:mb-10">
+                {(Object.keys(CARS) as CarModel[]).map((car) => (
+                  <motion.button
+                    key={car}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedCar(car)}
+                    className={`relative p-4 md:p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 md:gap-4 ${
+                      selectedCar === car
+                        ? 'border-emerald-500 bg-emerald-500/10'
+                        : 'border-stone-700 bg-stone-800/50 hover:border-stone-500'
+                    }`}
+                  >
+                    {selectedCar === car && (
+                      <div className="absolute top-3 right-3 md:top-4 md:right-4 bg-emerald-500 rounded-full p-1">
+                        <Check className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                      </div>
+                    )}
+                    <div className="w-24 h-36 md:w-32 md:h-48">
+                      <CarSVG
+                        model={car}
+                        tilt={0}
+                        isNitro={false}
+                        isBlinking={false}
+                        isTurningLeft={false}
+                        isTurningRight={false}
+                      />
                     </div>
-                  )}
-                  <div className="w-32 h-48">
-                    <CarSVG
-                      model={car}
-                      tilt={0}
-                      isNitro={false}
-                      isBlinking={false}
-                      isTurningLeft={false}
-                      isTurningRight={false}
-                    />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-black text-white">{car.toUpperCase()}</h3>
-                    <p className={`text-sm font-bold ${CARS[car].accent}`}>{CARS[car].nameHi}</p>
-                  </div>
-                </motion.button>
-              ))}
-            </div>
+                    <div className="text-center">
+                      <h3 className="text-xl md:text-2xl font-black text-white">{car.toUpperCase()}</h3>
+                      <p className={`text-xs md:text-sm font-bold ${CARS[car].accent}`}>{CARS[car].nameHi}</p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => setGameState('menu')}
-                className="px-8 py-4 bg-stone-700 hover:bg-stone-600 rounded-xl font-black text-xl flex items-center gap-2"
-              >
-                <ArrowLeft className="w-6 h-6" /> वापस
-              </button>
-              <button
-                onClick={() => startCountdown(mode)}
-                className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 rounded-xl font-black text-xl flex items-center gap-2 shadow-lg shadow-emerald-500/30"
-              >
-                <Play className="w-6 h-6 fill-white" /> रेस शुरू करें
-              </button>
+              <div className="flex gap-3 md:gap-4">
+                <button
+                  onClick={() => setGameState('menu')}
+                  className="px-6 md:px-8 py-3 md:py-4 bg-stone-700 hover:bg-stone-600 rounded-xl font-bold md:font-black text-base md:text-xl flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" /> वापस
+                </button>
+                <button
+                  onClick={() => startCountdown(mode)}
+                  className="px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 rounded-xl font-bold md:font-black text-base md:text-xl flex items-center gap-2 shadow-lg shadow-emerald-500/30"
+                >
+                  <Play className="w-5 h-5 md:w-6 md:h-6 fill-white" /> रेस शुरू करें
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -973,7 +979,7 @@ export default function AlamnagarTurboRacer() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center gap-6"
           >
-            <h2 className="text-6xl font-black text-white">रोका गया (Paused)</h2>
+            <h2 className="text-5xl md:text-6xl font-black text-white">रोका गया</h2>
             <div className="flex gap-4">
               <button
                 onClick={() => setGameState('playing')}
@@ -999,10 +1005,10 @@ export default function AlamnagarTurboRacer() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-red-950/90 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-red-950/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto"
           >
-            <div className="bg-stone-900 border-2 border-red-500/50 p-8 md:p-12 rounded-3xl text-center max-w-md w-full shadow-2xl">
-              <h2 className="text-5xl font-black text-red-500 mb-2">टक्कर हो गई!</h2>
+            <div className="bg-stone-900 border-2 border-red-500/50 p-6 md:p-12 rounded-3xl text-center max-w-md w-full shadow-2xl my-8">
+              <h2 className="text-4xl md:text-5xl font-black text-red-500 mb-2">टक्कर हो गई!</h2>
               <p className="text-stone-400 mb-6">आपकी कार का इंजन खराब हो गया।</p>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
@@ -1037,11 +1043,10 @@ export default function AlamnagarTurboRacer() {
         )}
       </AnimatePresence>
 
-      {/* 🎮 GAME VIEW - FIXED: Scroll blocked, buttons visible on all devices */}
+      {/* 🎮 GAME VIEW - FIXED: Proper viewport height, no scroll */}
       {gameState === 'playing' && (
         <div
-          ref={gameAreaRef}
-          className="fixed inset-0 w-screen h-screen overflow-hidden bg-stone-950"
+          className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-stone-950"
           style={{ touchAction: 'none' }}
         >
           <div
@@ -1155,22 +1160,22 @@ export default function AlamnagarTurboRacer() {
           </div>
 
           {/* 📊 HUD */}
-          <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
-            <div className="flex flex-col gap-2 pointer-events-auto">
-              <div className="bg-black/70 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 flex items-center gap-2">
-                <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-                <div className="w-24 h-3 bg-stone-700 rounded-full overflow-hidden">
+          <div className="absolute top-2 md:top-4 left-2 md:left-4 right-2 md:right-4 z-50 flex justify-between items-start pointer-events-none">
+            <div className="flex flex-col gap-1.5 md:gap-2 pointer-events-auto">
+              <div className="bg-black/70 backdrop-blur-md px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-white/20 flex items-center gap-2">
+                <Heart className="w-4 h-4 md:w-5 md:h-5 text-red-500 fill-red-500" />
+                <div className="w-20 md:w-24 h-2.5 md:h-3 bg-stone-700 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-red-500"
                     animate={{ width: `${health}%` }}
                   />
                 </div>
               </div>
-              <div className="bg-black/70 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 flex items-center gap-2">
+              <div className="bg-black/70 backdrop-blur-md px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-white/20 flex items-center gap-2">
                 <Zap
-                  className={`w-5 h-5 ${isNitroActive ? 'text-yellow-400 fill-yellow-400' : 'text-blue-400'}`}
+                  className={`w-4 h-4 md:w-5 md:h-5 ${isNitroActive ? 'text-yellow-400 fill-yellow-400' : 'text-blue-400'}`}
                 />
-                <div className="w-24 h-3 bg-stone-700 rounded-full overflow-hidden">
+                <div className="w-20 md:w-24 h-2.5 md:h-3 bg-stone-700 rounded-full overflow-hidden">
                   <motion.div
                     className={`h-full ${isNitroActive ? 'bg-yellow-400' : 'bg-blue-500'}`}
                     animate={{ width: `${nitro}%` }}
@@ -1179,58 +1184,59 @@ export default function AlamnagarTurboRacer() {
               </div>
               <button
                 onClick={() => setGameState('paused')}
-                className="bg-black/70 backdrop-blur-md p-3 rounded-full border border-white/20"
+                className="bg-black/70 backdrop-blur-md p-2 md:p-3 rounded-full border border-white/20"
                 style={{ touchAction: 'manipulation' }}
               >
-                <Pause className="w-5 h-5 text-white" />
+                <Pause className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </button>
             </div>
 
-            <div className="bg-black/70 backdrop-blur-md px-6 py-3 rounded-full border border-yellow-500/30 flex items-center gap-3">
-              <Coins className="w-6 h-6 text-yellow-400" />
-              <span className="text-2xl font-black text-white">{score}</span>
+            <div className="bg-black/70 backdrop-blur-md px-4 md:px-6 py-2 md:py-3 rounded-full border border-yellow-500/30 flex items-center gap-2 md:gap-3">
+              <Coins className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
+              <span className="text-xl md:text-2xl font-black text-white">{score}</span>
             </div>
           </div>
 
-          {/* 🎮 STEERING BUTTONS - FIXED: Always visible, big buttons, touch-friendly */}
-          <div className="fixed bottom-6 left-4 z-50 flex gap-4" style={{ pointerEvents: 'auto' }}>
-            <button
-              className={`w-24 h-24 rounded-full border-[3px] flex items-center justify-center transition-all ${
-                leftPressed
-                  ? 'bg-white/50 border-white scale-90'
-                  : 'bg-black/50 border-white/40'
-              }`}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              onTouchStart={(e) => { e.preventDefault(); setLeftPressed(true); }}
-              onTouchEnd={(e) => { e.preventDefault(); setLeftPressed(false); }}
-              onTouchCancel={() => setLeftPressed(false)}
-              onMouseDown={() => setLeftPressed(true)}
-              onMouseUp={() => setLeftPressed(false)}
-              onMouseLeave={() => setLeftPressed(false)}
-            >
-              <ChevronLeft className="w-14 h-14 text-white" strokeWidth={3} />
-            </button>
-            <button
-              className={`w-24 h-24 rounded-full border-[3px] flex items-center justify-center transition-all ${
-                rightPressed
-                  ? 'bg-white/50 border-white scale-90'
-                  : 'bg-black/50 border-white/40'
-              }`}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              onTouchStart={(e) => { e.preventDefault(); setRightPressed(true); }}
-              onTouchEnd={(e) => { e.preventDefault(); setRightPressed(false); }}
-              onTouchCancel={() => setRightPressed(false)}
-              onMouseDown={() => setRightPressed(true)}
-              onMouseUp={() => setRightPressed(false)}
-              onMouseLeave={() => setRightPressed(false)}
-            >
-              <ChevronRight className="w-14 h-14 text-white" strokeWidth={3} />
-            </button>
-          </div>
-
-          {/* 🚀 BOOST BUTTON - FIXED: Always visible, big button */}
+          {/* 🎮 STEERING CONTROLS - FIXED: Left arrow LEFT side, Right arrow RIGHT side */}
+          {/* Left Steering Button - Bottom Left */}
           <button
-            className={`fixed bottom-6 right-4 z-50 w-24 h-24 rounded-full border-[3px] flex items-center justify-center transition-all ${
+            className={`fixed bottom-6 left-4 z-50 w-20 h-20 md:w-24 md:h-24 rounded-full border-[3px] flex items-center justify-center transition-all ${
+              leftPressed
+                ? 'bg-white/50 border-white scale-90 shadow-lg shadow-white/30'
+                : 'bg-black/50 border-white/40'
+            }`}
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            onTouchStart={(e) => { e.preventDefault(); setLeftPressed(true); }}
+            onTouchEnd={(e) => { e.preventDefault(); setLeftPressed(false); }}
+            onTouchCancel={() => setLeftPressed(false)}
+            onMouseDown={() => setLeftPressed(true)}
+            onMouseUp={() => setLeftPressed(false)}
+            onMouseLeave={() => setLeftPressed(false)}
+          >
+            <ChevronLeft className="w-12 h-12 md:w-14 md:h-14 text-white" strokeWidth={3} />
+          </button>
+
+          {/* Right Steering Button - Bottom Right */}
+          <button
+            className={`fixed bottom-6 right-4 z-50 w-20 h-20 md:w-24 md:h-24 rounded-full border-[3px] flex items-center justify-center transition-all ${
+              rightPressed
+                ? 'bg-white/50 border-white scale-90 shadow-lg shadow-white/30'
+                : 'bg-black/50 border-white/40'
+            }`}
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            onTouchStart={(e) => { e.preventDefault(); setRightPressed(true); }}
+            onTouchEnd={(e) => { e.preventDefault(); setRightPressed(false); }}
+            onTouchCancel={() => setRightPressed(false)}
+            onMouseDown={() => setRightPressed(true)}
+            onMouseUp={() => setRightPressed(false)}
+            onMouseLeave={() => setRightPressed(false)}
+          >
+            <ChevronRight className="w-12 h-12 md:w-14 md:h-14 text-white" strokeWidth={3} />
+          </button>
+
+          {/* 🚀 BOOST BUTTON - Above Right Steering */}
+          <button
+            className={`fixed bottom-32 right-6 z-50 w-16 h-16 md:w-20 md:h-20 rounded-full border-[3px] flex items-center justify-center transition-all ${
               nitro <= 0 || isNitroActive
                 ? 'bg-gray-800/50 border-gray-600 opacity-40'
                 : 'bg-blue-600/80 border-blue-400 shadow-lg shadow-blue-500/50'
@@ -1260,7 +1266,7 @@ export default function AlamnagarTurboRacer() {
             }}
           >
             <Zap
-              className={`w-14 h-14 ${isNitroActive ? 'text-yellow-300' : 'text-white'}`}
+              className={`w-10 h-10 md:w-12 md:h-12 ${isNitroActive ? 'text-yellow-300' : 'text-white'}`}
               strokeWidth={3}
             />
           </button>
