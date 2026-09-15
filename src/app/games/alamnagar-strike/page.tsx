@@ -469,7 +469,7 @@ interface BirdObject {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🔫 CRYSTAL CLEAR GUN SVGs - NO GLOW, SHARP DETAILED DESIGNS
+// 🔫 CRYSTAL CLEAR GUN SVGs - FIXED: Proper vertical flip when pointing left
 // ═══════════════════════════════════════════════════════════════════════════════
 const PistolSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   <g transform={`translate(${-recoilAmount}, 0)`}>
@@ -574,17 +574,19 @@ const SniperSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   </g>
 );
 
-// ✅ CRITICAL FIX: Gun rotation with proper flipping
+// ✅ CRITICAL FIX: Gun rotation with proper VERTICAL flip when pointing left
 const GunSVG = ({ weapon, angle, recoil }: { weapon: WeaponType; angle: number; recoil: number }) => {
   // Normalize angle to 0-360 range
   const normalizedAngle = ((angle % 360) + 360) % 360;
   
-  // When gun points left (90-270 degrees), flip horizontally so it always looks correct
-  const shouldFlipHorizontally = normalizedAngle > 90 && normalizedAngle < 270;
-  const horizontalScale = shouldFlipHorizontally ? -1 : 1;
+  // Check if gun is pointing left (between 90° and 270°)
+  const isPointingLeft = normalizedAngle > 90 && normalizedAngle < 270;
+  
+  // If pointing left, flip VERTICALLY so gun appears right-side up
+  const verticalScale = isPointingLeft ? -1 : 1;
   
   return (
-    <g transform={`rotate(${angle}) scale(${horizontalScale}, 1)`}>
+    <g transform={`rotate(${angle}) scale(1, ${verticalScale})`}>
       {weapon === 'pistol' && <PistolSVG recoilAmount={recoil} />}
       {weapon === 'rifle' && <RifleSVG recoilAmount={recoil} />}
       {weapon === 'shotgun' && <ShotgunSVG recoilAmount={recoil} />}
@@ -1796,7 +1798,7 @@ export default function AlamnagarStrike() {
               </div>
             ))}
 
-            {/* Player Gun - FIXED: No more flipping issue */}
+            {/* Player Gun - FIXED: Proper vertical flip */}
             <div
               className="absolute z-30 pointer-events-none"
               style={{
