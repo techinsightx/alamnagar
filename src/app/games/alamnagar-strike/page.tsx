@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, Trophy, Play, RotateCcw, Volume2, VolumeX, Target, 
   MapPin, Trees, Building2, AlertTriangle, Mic, MicOff, Wind,
-  RefreshCw, Zap, Crosshair
+  RefreshCw, Zap, Crosshair, ChevronUp, ChevronDown
 } from "lucide-react";
 import Link from "next/link";
 import { db, auth } from "@/lib/firebase";
@@ -21,7 +21,7 @@ import {
 } from "firebase/auth";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🔊 GLOBAL AUDIO CONTEXT - FIXED: Persistent audio context
+// 🔊 GLOBAL AUDIO CONTEXT - Persistent audio context
 // ═══════════════════════════════════════════════════════════════════════════════
 let globalAudioContext: AudioContext | null = null;
 
@@ -634,69 +634,48 @@ const ZombieSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boole
   
   return (
     <g transform={`scale(${scale}) translate(0,${-bob})`} style={{ filter: isHit ? 'brightness(3) saturate(3)' : 'none', transition: 'filter 0.08s' }}>
-      {/* Shadow */}
       <ellipse cx="0" cy="45" rx="20" ry="5" fill="rgba(0,0,0,0.5)" />
-      
-      {/* Back Leg with detailed joints */}
       <g transform={`rotate(${legSwing})`} style={{ transformOrigin: '16px 20px' }}>
         <rect x="-8" y={20+breathe} width="8" height="12" rx="2" fill="#2d4a3e" />
         <circle cx="-4" cy="32" r="3" fill="#1a3028" />
         <rect x="-8" y="32" width="8" height="13" rx="2" fill="#2d4a3e" />
         <rect x="-10" y="43" width="12" height="4" rx="1" fill="#1a2018" />
       </g>
-      
-      {/* Back Arm with detailed joints */}
       <g transform={`rotate(${-armSwing})`} style={{ transformOrigin: '14px -5px' }}>
         <rect x="-18" y={-5+breathe} width="8" height="11" rx="2" fill="#4a6b5e" />
         <circle cx="-14" cy="6" r="3" fill="#3a5b4e" />
         <rect x="-18" y="6" width="8" height="11" rx="2" fill="#4a6b5e" />
         <circle cx="-14" cy="17" r="2.5" fill="#3a5b4e" />
       </g>
-      
-      {/* Torso with torn clothes */}
       <rect x="-12" y={-10+breathe} width="24" height="32" rx="4" fill="#3d5a4e" />
       <path d="M-12 -5 L12 -5 L12 5 L-12 5Z" fill="#5a3d3d" />
       <path d="M-10 -3 L-8 2 M-6 -4 L-5 1 M-2 -3 L-1 2" stroke="#4a2d2d" strokeWidth="0.5" />
       <path d="M10 -3 L8 2 M6 -4 L5 1 M2 -3 L1 2" stroke="#4a2d2d" strokeWidth="0.5" />
-      
-      {/* Front Leg with detailed joints */}
       <g transform={`rotate(${-legSwing})`} style={{ transformOrigin: '-16px 20px' }}>
         <rect x="0" y={20+breathe} width="8" height="12" rx="2" fill="#2d4a3e" />
         <circle cx="4" cy="32" r="3" fill="#1a3028" />
         <rect x="0" y="32" width="8" height="13" rx="2" fill="#2d4a3e" />
         <rect x="-2" y="43" width="12" height="4" rx="1" fill="#1a2018" />
       </g>
-      
-      {/* Front Arm with detailed joints */}
       <g transform={`rotate(${armSwing})`} style={{ transformOrigin: '-14px -5px' }}>
         <rect x="10" y={-5+breathe} width="8" height="11" rx="2" fill="#4a6b5e" />
         <circle cx="14" cy="6" r="3" fill="#3a5b4e" />
         <rect x="10" y="6" width="8" height="11" rx="2" fill="#4a6b5e" />
         <circle cx="14" cy="17" r="2.5" fill="#3a5b4e" />
       </g>
-      
-      {/* Head with detailed features */}
       <circle cx="0" cy={-20+breathe} r="12" fill="#4a6b5e" />
       <path d="M-10 -25 Q-5 -30 0 -28 Q5 -30 10 -25 Q8 -28 0 -27 Q-8 -28 -10 -25Z" fill="#2d3d2e" />
-      
-      {/* Glowing eyes with pupils */}
       <circle cx="-4" cy="-22" r="2.5" fill="#ff0000" />
       <circle cx="4" cy="-22" r="2.5" fill="#ff0000" />
       <circle cx="-4" cy="-22" r="1.5" fill="#ff6666" />
       <circle cx="4" cy="-22" r="1.5" fill="#ff6666" />
       <circle cx="-4" cy="-22" r="0.8" fill="#ffffff" />
       <circle cx="4" cy="-22" r="0.8" fill="#ffffff" />
-      
-      {/* Mouth with teeth */}
       <path d="M-5 -16 Q0 -14 5 -16" stroke="#2d3d2e" strokeWidth="1.5" fill="#1a1a1a" />
       <path d="M-4 -16 L-3 -14 M-2 -16 L-1 -14 M0 -16 L0 -14 M2 -16 L3 -14 M4 -16 L3 -14" stroke="white" strokeWidth="0.8" />
-      
-      {/* Wounds with blood */}
       <circle cx="-6" cy="-10" r="2" fill="#8b0000" />
       <circle cx="6" cy="-5" r="1.5" fill="#8b0000" />
       <circle cx="-6" cy="-10" r="1" fill="#ff0000" opacity="0.6" />
-      
-      {/* Boss crown with jewels */}
       {isBoss && (
         <g>
           <path d="M-8 -30 L-6 -35 L-3 -32 L0 -36 L3 -32 L6 -35 L8 -30 Z" fill="#ffd700" />
@@ -720,10 +699,7 @@ const ThugSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean
   
   return (
     <g transform={`scale(${scale})`} style={{ filter: isHit ? 'brightness(3) saturate(3)' : 'none', transition: 'filter 0.08s' }}>
-      {/* Shadow */}
       <ellipse cx="0" cy="50" rx="25" ry="6" fill="rgba(0,0,0,0.6)" />
-      
-      {/* Legs with detailed joints */}
       <g transform={`rotate(${legSwing})`} style={{ transformOrigin: '10px 20px' }}>
         <rect x="-10" y={20+breathe} width="10" height="15" rx="3" fill="#1a1a1a" />
         <circle cx="-5" cy="35" r="4" fill="#0a0a0a" />
@@ -736,13 +712,9 @@ const ThugSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean
         <rect x="0" y="35" width="10" height="15" rx="3" fill="#1a1a1a" />
         <rect x="-2" y="48" width="14" height="5" rx="2" fill="#0a0a0a" />
       </g>
-      
-      {/* Torso with jacket */}
       <rect x="-15" y={-10+breathe} width="30" height="35" rx="5" fill="#333" />
       <rect x="-13" y="-8" width="26" height="10" rx="2" fill="#222" />
       <path d="M-15 -5 L-13 5 M15 -5 L13 5" stroke="#1a1a1a" strokeWidth="1" />
-      
-      {/* Arms with detailed joints */}
       <g transform={`rotate(${-armSwing})`} style={{ transformOrigin: '17px -5px' }}>
         <rect x="-22" y={-5+breathe} width="10" height="12" rx="3" fill="#d4a373" />
         <circle cx="-17" cy="7" r="4" fill="#c49363" />
@@ -755,27 +727,17 @@ const ThugSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolean
         <rect x="12" y="7" width="10" height="13" rx="3" fill="#d4a373" />
         <circle cx="17" cy="20" r="3.5" fill="#c49363" />
       </g>
-      
-      {/* Head with detailed features */}
       <circle cx="0" cy={-25+breathe} r="14" fill="#d4a373" />
       <path d="M-14 -30 Q0 -35 14 -30 L12 -25 Q0 -28 -12 -25Z" fill="#111" />
-      
-      {/* Eyes with angry expression */}
       <path d="M-7 -27 L-3 -26" stroke="#000" strokeWidth="1.5" />
       <path d="M7 -27 L3 -26" stroke="#000" strokeWidth="1.5" />
       <motion.circle cx="-5" cy="-26" r="2" fill="#000" animate={{ scaleY: [1,0.2,1] }} transition={{ repeat: Infinity, duration: 3 }} />
       <motion.circle cx="5" cy="-26" r="2" fill="#000" animate={{ scaleY: [1,0.2,1] }} transition={{ repeat: Infinity, duration: 3 }} />
       <circle cx="-5" cy="-26" r="0.8" fill="#ffffff" opacity="0.6" />
       <circle cx="5" cy="-26" r="0.8" fill="#ffffff" opacity="0.6" />
-      
-      {/* Angry mouth */}
       <path d="M-6 -18 Q0 -15 6 -18" stroke="#000" strokeWidth="1.5" fill="none" />
       <path d="M-5 -18 L-4 -16 M-3 -18 L-2 -16 M-1 -18 L0 -16 M1 -18 L2 -16 M3 -18 L4 -16" stroke="#fff" strokeWidth="0.8" />
-      
-      {/* Scar */}
       <path d="M-8 -22 L-6 -20" stroke="#8b0000" strokeWidth="1" />
-      
-      {/* Boss indicator */}
       {isBoss && <motion.circle cx="0" cy="-38" r="3" fill="#f00" animate={{ opacity: [0.5,1,0.5] }} transition={{ repeat: Infinity, duration: 1 }} />}
     </g>
   );
@@ -789,15 +751,10 @@ const TigerSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolea
   
   return (
     <g transform={`scale(${scale}) translate(0,${-bob})`} style={{ filter: isHit ? 'brightness(3) saturate(3)' : 'none', transition: 'filter 0.08s' }}>
-      {/* Shadow */}
       <ellipse cx="0" cy="40" rx="30" ry="8" fill="rgba(0,0,0,0.5)" />
-      
-      {/* Body with stripes */}
       <ellipse cx="0" cy={10+breathe} rx="25" ry="18" fill="#f97316" />
       <path d="M-15 0 L-10 10 M-5 0 L0 10 M5 0 L10 10 M15 0 L20 10" stroke="#000" strokeWidth="3" />
       <path d="M-20 5 L-15 15 M-10 5 L-5 15 M0 5 L5 15 M10 5 L15 15" stroke="#000" strokeWidth="2" />
-      
-      {/* Legs with detailed joints */}
       <g transform={`rotate(${legSwing})`} style={{ transformOrigin: '11px 20px' }}>
         <rect x="-15" y={20+breathe} width="8" height="10" rx="2" fill="#f97316" />
         <circle cx="-11" cy="30" r="3" fill="#e96306" />
@@ -822,35 +779,21 @@ const TigerSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolea
         <rect x="15" y="30" width="8" height="10" rx="2" fill="#f97316" />
         <rect x="13" y="38" width="12" height="4" rx="1" fill="#e96306" />
       </g>
-      
-      {/* Head with detailed features */}
       <circle cx="0" cy={-15+breathe} r="16" fill="#f97316" />
       <path d="M-10 -25 L-12 -30 L-6 -28 M10 -25 L12 -30 L6 -28" fill="#f97316" stroke="#000" strokeWidth="1" />
-      
-      {/* Eyes with pupils */}
       <motion.circle cx="-6" cy="-18" r="3" fill="#fff" animate={{ opacity: [0.7,1,0.7] }} transition={{ repeat: Infinity, duration: 2 }} />
       <motion.circle cx="6" cy="-18" r="3" fill="#fff" animate={{ opacity: [0.7,1,0.7] }} transition={{ repeat: Infinity, duration: 2 }} />
       <circle cx="-6" cy="-18" r="1.5" fill="#000" />
       <circle cx="6" cy="-18" r="1.5" fill="#000" />
       <circle cx="-6" cy="-18" r="0.6" fill="#ffffff" opacity="0.6" />
       <circle cx="6" cy="-18" r="0.6" fill="#ffffff" opacity="0.6" />
-      
-      {/* Nose */}
       <ellipse cx="0" cy="-14" rx="2" ry="1.5" fill="#000" />
-      
-      {/* Mouth with teeth */}
       <path d="M-4 -10 Q0 -8 4 -10" stroke="#000" strokeWidth="1" fill="none" />
       <path d="M-6 -8 L-8 -5 M6 -8 L8 -5" stroke="#fff" strokeWidth="1" />
-      
-      {/* Whiskers */}
       <path d="M-8 -12 L-12 -11 M-8 -10 L-12 -10 M-8 -8 L-12 -9" stroke="#000" strokeWidth="0.5" />
       <path d="M8 -12 L12 -11 M8 -10 L12 -10 M8 -8 L12 -9" stroke="#000" strokeWidth="0.5" />
-      
-      {/* Tail with animation */}
       <motion.path d={`M25 10 Q35 ${5+Math.sin(walkFrame*5)*5} 40 0`} stroke="#f97316" strokeWidth="4" fill="none" />
       <motion.path d={`M25 10 Q35 ${5+Math.sin(walkFrame*5)*5} 40 0`} stroke="#000" strokeWidth="1" fill="none" />
-      
-      {/* Boss crown */}
       {isBoss && (
         <g>
           <path d="M-8 -28 L-6 -33 L-3 -30 L0 -34 L3 -30 L6 -33 L8 -28 Z" fill="#ffd700" />
@@ -870,24 +813,17 @@ const GhostSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolea
   
   return (
     <g transform={`scale(${scale}) translate(${floatX},${floatY})`} style={{ filter: isHit ? 'brightness(3)' : 'none', transition: 'filter 0.08s' }}>
-      {/* Ghost body with wavy bottom */}
       <motion.path d="M-20 -20 Q-20 -40 0 -40 Q20 -40 20 -20 L20 10 Q10 0 0 10 Q-10 0 -20 10 Z" fill="rgba(255,255,255,0.8)"
         animate={{ d: ["M-20 -20 Q-20 -40 0 -40 Q20 -40 20 -20 L20 10 Q10 0 0 10 Q-10 0 -20 10 Z","M-20 -15 Q-20 -35 0 -35 Q20 -35 20 -15 L20 15 Q10 5 0 15 Q-10 5 -20 15 Z","M-20 -20 Q-20 -40 0 -40 Q20 -40 20 -20 L20 10 Q10 0 0 10 Q-10 0 -20 10 Z"] }}
         transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} />
-      
-      {/* Eyes with glowing pupils */}
       <motion.circle cx="-8" cy="-25" r="4" fill="#000" animate={{ scaleY: [1,0.2,1] }} transition={{ repeat: Infinity, duration: 4 }} />
       <motion.circle cx="8" cy="-25" r="4" fill="#000" animate={{ scaleY: [1,0.2,1] }} transition={{ repeat: Infinity, duration: 4 }} />
       <motion.circle cx="-8" cy="-25" r="1.5" fill="#f00" animate={{ opacity: [0.5,1,0.5] }} transition={{ repeat: Infinity, duration: 1.5 }} />
       <motion.circle cx="8" cy="-25" r="1.5" fill="#f00" animate={{ opacity: [0.5,1,0.5] }} transition={{ repeat: Infinity, duration: 1.5 }} />
       <circle cx="-8" cy="-25" r="0.5" fill="#ffffff" opacity="0.6" />
       <circle cx="8" cy="-25" r="0.5" fill="#ffffff" opacity="0.6" />
-      
-      {/* Mouth */}
       <ellipse cx="0" cy="-15" rx="6" ry="8" fill="#000" />
       <ellipse cx="0" cy="-15" rx="3" ry="4" fill="#1a1a1a" />
-      
-      {/* Boss crown */}
       {isBoss && <motion.path d="M-15 -35 L0 -50 L15 -35" fill="none" stroke="#f00" strokeWidth="2" animate={{ opacity: [0.5,1,0.5] }} transition={{ repeat: Infinity, duration: 1 }} />}
     </g>
   );
@@ -900,10 +836,7 @@ const AlienSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolea
   
   return (
     <g transform={`scale(${scale})`} style={{ filter: isHit ? 'brightness(3) saturate(3)' : 'none', transition: 'filter 0.08s' }}>
-      {/* Shadow */}
       <ellipse cx="0" cy="45" rx="20" ry="5" fill="rgba(0,0,0,0.5)" />
-      
-      {/* Legs with detailed joints */}
       <g transform={`rotate(${legSwing})`} style={{ transformOrigin: '16px 20px' }}>
         <rect x="-8" y={20+breathe} width="8" height="12" rx="2" fill="#4a6b5e" />
         <circle cx="-4" cy="32" r="3" fill="#3a5b4e" />
@@ -916,29 +849,19 @@ const AlienSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolea
         <rect x="0" y="32" width="8" height="13" rx="2" fill="#4a6b5e" />
         <rect x="-2" y="43" width="12" height="4" rx="1" fill="#3a5b4e" />
       </g>
-      
-      {/* Torso */}
       <ellipse cx="0" cy={5+breathe} rx="18" ry="22" fill="#8b5cf6" />
       <ellipse cx="0" cy={5+breathe} rx="15" ry="18" fill="#7c4ce6" />
-      
-      {/* Head with detailed features */}
       <circle cx="0" cy={-20+breathe} r="16" fill="#a78bfa" />
       <circle cx="0" cy={-20+breathe} r="14" fill="#977bea" />
-      
-      {/* Eyes with pupils */}
       <motion.ellipse cx="-6" cy="-22" rx="5" ry="7" fill="#000" animate={{ scaleY: [1,0.3,1] }} transition={{ repeat: Infinity, duration: 3 }} />
       <motion.ellipse cx="6" cy="-22" rx="5" ry="7" fill="#000" animate={{ scaleY: [1,0.3,1] }} transition={{ repeat: Infinity, duration: 3 }} />
       <motion.circle cx="-6" cy="-22" r="2" fill="#0f0" animate={{ opacity: [0.5,1,0.5] }} transition={{ repeat: Infinity, duration: 2 }} />
       <motion.circle cx="6" cy="-22" r="2" fill="#0f0" animate={{ opacity: [0.5,1,0.5] }} transition={{ repeat: Infinity, duration: 2 }} />
       <circle cx="-6" cy="-22" r="0.8" fill="#ffffff" opacity="0.6" />
       <circle cx="6" cy="-22" r="0.8" fill="#ffffff" opacity="0.6" />
-      
-      {/* Antenna with glowing tip */}
       <path d="M-10 -30 Q0 -35 10 -30" stroke="#8b5cf6" strokeWidth="4" fill="none" />
       <motion.circle cx="0" cy="-32" r="3" fill="#0f0" animate={{ opacity: [0.5,1,0.5] }} transition={{ repeat: Infinity, duration: 1 }} />
       <circle cx="0" cy="-32" r="1" fill="#ffffff" opacity="0.6" />
-      
-      {/* Boss crown */}
       {isBoss && (
         <g>
           <path d="M-8 -35 L-6 -40 L-3 -37 L0 -41 L3 -37 L6 -40 L8 -35 Z" fill="#ffd700" />
@@ -959,41 +882,25 @@ const SnakeSVG = ({ isHit, isBoss, walkFrame }: { isHit: boolean; isBoss: boolea
   
   return (
     <g transform={`scale(${scale})`} style={{ filter: isHit ? 'brightness(3) saturate(3)' : 'none', transition: 'filter 0.08s' }}>
-      {/* Snake body with scales */}
       <path d={`M-30 0 Q-20 ${wave1} -10 0 Q0 ${wave2} 10 0 Q20 ${wave3} 30 0`} stroke="#2d5016" strokeWidth="8" fill="none" strokeLinecap="round" />
       <path d={`M-30 0 Q-20 ${wave1} -10 0 Q0 ${wave2} 10 0 Q20 ${wave3} 30 0`} stroke="#4a7c2c" strokeWidth="5" fill="none" strokeLinecap="round" />
-      
-      {/* Scale pattern */}
       <path d={`M-25 ${wave1/2} L-20 ${wave1} M-15 ${wave2/2} L-10 0 M-5 ${wave2/2} L0 ${wave2} M5 ${wave3/2} L10 0 M15 ${wave3/2} L20 ${wave3}`} stroke="#1a3008" strokeWidth="1" fill="none" />
-      
-      {/* Head with detailed features */}
       <ellipse cx="30" cy="0" rx="8" ry="6" fill="#2d5016" />
       <ellipse cx="30" cy="0" rx="6" ry="4" fill="#3d6026" />
-      
-      {/* Eyes with slit pupils */}
       <ellipse cx="32" cy="-2" rx="3" ry="2" fill="#ff0" />
       <ellipse cx="32" cy="-2" rx="1" ry="2" fill="#000" />
       <circle cx="33" cy="-2" r="0.5" fill="#ffffff" opacity="0.6" />
-      
-      {/* Tongue with animation */}
       <motion.path d="M38 0 L42 -1 M38 0 L42 1" stroke="#f00" strokeWidth="1" fill="none"
         animate={{ d: ["M38 0 L42 -1 M38 0 L42 1","M38 0 L44 0","M38 0 L42 -1 M38 0 L42 1"] }}
         transition={{ repeat: Infinity, duration: 0.5 }} />
-      
-      {/* Scale details */}
       <circle cx="-20" cy={wave1/2} r="2" fill="#1a3008" />
       <circle cx="-5" cy={wave2/2} r="2" fill="#1a3008" />
       <circle cx="15" cy={wave3/2} r="2" fill="#1a3008" />
-      
-      {/* Boss crown */}
       {isBoss && <><circle cx="30" cy="-8" r="2" fill="#ffd700" /><circle cx="25" cy="-8" r="2" fill="#ffd700" /></>}
     </g>
   );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🐦 BIRD & ENVIRONMENTAL SVGs
-// ═══════════════════════════════════════════════════════════════════════════════
 const BirdSVG = ({ wingPhase, size }: { wingPhase: number; size: number }) => {
   const wingY = Math.sin(wingPhase) * 4;
   return (
@@ -1013,9 +920,6 @@ const Lantern = ({ delay, x, y }: { delay: number; x: number; y: number }) => (
   </motion.div>
 );
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🗺️ ENVIRONMENT CONFIGURATIONS
-// ═══════════════════════════════════════════════════════════════════════════════
 const ENVIRONMENTS: Record<EnvironmentType, { name: string; hindiName: string; icon: any; background: string; overlay: string; enemyTypes: EnemyType[] }> = {
   gali: { 
     name: "Gali Muhalla", 
@@ -1043,9 +947,6 @@ const ENVIRONMENTS: Record<EnvironmentType, { name: string; hindiName: string; i
   }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🎮 MAIN GAME COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════════
 export default function AlamnagarStrike() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -1078,6 +979,10 @@ export default function AlamnagarStrike() {
   const [muzzleFlash, setMuzzleFlash] = useState(0);
   const [birds, setBirds] = useState<BirdObject[]>([]);
   const [bulletImpacts, setBulletImpacts] = useState<ImpactEffect[]>([]);
+  
+  // ✅ NEW: Navigation expand/collapse state
+  const [isNavExpanded, setIsNavExpanded] = useState(true);
+  const [navAutoHideTimer, setNavAutoHideTimer] = useState<NodeJS.Timeout | null>(null);
 
   const gunPositionRef = useRef({ x: 50, y: 80 });
   const gunAngleRef = useRef(0);
@@ -1104,32 +1009,18 @@ export default function AlamnagarStrike() {
     if (saved) setHighScore(parseInt(saved));
   }, []);
 
-  // ✅ FIXED: Continuous ambient sounds with proper cleanup
   useEffect(() => {
     if (gameState === 'playing' && ambientEnabled && soundEnabled) {
-      // Initialize audio context on first user interaction
       getAudioContext();
-      
-      // Play initial ambient sound
       playSound('ambient_night', 0.03);
       
-      // Set up continuous ambient loop
       ambientIntervalRef.current = window.setInterval(() => {
         if (ambientEnabled && soundEnabled) {
           playSound('ambient_night', 0.03);
-          
-          if (Math.random() > 0.6) {
-            playSound('ambient_wind', 0.3);
-          }
-          if (Math.random() > 0.85) {
-            playSound('ghost_wail', 0.15);
-          }
-          if (Math.random() > 0.7) {
-            playSound('bird_tweet', 0.1);
-          }
-          if (Math.random() > 0.8) {
-            playSound('ambient_crickets', 0.08);
-          }
+          if (Math.random() > 0.6) playSound('ambient_wind', 0.3);
+          if (Math.random() > 0.85) playSound('ghost_wail', 0.15);
+          if (Math.random() > 0.7) playSound('bird_tweet', 0.1);
+          if (Math.random() > 0.8) playSound('ambient_crickets', 0.08);
         }
       }, 6000);
     }
@@ -1273,6 +1164,7 @@ export default function AlamnagarStrike() {
     setCombo(0);
     setBirds([]);
     setBulletImpacts([]);
+    setIsNavExpanded(true); // ✅ Show nav initially
     scoreRef.current = 0;
     healthRef.current = 100;
     gunPositionRef.current = { x: 50, y: 80 };
@@ -1285,10 +1177,14 @@ export default function AlamnagarStrike() {
     lastKillTimeRef.current = 0;
     birdSpawnRef.current = 0;
     
-    // Initialize audio context on game start
     getAudioContext();
-    
     if (soundEnabled) playSound('combo');
+    
+    // ✅ Auto-hide nav after 3 seconds
+    const timer = setTimeout(() => {
+      setIsNavExpanded(false);
+    }, 3000);
+    setNavAutoHideTimer(timer);
   };
 
   const spawnParticles = useCallback((x: number, y: number, color: string, count: number, type: ParticleType = 'spark') => {
@@ -1700,6 +1596,13 @@ export default function AlamnagarStrike() {
     setCurrentWeapon(weapon);
     setAmmo(WEAPONS[weapon].magazineSize);
     if (soundEnabled) playSound('reload');
+    
+    // ✅ Auto-hide nav after weapon selection
+    if (navAutoHideTimer) clearTimeout(navAutoHideTimer);
+    const timer = setTimeout(() => {
+      setIsNavExpanded(false);
+    }, 2000);
+    setNavAutoHideTimer(timer);
   };
 
   const currentEnvironment = ENVIRONMENTS[selectedEnvironment];
@@ -2060,48 +1963,87 @@ export default function AlamnagarStrike() {
         )}
       </div>
 
-      {/* ✅ FIXED: Weapon Controls - Bottom Left */}
+      {/* ✅ FIXED: Bottom Navigation - Expand/Collapse */}
       {gameState === 'playing' && (
-        <div className="fixed bottom-4 left-4 z-50 flex flex-col gap-2 pointer-events-auto">
-          <div className="flex gap-2">
-            {(Object.keys(WEAPONS) as WeaponType[]).map(weapon => (
-              <button
-                key={weapon}
-                onClick={() => switchWeapon(weapon)}
-                disabled={isReloading}
-                className={`px-3 py-2 rounded-lg font-bold text-xs border transition-all ${
-                  currentWeapon === weapon
-                    ? 'bg-white text-black border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.5)]'
-                    : 'bg-black/60 text-white border-white/20 hover:bg-black/80'
+        <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+          {/* Toggle Button */}
+          <motion.button
+            onClick={() => setIsNavExpanded(!isNavExpanded)}
+            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full bg-black/80 backdrop-blur-md px-4 py-2 rounded-t-lg border border-white/20 pointer-events-auto hover:bg-black/90 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isNavExpanded ? (
+              <ChevronDown className="w-5 h-5 text-white" />
+            ) : (
+              <ChevronUp className="w-5 h-5 text-white" />
+            )}
+          </motion.button>
+
+          {/* Navigation Panel */}
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: isNavExpanded ? '0%' : '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="bg-black/90 backdrop-blur-md border-t border-white/20 p-4 pointer-events-auto"
+          >
+            <div className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
+              {/* Weapon Buttons */}
+              {(Object.keys(WEAPONS) as WeaponType[]).map(weapon => (
+                <motion.button
+                  key={weapon}
+                  onClick={() => switchWeapon(weapon)}
+                  disabled={isReloading}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm border transition-all ${
+                    currentWeapon === weapon
+                      ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.5)]'
+                      : 'bg-black/60 text-white border-white/20 hover:bg-black/80'
+                  }`}
+                >
+                  {WEAPONS[weapon].name}
+                </motion.button>
+              ))}
+              
+              {/* Separator */}
+              <div className="w-px h-8 bg-white/20 mx-2" />
+              
+              {/* Reload Button */}
+              <motion.button
+                onClick={handleReload}
+                disabled={isReloading || ammo === WEAPONS[currentWeapon].magazineSize}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-4 py-2 rounded-lg font-bold text-sm border border-white/20 bg-black/60 text-white hover:bg-black/80 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isReloading ? 'animate-spin' : ''}`} />
+                Reload
+              </motion.button>
+              
+              {/* Dash Button */}
+              <motion.button
+                onClick={handleDash}
+                disabled={dashCooldown > 0}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-4 py-2 rounded-lg font-bold text-sm border transition-all flex items-center gap-2 ${
+                  dashCooldown > 0
+                    ? 'bg-black/40 text-stone-500 border-stone-700'
+                    : 'bg-blue-600/80 text-white border-blue-400'
                 }`}
               >
-                {WEAPONS[weapon].name}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleReload}
-              disabled={isReloading || ammo === WEAPONS[currentWeapon].magazineSize}
-              className="px-3 py-2 rounded-lg font-bold text-xs border border-white/20 bg-black/60 text-white hover:bg-black/80 transition-all disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 inline ${isReloading ? 'animate-spin' : ''}`} /> Reload
-            </button>
-            <button
-              onClick={handleDash}
-              disabled={dashCooldown > 0}
-              className={`px-3 py-2 rounded-lg font-bold text-xs border transition-all ${
-                dashCooldown > 0
-                  ? 'bg-black/40 text-stone-500 border-stone-700'
-                  : 'bg-blue-600/80 text-white border-blue-400'
-              }`}
-            >
-              <Zap className="w-4 h-4 inline" /> {dashCooldown > 0 ? `${(dashCooldown / 1000).toFixed(1)}s` : 'Dash'}
-            </button>
-          </div>
-          <div className="text-xs text-white/60 bg-black/40 px-2 py-1 rounded">
-            Ammo: {ammo}/{WEAPONS[currentWeapon].magazineSize}
-          </div>
+                <Zap className="w-4 h-4" />
+                {dashCooldown > 0 ? `${(dashCooldown / 1000).toFixed(1)}s` : 'Dash'}
+              </motion.button>
+              
+              {/* Ammo Display */}
+              <div className="px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-sm flex items-center gap-2">
+                <span className="text-white/60">Ammo:</span>
+                <span className="font-bold">{ammo}/{WEAPONS[currentWeapon].magazineSize}</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
       )}
 
