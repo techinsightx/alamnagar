@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Rocket, LayoutTemplate, Bot, ExternalLink, Sparkles, Globe, Code, BarChart3 } from "lucide-react";
+import { 
+  ArrowLeft, Rocket, LayoutTemplate, Bot, ExternalLink, Sparkles, 
+  Globe, Code, BarChart3, Calculator, Leaf 
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -93,17 +96,18 @@ const ToolsCinematicSlider = () => {
   );
 };
 
-// ✅ UPDATED TOOLS ARRAY (Fully in Hindi/Devnagari)
+// ✅ UPDATED TOOLS ARRAY (5 Tools - Fully in Hindi/Devnagari)
 const TOOLS = [
   {
     id: 1,
     title: "फनल बिल्डर",
-    description: "मुफ्त में प्रोफेशनल वेबसाइट और हाई-कन्वर्टिंग लैंडिंग पेज बनाएं। कोडिंग की आवश्यकता नहीं!",
+    description: "मुफ्त में प्रोफेशनल वेबसाइट और हाई-कन्वर्टिंग लैंडिंग पेज बनाएं। कोडिंग की कोई आवश्यकता नहीं!",
     icon: LayoutTemplate,
     href: "https://funnelsbuilder.netlify.app",
     color: "from-purple-500 to-indigo-500",
     tags: ["वेब डेवलपमेंट", "नो-कोड", "मुफ्त"],
-    external: true
+    external: true,
+    comingSoon: false
   },
   {
     id: 2,
@@ -113,7 +117,8 @@ const TOOLS = [
     href: "https://aipassivesystem.netlify.app",
     color: "from-cyan-500 to-blue-500",
     tags: ["एआई", "ऑटोमेशन", "आय"],
-    external: true
+    external: true,
+    comingSoon: false
   },
   {
     id: 3,
@@ -124,6 +129,28 @@ const TOOLS = [
     color: "from-emerald-500 to-teal-500",
     tags: ["एनालिटिक्स", "रियल-टाइम", "डैशबोर्ड"],
     external: false,
+    comingSoon: false
+  },
+  {
+    id: 4,
+    title: "कैलकुलेटर्स वर्ल्ड",
+    description: "हर गणना के लिए स्मार्ट समाधान। वित्त, स्वास्थ्य, विज्ञान और दैनिक जीवन के लिए तेज़ और सटीक कैलकुलेटर।",
+    icon: Calculator,
+    href: "https://calculatorsworld.netlify.app",
+    color: "from-orange-500 to-red-500",
+    tags: ["कैलकुलेटर", "उपयोगी", "मुफ्त"],
+    external: true,
+    comingSoon: false
+  },
+  {
+    id: 5,
+    title: "कार्बन क्लैरिटी",
+    description: "अपने कार्बन फुटप्रिंट को मापें और एक हरित भविष्य के लिए व्यावहारिक सुझाव प्राप्त करें। पर्यावरण संरक्षण में आपका साथी।",
+    icon: Leaf,
+    href: "https://carbonclarity.netlify.app",
+    color: "from-green-500 to-emerald-600",
+    tags: ["पर्यावरण", "ट्रैकिंग", "सस्टेनेबिलिटी"],
+    external: true,
     comingSoon: false
   }
 ];
@@ -194,7 +221,7 @@ export default function ToolsPage() {
 
       {/* Tools Grid */}
       <section className="relative z-10 px-4 md:px-8 py-24 max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {TOOLS.map((tool, index) => (
             <motion.div
               key={tool.id}
