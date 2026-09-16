@@ -185,6 +185,29 @@ const playSound = (soundType: string, volume: number = 1.0) => {
         oscillator.stop(currentTime + 2);
         break;
         
+      case 'ambient_night':
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(60, currentTime);
+        oscillator.frequency.linearRampToValueAtTime(80, currentTime + 3);
+        oscillator.frequency.linearRampToValueAtTime(60, currentTime + 6);
+        gainNode.gain.setValueAtTime(0.03, currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.05, currentTime + 3);
+        gainNode.gain.linearRampToValueAtTime(0, currentTime + 6);
+        oscillator.start(currentTime);
+        oscillator.stop(currentTime + 6);
+        break;
+        
+      case 'ambient_crickets':
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(4000, currentTime);
+        oscillator.frequency.setValueAtTime(4200, currentTime + 0.05);
+        oscillator.frequency.setValueAtTime(4000, currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.02, currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.15);
+        oscillator.start(currentTime);
+        oscillator.stop(currentTime + 0.15);
+        break;
+        
       case 'gameover':
         oscillator.type = 'sawtooth';
         oscillator.frequency.setValueAtTime(300, currentTime);
@@ -469,7 +492,7 @@ interface BirdObject {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🔫 CRYSTAL CLEAR GUN SVGs - FIXED: Proper vertical flip when pointing left
+// 🔫 CRYSTAL CLEAR GUN SVGs - FIXED: Proper vertical flip
 // ═══════════════════════════════════════════════════════════════════════════════
 const PistolSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   <g transform={`translate(${-recoilAmount}, 0)`}>
@@ -574,15 +597,10 @@ const SniperSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   </g>
 );
 
-// ✅ CRITICAL FIX: Gun rotation with proper VERTICAL flip when pointing left
+// ✅ CRITICAL FIX: Gun rotation with proper VERTICAL flip
 const GunSVG = ({ weapon, angle, recoil }: { weapon: WeaponType; angle: number; recoil: number }) => {
-  // Normalize angle to 0-360 range
   const normalizedAngle = ((angle % 360) + 360) % 360;
-  
-  // Check if gun is pointing left (between 90° and 270°)
   const isPointingLeft = normalizedAngle > 90 && normalizedAngle < 270;
-  
-  // If pointing left, flip VERTICALLY so gun appears right-side up
   const verticalScale = isPointingLeft ? -1 : 1;
   
   return (
@@ -861,17 +879,39 @@ export default function AlamnagarStrike() {
     if (saved) setHighScore(parseInt(saved));
   }, []);
 
-  // Ambient sounds
+  // ✅ FIXED: Continuous ambient sounds - properly integrated
   useEffect(() => {
     if (gameState === 'playing' && ambientEnabled && soundEnabled) {
+      // Play initial ambient sound
+      playSound('ambient_night', 0.03);
+      
+      // Set up continuous ambient loop
       ambientIntervalRef.current = window.setInterval(() => {
-        if (Math.random() > 0.6) playSound('ambient_wind', 0.3);
-        if (Math.random() > 0.85) playSound('ghost_wail', 0.15);
-        if (Math.random() > 0.7) playSound('bird_tweet', 0.1);
-      }, 4000);
+        // Play ambient night sound every 6 seconds
+        playSound('ambient_night', 0.03);
+        
+        // Random ambient sounds
+        if (Math.random() > 0.6) {
+          playSound('ambient_wind', 0.3);
+        }
+        if (Math.random() > 0.85) {
+          playSound('ghost_wail', 0.15);
+        }
+        if (Math.random() > 0.7) {
+          playSound('bird_tweet', 0.1);
+        }
+        if (Math.random() > 0.8) {
+          playSound('ambient_crickets', 0.08);
+        }
+      }, 6000); // Every 6 seconds
     }
+    
+    // Cleanup
     return () => {
-      if (ambientIntervalRef.current) clearInterval(ambientIntervalRef.current);
+      if (ambientIntervalRef.current) {
+        clearInterval(ambientIntervalRef.current);
+        ambientIntervalRef.current = null;
+      }
     };
   }, [gameState, ambientEnabled, soundEnabled]);
 
@@ -1824,15 +1864,15 @@ export default function AlamnagarStrike() {
         )}
       </div>
 
-      {/* Weapon Controls */}
+      {/* ✅ FIXED: Weapon Controls - Properly positioned, visible on all devices */}
       {gameState === 'playing' && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-3 pointer-events-auto">
+        <div className="fixed bottom-20 md:bottom-24 left-1/2 -translate-x-1/2 z-50 flex flex-wrap justify-center gap-2 md:gap-3 pointer-events-auto px-4 max-w-full">
           {(Object.keys(WEAPONS) as WeaponType[]).map(weapon => (
             <button
               key={weapon}
               onClick={() => switchWeapon(weapon)}
               disabled={isReloading}
-              className={`px-3 md:px-4 py-2 md:py-3 rounded-xl font-bold text-xs md:text-sm border transition-all flex flex-col items-center gap-1 ${
+              className={`px-3 md:px-4 py-2 md:py-3 rounded-xl font-bold text-xs md:text-sm border transition-all flex flex-col items-center gap-1 min-w-[80px] ${
                 currentWeapon === weapon
                   ? 'bg-white text-black border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.5)]'
                   : 'bg-black/60 text-white border-white/20 hover:bg-black/80'
@@ -1849,7 +1889,7 @@ export default function AlamnagarStrike() {
           <button
             onClick={handleReload}
             disabled={isReloading || ammo === WEAPONS[currentWeapon].magazineSize}
-            className="px-3 py-2 rounded-xl font-bold text-xs border border-white/20 bg-black/60 text-white hover:bg-black/80 transition-all flex flex-col items-center gap-1 disabled:opacity-50"
+            className="px-3 py-2 rounded-xl font-bold text-xs border border-white/20 bg-black/60 text-white hover:bg-black/80 transition-all flex flex-col items-center gap-1 disabled:opacity-50 min-w-[80px]"
           >
             <RefreshCw className={`w-4 h-4 ${isReloading ? 'animate-spin' : ''}`} />
             <span>R</span>
@@ -1857,7 +1897,7 @@ export default function AlamnagarStrike() {
           <button
             onClick={handleDash}
             disabled={dashCooldown > 0}
-            className={`px-3 py-2 rounded-xl font-bold text-xs border transition-all flex flex-col items-center gap-1 ${
+            className={`px-3 py-2 rounded-xl font-bold text-xs border transition-all flex flex-col items-center gap-1 min-w-[80px] ${
               dashCooldown > 0
                 ? 'bg-black/40 text-stone-500 border-stone-700'
                 : 'bg-blue-600/80 text-white border-blue-400'
