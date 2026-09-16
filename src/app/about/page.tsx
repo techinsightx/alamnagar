@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { motion } from "framer-motion";
 import { 
   MapPin, Users, Heart, Sprout, Sun, History, 
@@ -15,16 +15,78 @@ import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, limit } from "firebase/firestore";
 
 // ═══════════════════════════════════════════════════════════
-// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
+// 🖼️ CINEMATIC BOX SLIDER COMPONENT (Reusable for all sections)
 // ═══════════════════════════════════════════════════════════
-const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1609766418204-94aae7d87817?q=80&w=2670&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?q=80&w=2670&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2670&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2670&auto=format&fit=crop",
+const FALLBACK_IMAGES: string[] = [
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1609766418204-94aae7d87817?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=800&auto=format&fit=crop",
 ];
 
+const CinematicBoxSlider = ({ images, className }: { images: string[], className?: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [resolvedImages, setResolvedImages] = useState<string[]>(images);
+
+  const handleImageError = (index: number) => {
+    setResolvedImages(prev => {
+      const updated = [...prev];
+      if (!updated[index].startsWith('http') || !updated[index].includes('images.unsplash.com')) {
+        updated[index] = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+      }
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    if (resolvedImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % resolvedImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [resolvedImages.length]);
+
+  return (
+    <div className={`relative w-full h-full overflow-hidden bg-stone-200 ${className}`}>
+      {resolvedImages.map((img, index) => (
+        <motion.div
+          key={img}
+          className="absolute inset-0 w-full h-full"
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ 
+            opacity: index === currentIndex ? 1 : 0,
+            scale: index === currentIndex ? 1 : 1.1
+          }}
+          transition={{ duration: 2.5, ease: "easeInOut" }}
+        >
+          <img 
+            src={img} 
+            alt={`Alamnagar Slide ${index + 1}`} 
+            className="w-full h-full object-cover"
+            onError={() => handleImageError(index)}
+          />
+        </motion.div>
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
+      
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
+        {resolvedImages.map((_, index) => (
+          <motion.div
+            key={index}
+            className={`h-1.5 rounded-full transition-all ${
+              index === currentIndex ? 'bg-white w-6' : 'bg-white/40 w-1.5'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// 🖼️ HERO SECTION SLIDER
+// ═══════════════════════════════════════════════════════════
 const SmoothImageSlider = ({ images, className }: { images: string[], className?: string }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [resolvedImages, setResolvedImages] = useState<string[]>(images);
@@ -113,7 +175,7 @@ const AnimatedNumber = ({ value }: { value: number }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 📊 HERO TOWER CHART COMPONENT (REAL-TIME - SAME AS HOMEPAGE)
+// 📊 HERO TOWER CHART COMPONENT (REAL-TIME)
 // ══════════════════════════════════════════════════════════
 const HeroTowerChart = ({ stats }: { stats: any }) => {
   const data = [
@@ -181,16 +243,18 @@ const HeroTowerChart = ({ stats }: { stats: any }) => {
 };
 
 // ══════════════════════════════════════════════════════════
-// 📖 READ MORE COMPONENT
+// 📖 READ MORE COMPONENT (Fixed TypeScript Error)
 // ═══════════════════════════════════════════════════════════
-const ReadMore = ({ children, limit = 200 }: { children: string; limit?: number }) => {
+const ReadMore = ({ children, limit = 200 }: { children: ReactNode; limit?: number }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const isLong = children.length > limit;
-  const displayText = isExpanded || !isLong ? children : children.slice(0, limit) + '...';
+  const textContent = typeof children === 'string' ? children : '';
+  const isLong = textContent.length > limit;
+  
+  const displayContent = isExpanded || !isLong ? children : textContent.slice(0, limit) + '...';
 
   return (
     <p className="text-stone-600 leading-relaxed text-lg">
-      {displayText}
+      {displayContent}
       {isLong && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
@@ -298,7 +362,7 @@ export default function AboutPage() {
   const [chartData, setChartData] = useState<any[]>([]);
 
   // ✅ 5 HERO IMAGES FOR SLIDER
-  const heroImages = [
+  const heroImages: string[] = [
     '/images/hero-1.jpg',
     '/images/hero-2.jpg',
     '/images/hero-3.jpg',
@@ -371,7 +435,8 @@ export default function AboutPage() {
     };
   }, []);
 
-  const stats = [
+  // ✅ Explicitly typed stats array to prevent TypeScript inference errors
+  const stats: { icon: ReactNode; value: number; label: string; suffix: string }[] = [
     { icon: <Users className="w-6 h-6" />, value: liveStats.totalUsers, label: "जुड़े सदस्य", suffix: "" },
     { icon: <Camera className="w-6 h-6" />, value: liveStats.totalPosts, label: "कुल पोस्ट", suffix: "" },
     { icon: <Eye className="w-6 h-6" />, value: liveStats.totalViews, label: "कुल व्यूज़", suffix: "" },
@@ -388,7 +453,6 @@ export default function AboutPage() {
             <SmoothImageSlider images={heroImages} className="w-full h-full" />
           </div>
           
-          {/* ✅ REAL-TIME Tower Chart - ORIGINAL SEQUENCE */}
           <HeroTowerChart stats={liveStats} />
           <div className="absolute inset-0 z-[2] bg-gradient-to-br from-stone-950/40 via-stone-900/25 to-stone-950/50 pointer-events-none" />
 
@@ -491,18 +555,21 @@ export default function AboutPage() {
             variants={staggerContainer}
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
+            {/* ✅ UPGRADED: Cinematic Box Slider for Story */}
             <motion.div variants={fadeInUp} className="relative">
               <div className="absolute -top-8 -left-8 w-40 h-40 bg-amber-200/50 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-emerald-200/50 rounded-full blur-3xl pointer-events-none" />
               
               <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white group h-[400px] md:h-[550px] w-full">
-                <motion.img 
-                  initial={{ scale: 1.1 }}
-                  whileInView={{ scale: 1 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  src="/images/mitti-anmol-rishta.jpg"
-                  alt="Village Life" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                <CinematicBoxSlider 
+                  images={[
+                    '/images/story-1.jpg',
+                    '/images/story-2.jpg',
+                    '/images/story-3.jpg',
+                    '/images/story-4.jpg',
+                    '/images/story-5.jpg'
+                  ]} 
+                  className="h-full w-full group-hover:scale-105 transition-transform duration-700" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 
@@ -582,9 +649,20 @@ export default function AboutPage() {
                 ))}
               </div>
             </motion.div>
+            
+            {/* ✅ UPGRADED: Cinematic Box Slider for Economy */}
             <motion.div variants={fadeInUp} className="order-1 lg:order-2 relative">
-              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full">
-                <img src="/images/krishi-vikas.jpg" alt="Agriculture" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full group">
+                <CinematicBoxSlider 
+                  images={[
+                    '/images/economy-1.jpg',
+                    '/images/economy-2.jpg',
+                    '/images/economy-3.jpg',
+                    '/images/economy-4.jpg',
+                    '/images/economy-5.jpg'
+                  ]} 
+                  className="h-full w-full group-hover:scale-105 transition-transform duration-700" 
+                />
               </div>
             </motion.div>
           </motion.div>
@@ -597,11 +675,22 @@ export default function AboutPage() {
             variants={staggerContainer}
             className="grid lg:grid-cols-2 gap-16 items-center"
           >
+            {/* ✅ UPGRADED: Cinematic Box Slider for Education & Health */}
             <motion.div variants={fadeInUp} className="relative">
-              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full">
-                <img src="/images/bhavishya-ki-neev.jpg" alt="Education" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+              <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white h-[400px] md:h-[500px] w-full group">
+                <CinematicBoxSlider 
+                  images={[
+                    '/images/education-1.jpg',
+                    '/images/education-2.jpg',
+                    '/images/education-3.jpg',
+                    '/images/education-4.jpg',
+                    '/images/education-5.jpg'
+                  ]} 
+                  className="h-full w-full group-hover:scale-105 transition-transform duration-700" 
+                />
               </div>
             </motion.div>
+
             <motion.div variants={fadeInUp}>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-bold mb-6">
                 <GraduationCap className="w-4 h-4" />
@@ -613,16 +702,16 @@ export default function AboutPage() {
                   <h4 className="text-xl font-bold text-stone-900 mb-2 flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-emerald-600" /> शिक्षा
                   </h4>
-                  <ReadMore limit={250}>
-                    2011 में लगभग 52% साक्षरता दर के साथ, ब्लॉक ने धीरे-धीरे सरकारी और निजी स्कूलों का एक घना नेटवर्क बनाया है जैसे N.K.M. High School Shah Alam Nagar, project girls' schools, और Ms Ethari जैसे प्राथमिक क्लस्टर। नए अंग्रेजी-माध्यम और कोचिंग सेंटर छात्रों को बोर्ड परीक्षाओं की तैयारी कराते हैं। स्कूल सुरक्षा और पर्यावरण क्लबों पर राज्य कार्यक्रम साक्षरता को लगातार ऊपर धकेलने का लक्ष्य रखते हैं।
+                  <ReadMore limit={350}>
+                    आलमनगर में शिक्षा का विस्तार सरकारी और निजी संस्थानों के बेहतरीन समन्वय से तेजी से हो रहा है। सरकारी स्तर पर <strong>एन.के.एम. हाई स्कूल (N.K.M. High School)</strong> और <strong>विजया स्मारक कन्या प्रोजेक्ट +2 हाई स्कूल</strong> जैसे संस्थान लड़कियों और लड़कों की गुणवत्तापूर्ण शिक्षा में अग्रणी भूमिका निभा रहे हैं। निजी क्षेत्र में, <strong>राघवेंद्र मेमोरियल पब्लिक स्कूल</strong> और <strong>रॉयल हेरिटेज वर्ल्ड स्कूल</strong> जैसे संस्थानों ने बच्चों की स्कूली शिक्षा को अंतरराष्ट्रीय मानकों के अनुरूप बेहतरीन ढंग से व्यवस्थित किया है। इसके अलावा, मैट्रिकुलेशन और अन्य प्रतिस्पर्धी परीक्षाओं की तैयारी के लिए <strong>'World of Concept'</strong> जैसी समर्पित कोचिंग संस्थाएं, जिन्हें <strong>आर.के. सर (RK Sir)</strong> द्वारा संचालित किया जाता है, छात्रों को उत्कृष्ट परिणाम दिलाने में महत्वपूर्ण भूमिका निभा रही हैं।
                   </ReadMore>
                 </div>
                 <div>
                   <h4 className="text-xl font-bold text-stone-900 mb-2 flex items-center gap-2">
                     <Stethoscope className="w-5 h-5 text-rose-600" /> स्वास्थ्य
                   </h4>
-                  <ReadMore limit={250}>
-                    आलमनगर में एक सामुदायिक स्वास्थ्य केंद्र (CHC) है जो आस-पास की पंचायतों के लिए मुख्य सरकारी रेफरल बिंदु के रूप में काम करता है, सामान्य प्रसव और बुनियादी आपातकालीन देखभाल को संभालता है। इस CHC के आस-पास, कई प्राथमिक स्वास्थ्य केंद्र बाढ़ प्रभावित कोसी गाँवों की सेवा करने का प्रयास करते हैं, लेकिन दस्त और वेक्टर-जनित रोगों के बार-बार होने वाले महामारी दिखाते हैं कि ब्लॉक को अभी भी मजबूत स्टाफिंग और स्वच्छ पेयजल प्रणालियों की आवश्यकता है।
+                  <ReadMore limit={350}>
+                    आलमनगर में स्वास्थ्य सेवाओं का ढांचा लगातार मजबूत हो रहा है। यहाँ का सामुदायिक स्वास्थ्य केंद्र (CHC) और प्राथमिक स्वास्थ्य केंद्र (PHC) बुनियादी और आपातकालीन चिकित्सा देखभाल की रीढ़ हैं। इसके साथ ही, निजी स्वास्थ्य संस्थान जैसे <strong>डॉ. शिवनंदन ठाकुर क्लिनिक</strong>, <strong>मिथिला डेंटल क्लिनिक</strong> और <strong>गीता नारायण हॉस्पिटल</strong> समुदाय की स्वास्थ्य आवश्यकताओं में काफी अहम योगदान दे रहे हैं। विशेष रूप से, सरकारी पशु चिकित्सक <strong>डॉ. मनीष कुमार सिंह</strong> का पशुधन स्वास्थ्य और किसानों के कल्याण में दिया गया निस्वार्थ सहयोग सराहनीय है, जो ग्रामीण अर्थव्यवस्था को सीधे मजबूती प्रदान करता है।
                   </ReadMore>
                 </div>
               </div>
