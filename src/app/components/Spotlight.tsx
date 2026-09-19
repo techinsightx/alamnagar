@@ -20,6 +20,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+// ✅ NEW: Image Compression Library Import
+import imageCompression from "browser-image-compression";
+
 // ══════════════════════════════════════════════════════════
 // 🔔 NOTIFICATION CREATOR (No undefined fields)
 // ══════════════════════════════════════════════════════════
@@ -527,6 +530,9 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
+  // ✅ NEW: Compression Loading State
+  const [isCompressing, setIsCompressing] = useState(false);
+
   const [showAudioLibrary, setShowAudioLibrary] = useState(false);
   const [showAudioUpload, setShowAudioUpload] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<any>(null);
@@ -639,26 +645,53 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ✅ UPGRADED: Async File Selection with Auto-Compression
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
       showToast("केवल छवि या वीडियो फ़ाइल चुनें।", "error");
       return;
     }
-    if (file.type.startsWith("image/") && file.size > 10 * 1024 * 1024) {
-      showToast("इमेज का साइज़ 10MB से कम होना चाहिए।", "error");
+    
+    // Allow larger input files but compress them automatically
+    if (file.type.startsWith("image/") && file.size > 50 * 1024 * 1024) {
+      showToast("इमेज का साइज़ 50MB से अधिक नहीं होना चाहिए।", "error");
       return;
     }
     if (file.type.startsWith("video/") && file.size > 100 * 1024 * 1024) {
       showToast("वीडियो का साइज़ 100MB से कम होना चाहिए।", "error");
       return;
     }
-    setMediaFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setMediaPreview(reader.result as string);
-    reader.readAsDataURL(file);
-    setIsCameraActive(false);
+
+    try {
+      if (file.type.startsWith("image/")) {
+        setIsCompressing(true);
+        const options = {
+          maxSizeMB: 1.5,          // Compress to max 1.5MB
+          maxWidthOrHeight: 1920,  // Max resolution 1920px (Full HD)
+          useWebWorker: true,      // Fast background processing
+        };
+        const compressedFile = await imageCompression(file, options);
+        setMediaFile(compressedFile);
+        
+        const reader = new FileReader();
+        reader.onloadend = () => setMediaPreview(reader.result as string);
+        reader.readAsDataURL(compressedFile);
+        setIsCompressing(false);
+      } else {
+        // Video handling remains the same
+        setMediaFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setMediaPreview(reader.result as string);
+        reader.readAsDataURL(file);
+      }
+      setIsCameraActive(false);
+    } catch (error) {
+      console.error("Compression error:", error);
+      showToast("इमेज को कंप्रेस करने में त्रुटि हुई।", "error");
+      setIsCompressing(false);
+    }
   };
 
   const openCamera = async () => {
@@ -922,24 +955,33 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center gap-4 p-6 w-full h-full">
-                  <p className="text-sm text-white/50">अपनी पोस्ट में मीडिया जोड़ें</p>
-                  <div className="flex items-center gap-4">
-                    <button type="button" onClick={openCamera} className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-emerald-500/50 transition-all group/btn">
-                      <Camera className="w-6 h-6 text-emerald-400 group-hover/btn:text-emerald-300" />
-                      <span className="text-xs text-white/70 font-medium">कैमरा</span>
-                    </button>
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-amber-500/50 transition-all group/btn">
-                      <ImageIcon className="w-6 h-6 text-amber-400 group-hover/btn:text-amber-300" />
-                      <span className="text-xs text-white/70 font-medium">गैलरी</span>
-                    </button>
-                  </div>
+                  {isCompressing ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+                      <p className="text-sm text-white/70 font-medium">इमेज ऑप्टिमाइज़ हो रही है...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm text-white/50">अपनी पोस्ट में मीडिया जोड़ें</p>
+                      <div className="flex items-center gap-4">
+                        <button type="button" onClick={openCamera} className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-emerald-500/50 transition-all group/btn">
+                          <Camera className="w-6 h-6 text-emerald-400 group-hover/btn:text-emerald-300" />
+                          <span className="text-xs text-white/70 font-medium">कैमरा</span>
+                        </button>
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-amber-500/50 transition-all group/btn">
+                          <ImageIcon className="w-6 h-6 text-amber-400 group-hover/btn:text-amber-300" />
+                          <span className="text-xs text-white/70 font-medium">गैलरी</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
             <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="hidden" />
           </div>
           <div className="p-4 border-t border-stone-700 bg-stone-900 flex-shrink-0">
-            <button type="button" onClick={handlePost} disabled={uploading || (!content.trim() && !mediaFile && !title.trim())} className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+            <button type="button" onClick={handlePost} disabled={uploading || isCompressing || (!content.trim() && !mediaFile && !title.trim())} className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-amber-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
               {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> प्रकाशित हो रहा है...</> : <><Send className="w-4 h-4" /> स्पॉटलाइट प्रकाशित करें</>}
             </button>
           </div>
@@ -951,6 +993,7 @@ const CreateSpotlightModal = ({ isOpen, onClose, onPostCreated, showToast }: { i
   );
 };
 
+// ... [SpotlightCard, SpotlightContent, and SpotlightPage components remain EXACTLY as provided, no changes needed] ...
 const SpotlightCard = ({ post, currentUserId, currentUserObj, requireAuth, onDelete, postId, showToast }: { post: SpotlightPost; currentUserId: string; currentUserObj?: any; requireAuth: (action: string, postId?: string) => boolean; onDelete: (id: string) => void; postId: string; showToast: (msg: string, type: 'success' | 'error') => void }) => {
   const [liked, setLiked] = useState(post.likedBy?.includes(currentUserId) || false);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
