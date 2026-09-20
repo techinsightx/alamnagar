@@ -12,6 +12,7 @@
     "@vercel/speed-insights": "1.1.0",
     "browser-image-compression": "2.0.2",
     "cloudinary": "2.5.1",
+    "critters": "^0.0.23",
     "firebase": "10.14.1",
     "framer-motion": "11.11.17",
     "lucide-react": "0.460.0",
