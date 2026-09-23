@@ -513,88 +513,155 @@ interface BirdObject {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🌙 ANIMATED PROCEDURAL BACKGROUND
+// 🌙 ULTRA-REALISTIC ANIMATED PROCEDURAL BACKGROUND (Micro-Level Structured)
 // ═══════════════════════════════════════════════════════════════════════════════
 const AnimatedBackground = ({ environment, time }: { environment: EnvironmentType; time: number }) => {
-  const stars = Array.from({ length: 80 }, (_, i) => ({
+  // Generate consistent random stars
+  const stars = Array.from({ length: 120 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
-    y: Math.random() * 50,
-    size: Math.random() * 2 + 0.5,
-    twinkleSpeed: Math.random() * 2 + 1,
-    delay: Math.random() * 3,
+    y: Math.random() * 60,
+    size: Math.random() * 2.5 + 0.5,
+    twinkleSpeed: Math.random() * 3 + 1,
+    delay: Math.random() * 5,
+    opacity: Math.random() * 0.5 + 0.3,
   }));
 
-  const clouds = Array.from({ length: 5 }, (_, i) => ({
+  // Fireflies for Jungle (Magical real feel)
+  const fireflies = environment === 'jungle' ? Array.from({ length: 15 }, (_, i) => ({
     id: i,
-    x: (i * 25 + (time * 0.02) % 120) - 10,
-    y: 10 + i * 8,
-    scale: 0.8 + Math.random() * 0.4,
-    opacity: 0.15 + Math.random() * 0.1,
-  }));
+    x: Math.random() * 100,
+    y: 40 + Math.random() * 40,
+    duration: 3 + Math.random() * 4,
+    delay: Math.random() * 5,
+    size: Math.random() * 3 + 2,
+  })) : [];
 
-  const fogLayers = Array.from({ length: 3 }, (_, i) => ({
-    id: i,
-    y: 60 + i * 10,
-    speed: 0.01 + i * 0.005,
-    opacity: 0.1 - i * 0.02,
-  }));
-
-  const trees = Array.from({ length: 12 }, (_, i) => ({
-    id: i,
-    x: (i * 9) + 2,
-    height: 20 + Math.random() * 15,
-    swayPhase: Math.random() * Math.PI * 2,
-  }));
-
-  const getEnvironmentColors = () => {
+  const getEnvironmentDetails = () => {
     switch (environment) {
       case 'gali':
         return {
-          skyTop: '#0a0a1a',
-          skyBottom: '#1a1a2e',
-          mountain: '#1e1e2e',
-          ground: '#0f0f1a',
-          fog: 'rgba(100, 100, 150, 0.1)',
-          treeColor: '#1a2e1a',
-          accent: '#ff6b35',
+          skyTop: '#050510',
+          skyBottom: '#1a1025',
+          mountain: '#151020',
+          ground: '#0a0810',
+          fog: 'rgba(150, 120, 180, 0.08)',
+          accent: '#ff7b35',
+          midLayer: (
+            <svg className="absolute bottom-0 w-full" style={{ height: '45%' }} preserveAspectRatio="none" viewBox="0 0 1200 300">
+              {/* Distant Gali Houses with subtle warm lights */}
+              {Array.from({ length: 10 }, (_, i) => {
+                const height = 120 + Math.random() * 80;
+                const width = 60 + Math.random() * 50;
+                const x = i * 120 + 10;
+                return (
+                  <g key={i}>
+                    <rect x={x} y={300 - height} width={width} height={height} fill="#1a1525" />
+                    <polygon points={`${x},${300 - height} ${x + width / 2},${300 - height - 25} ${x + width},${300 - height}`} fill="#251d35" />
+                    {/* Warm glowing windows */}
+                    <rect x={x + 15} y={300 - height + 30} width="12" height="15" fill="#ffaa44" opacity="0.6">
+                      <animate attributeName="opacity" values="0.6;0.3;0.6" dur={`${4 + Math.random() * 3}s`} repeatCount="indefinite" />
+                    </rect>
+                    <rect x={x + width - 25} y={300 - height + 50} width="12" height="15" fill="#ffaa44" opacity="0.4">
+                      <animate attributeName="opacity" values="0.4;0.7;0.4" dur={`${3 + Math.random() * 2}s`} repeatCount="indefinite" />
+                    </rect>
+                    {/* Hanging wires */}
+                    <path d={`M${x + width/2},${300 - height - 25} Q${x + width/2 + 30},${300 - height + 20} ${x + width + 20},${300 - height - 20}`} stroke="#0a0810" strokeWidth="1" fill="none" opacity="0.5" />
+                  </g>
+                );
+              })}
+            </svg>
+          ),
         };
       case 'jungle':
         return {
-          skyTop: '#001a0a',
-          skyBottom: '#0a2e1a',
-          mountain: '#0f3d1f',
-          ground: '#051a0a',
-          fog: 'rgba(50, 150, 100, 0.15)',
-          treeColor: '#1a4d2e',
+          skyTop: '#000a05',
+          skyBottom: '#051a0f',
+          mountain: '#0a2515',
+          ground: '#030d06',
+          fog: 'rgba(50, 180, 100, 0.12)',
           accent: '#4ade80',
+          midLayer: (
+            <svg className="absolute bottom-0 w-full" style={{ height: '50%' }} preserveAspectRatio="none" viewBox="0 0 1200 300">
+              {/* Layered Swaying Trees */}
+              {Array.from({ length: 15 }, (_, i) => {
+                const height = 150 + Math.random() * 100;
+                const x = i * 80 + 20;
+                const swayDur = 4 + Math.random() * 3;
+                return (
+                  <g key={i}>
+                    <rect x={x - 4} y={300 - height} width="8" height={height} fill="#05150a" />
+                    <g style={{ transformOrigin: `${x}px ${300 - height}px` }}>
+                      <animateTransform attributeName="transform" type="rotate" values="-1;1;-1" dur={`${swayDur}s`} repeatCount="indefinite" />
+                      <ellipse cx={x} cy={300 - height - 20} rx="35" ry="45" fill="#0a2515" />
+                      <ellipse cx={x - 20} cy={300 - height} rx="25" ry="35" fill="#0d301a" />
+                      <ellipse cx={x + 20} cy={300 - height} rx="25" ry="35" fill="#0d301a" />
+                    </g>
+                  </g>
+                );
+              })}
+              {/* Foreground Grass */}
+              <path d="M0 300 Q50 280 100 300 T200 300 T300 300 T400 300 T500 300 T600 300 T700 300 T800 300 T900 300 T1000 300 T1100 300 T1200 300" fill="#030d06" />
+            </svg>
+          ),
         };
       case 'city':
         return {
-          skyTop: '#0a0a2e',
-          skyBottom: '#1a1a3e',
-          mountain: '#2a2a4e',
-          ground: '#0a0a1a',
-          fog: 'rgba(100, 100, 200, 0.1)',
-          treeColor: '#2a2a3e',
+          skyTop: '#050515',
+          skyBottom: '#10102a',
+          mountain: '#151535',
+          ground: '#050510',
+          fog: 'rgba(100, 120, 200, 0.1)',
           accent: '#60a5fa',
+          midLayer: (
+            <svg className="absolute bottom-0 w-full" style={{ height: '55%' }} preserveAspectRatio="none" viewBox="0 0 1200 300">
+              {/* City Skyline with blinking lights */}
+              {Array.from({ length: 12 }, (_, i) => {
+                const height = 100 + Math.random() * 180;
+                const width = 50 + Math.random() * 70;
+                const x = i * 100 + 10;
+                return (
+                  <g key={i}>
+                    <rect x={x} y={300 - height} width={width} height={height} fill="#12122a" />
+                    <rect x={x} y={300 - height} width={width} height="3" fill="#1a1a3a" />
+                    {/* Windows */}
+                    {Array.from({ length: Math.floor(height / 25) }, (_, j) => (
+                      <rect
+                        key={j}
+                        x={x + 10}
+                        y={300 - height + j * 25 + 8}
+                        width={width - 20}
+                        height="12"
+                        fill={Math.random() > 0.7 ? '#fbbf24' : '#0a0a1a'}
+                        opacity={Math.random() > 0.7 ? 0.8 : 0.3}
+                      >
+                        {Math.random() > 0.8 && (
+                          <animate attributeName="opacity" values="0.3;0.8;0.3" dur={`${2 + Math.random() * 3}s`} repeatCount="indefinite" />
+                        )}
+                      </rect>
+                    ))}
+                  </g>
+                );
+              })}
+            </svg>
+          ),
         };
     }
   };
 
-  const colors = getEnvironmentColors();
+  const details = getEnvironmentDetails();
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      {/* Sky Gradient */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* 1. Deep Atmospheric Sky Gradient */}
       <div 
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(to bottom, ${colors.skyTop} 0%, ${colors.skyBottom} 50%, ${colors.ground} 100%)`,
+          background: `linear-gradient(to bottom, ${details.skyTop} 0%, ${details.skyBottom} 60%, ${details.ground} 100%)`,
         }}
       />
 
-      {/* Stars */}
+      {/* 2. Realistic Twinkling Stars */}
       <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
         {stars.map(star => (
           <circle
@@ -602,155 +669,109 @@ const AnimatedBackground = ({ environment, time }: { environment: EnvironmentTyp
             cx={`${star.x}%`}
             cy={`${star.y}%`}
             r={star.size}
-            fill="white"
-            opacity={0.3 + Math.sin(time * star.twinkleSpeed * 0.001 + star.delay) * 0.3}
-          />
+            fill="#ffffff"
+            opacity={star.opacity}
+          >
+            <animate attributeName="opacity" values={`${star.opacity};${star.opacity * 0.3};${star.opacity}`} dur={`${star.twinkleSpeed}s`} begin={`${star.delay}s`} repeatCount="indefinite" />
+          </circle>
         ))}
       </svg>
 
-      {/* Moon */}
-      <div 
-        className="absolute rounded-full"
-        style={{
-          right: '10%',
-          top: '8%',
-          width: '80px',
-          height: '80px',
-          background: 'radial-gradient(circle at 30% 30%, #fff8e7, #f5e6a3, #d4a574)',
-          boxShadow: '0 0 60px rgba(255, 248, 231, 0.4), 0 0 120px rgba(255, 248, 231, 0.2)',
-        }}
-      >
-        <div className="absolute w-4 h-4 bg-stone-400/30 rounded-full" style={{ top: '20%', left: '25%' }} />
-        <div className="absolute w-3 h-3 bg-stone-400/20 rounded-full" style={{ top: '50%', left: '60%' }} />
-        <div className="absolute w-2 h-2 bg-stone-400/25 rounded-full" style={{ top: '35%', left: '55%' }} />
-      </div>
-
-      {/* Clouds */}
-      {clouds.map(cloud => (
-        <div
-          key={cloud.id}
-          className="absolute"
+      {/* 3. Authentic Moon with Craters and Glow */}
+      <div className="absolute" style={{ right: '12%', top: '10%' }}>
+        <div 
+          className="rounded-full relative"
           style={{
-            left: `${cloud.x}%`,
-            top: `${cloud.y}%`,
-            transform: `scale(${cloud.scale})`,
-            opacity: cloud.opacity,
+            width: '90px',
+            height: '90px',
+            background: 'radial-gradient(circle at 35% 35%, #fffdf5, #f0e6c8, #d4c59a)',
+            boxShadow: '0 0 80px rgba(255, 253, 245, 0.3), 0 0 150px rgba(255, 253, 245, 0.1)',
           }}
         >
-          <svg width="200" height="60" viewBox="0 0 200 60">
-            <ellipse cx="60" cy="35" rx="40" ry="20" fill="white" />
-            <ellipse cx="90" cy="25" rx="35" ry="22" fill="white" />
-            <ellipse cx="120" cy="35" rx="45" ry="20" fill="white" />
-            <ellipse cx="150" cy="30" rx="30" ry="18" fill="white" />
-          </svg>
+          {/* Moon Craters */}
+          <div className="absolute w-5 h-5 bg-stone-400/20 rounded-full" style={{ top: '25%', left: '30%' }} />
+          <div className="absolute w-3 h-3 bg-stone-400/15 rounded-full" style={{ top: '55%', left: '60%' }} />
+          <div className="absolute w-4 h-4 bg-stone-400/25 rounded-full" style={{ top: '40%', left: '20%' }} />
+          <div className="absolute w-2 h-2 bg-stone-400/20 rounded-full" style={{ top: '70%', left: '40%' }} />
         </div>
-      ))}
+      </div>
 
-      {/* Mountains/Hills - Parallax Layer 1 */}
-      <svg className="absolute bottom-0 w-full" style={{ height: '50%' }} preserveAspectRatio="none" viewBox="0 0 1200 300">
+      {/* 4. Slow Moving Clouds (Parallax Layer 1) */}
+      <div className="absolute inset-0 opacity-20">
+        <svg className="w-[200%] h-full animate-[slide_60s_linear_infinite]" style={{ animation: `slide 80s linear infinite` }}>
+           <defs>
+             <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+               <stop offset="0%" stopColor="white" stopOpacity="0.8"/>
+               <stop offset="100%" stopColor="white" stopOpacity="0"/>
+             </linearGradient>
+           </defs>
+           <path d="M100 80 Q150 40 200 80 T300 80 T400 80" fill="url(#cloudGrad)" />
+           <path d="M600 120 Q650 80 700 120 T800 120" fill="url(#cloudGrad)" />
+           <path d="M1100 60 Q1150 20 1200 60 T1300 60" fill="url(#cloudGrad)" />
+        </svg>
+      </div>
+
+      {/* 5. Distant Mountains (Parallax Layer 2) */}
+      <svg className="absolute bottom-0 w-full" style={{ height: '40%' }} preserveAspectRatio="none" viewBox="0 0 1200 300">
         <path
-          d={`M0 300 L0 ${180 + Math.sin(time * 0.0001) * 5} 
-              Q150 ${120 + Math.sin(time * 0.0002) * 3} 300 ${150 + Math.sin(time * 0.00015) * 4}
-              Q450 ${100 + Math.sin(time * 0.0001) * 5} 600 ${130 + Math.sin(time * 0.0002) * 3}
-              Q750 ${90 + Math.sin(time * 0.00015) * 4} 900 ${140 + Math.sin(time * 0.0001) * 5}
-              Q1050 ${110 + Math.sin(time * 0.0002) * 3} 1200 ${160 + Math.sin(time * 0.00015) * 4}
-              L1200 300 Z`}
-          fill={colors.mountain}
-          opacity="0.6"
+          d={`M0 300 L0 180 Q150 120 300 160 Q450 90 600 140 Q750 80 900 150 Q1050 100 1200 170 L1200 300 Z`}
+          fill={details.mountain}
+          opacity="0.7"
         />
       </svg>
 
-      {/* Trees Silhouette - Parallax Layer 2 */}
-      {environment === 'jungle' && (
-        <svg className="absolute bottom-0 w-full" style={{ height: '40%' }} preserveAspectRatio="none" viewBox="0 0 1200 200">
-          {trees.map(tree => {
-            const sway = Math.sin(time * 0.001 + tree.swayPhase) * 3;
-            return (
-              <g key={tree.id} transform={`translate(${tree.x * 10}, 200)`}>
-                <rect x="-3" y={-tree.height * 2} width="6" height={tree.height * 2} fill="#0a1a0a" />
-                <g transform={`rotate(${sway}, 0, ${-tree.height * 2})`}>
-                  <ellipse cx="0" cy={-tree.height * 2 - 15} rx="20" ry="25" fill={colors.treeColor} />
-                  <ellipse cx="-10" cy={-tree.height * 2 - 5} rx="15" ry="20" fill={colors.treeColor} opacity="0.8" />
-                  <ellipse cx="10" cy={-tree.height * 2 - 5} rx="15" ry="20" fill={colors.treeColor} opacity="0.8" />
-                </g>
-              </g>
-            );
-          })}
-        </svg>
-      )}
+      {/* 6. Environment Specific Mid-Layer (Houses/Trees/Buildings) */}
+      {details.midLayer}
 
-      {/* City Buildings - For city environment */}
-      {environment === 'city' && (
-        <svg className="absolute bottom-0 w-full" style={{ height: '50%' }} preserveAspectRatio="none" viewBox="0 0 1200 300">
-          {Array.from({ length: 15 }, (_, i) => {
-            const height = 80 + Math.random() * 150;
-            const width = 40 + Math.random() * 60;
-            const x = i * 80 + 10;
-            return (
-              <g key={i}>
-                <rect x={x} y={300 - height} width={width} height={height} fill="#1a1a2e" stroke="#2a2a4e" strokeWidth="1" />
-                {Array.from({ length: Math.floor(height / 20) }, (_, j) => (
-                  <rect
-                    key={j}
-                    x={x + 8}
-                    y={300 - height + j * 20 + 5}
-                    width={width - 16}
-                    height="10"
-                    fill={Math.random() > 0.6 ? '#fbbf24' : '#1a1a2e'}
-                    opacity={Math.random() > 0.6 ? 0.8 : 0.3}
-                  />
-                ))}
-              </g>
-            );
-          })}
-        </svg>
-      )}
-
-      {/* Gali Houses - For gali environment */}
-      {environment === 'gali' && (
-        <svg className="absolute bottom-0 w-full" style={{ height: '45%' }} preserveAspectRatio="none" viewBox="0 0 1200 300">
-          {Array.from({ length: 8 }, (_, i) => {
-            const height = 100 + Math.random() * 80;
-            const width = 80 + Math.random() * 40;
-            const x = i * 150 + 20;
-            return (
-              <g key={i}>
-                <rect x={x} y={300 - height} width={width} height={height} fill="#2a1a1a" />
-                <polygon points={`${x},${300 - height} ${x + width / 2},${300 - height - 30} ${x + width},${300 - height}`} fill="#3a2a2a" />
-                <rect x={x + width / 2 - 10} y={300 - 40} width="20" height="40" fill="#1a0a0a" />
-                <rect x={x + 15} y={300 - height + 20} width="15" height="15" fill={Math.random() > 0.5 ? '#fbbf24' : '#1a1a1a'} opacity="0.7" />
-                <rect x={x + width - 30} y={300 - height + 20} width="15" height="15" fill={Math.random() > 0.5 ? '#fbbf24' : '#1a1a1a'} opacity="0.7" />
-              </g>
-            );
-          })}
-        </svg>
-      )}
-
-      {/* Ground */}
-      <div 
-        className="absolute bottom-0 w-full"
-        style={{
-          height: '25%',
-          background: `linear-gradient(to bottom, ${colors.ground}, #000000)`,
-        }}
-      />
-
-      {/* Fog Layers */}
-      {fogLayers.map(fog => (
-        <div
-          key={fog.id}
-          className="absolute w-full"
+      {/* 7. Rolling Fog/Mist (Atmospheric Depth) */}
+      <div className="absolute bottom-0 w-full h-1/3 overflow-hidden">
+        <div 
+          className="absolute w-[200%] h-full opacity-60"
           style={{
-            bottom: `${fog.y - 40}%`,
-            height: '20%',
-            background: `radial-gradient(ellipse at ${50 + Math.sin(time * fog.speed * 0.01) * 20}% 50%, ${colors.fog}, transparent 70%)`,
-            opacity: fog.opacity,
+            background: `radial-gradient(ellipse at 50% 100%, ${details.fog}, transparent 70%)`,
+            animation: 'fogMove 20s ease-in-out infinite alternate',
+          }}
+        />
+      </div>
+
+      {/* 8. Micro-Animations: Fireflies (Jungle Only) */}
+      {fireflies.map(fly => (
+        <div
+          key={fly.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${fly.x}%`,
+            top: `${fly.y}%`,
+            width: `${fly.size}px`,
+            height: `${fly.size}px`,
+            backgroundColor: '#fbbf24',
+            boxShadow: `0 0 ${fly.size * 2}px #fbbf24, 0 0 ${fly.size * 4}px #f59e0b`,
+            animation: `floatAndBlink ${fly.duration}s ease-in-out infinite`,
+            animationDelay: `${fly.delay}s`,
           }}
         />
       ))}
 
-      {/* Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
+      {/* 9. Cinematic Vignette (Focuses attention on center gameplay) */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(0,0,0,0.6)_80%,rgba(0,0,0,0.9)_100%)]" />
+
+      {/* Global CSS Animations for Micro-level feel */}
+      <style jsx global>{`
+        @keyframes slide {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes fogMove {
+          0% { transform: translateX(-10%) scale(1); }
+          100% { transform: translateX(10%) scale(1.1); }
+        }
+        @keyframes floatAndBlink {
+          0%, 100% { opacity: 0; transform: translate(0, 0); }
+          25% { opacity: 1; transform: translate(10px, -15px); }
+          50% { opacity: 0.8; transform: translate(-5px, -25px); }
+          75% { opacity: 1; transform: translate(15px, -10px); }
+        }
+      `}</style>
     </div>
   );
 };
@@ -1526,25 +1547,16 @@ export default function AlamnagarStrike() {
     }
   }, []);
 
-  // ✅ ENHANCED: Explosion at target (enemy) position
   const spawnExplosion = useCallback((x: number, y: number, size: 'small' | 'medium' | 'large' = 'medium', color: string = '#ff6600') => {
     const counts = { small: 8, medium: 15, large: 25 };
     const sizes = { small: 20, medium: 35, large: 50 };
     
-    // Fire particles
     spawnParticles(x, y, color, counts[size], 'fire', { speed: 5, size: sizes[size] / 3, gravity: -0.1 });
-    
-    // Smoke particles
     spawnParticles(x, y, '#333', Math.floor(counts[size] / 2), 'smoke', { speed: 2, size: sizes[size] / 2, gravity: -0.05 });
-    
-    // Debris
     spawnParticles(x, y, '#666', Math.floor(counts[size] / 3), 'debris', { speed: 8, size: 6, gravity: 0.2 });
-    
-    // Blood (for organic enemies)
     spawnParticles(x, y, '#8b0000', counts[size], 'blood', { speed: 7, size: 10, gravity: 0.15 });
     spawnParticles(x, y, '#ff0000', Math.floor(counts[size] / 2), 'blood', { speed: 5, size: 8, gravity: 0.12 });
     
-    // Add impact effect at enemy position
     setBulletImpacts(prev => [...prev, {
       id: Date.now() + Math.random(),
       x,
@@ -1675,7 +1687,6 @@ export default function AlamnagarStrike() {
       if (gunRecoil > 0) setGunRecoil(r => Math.max(0, r - 0.4));
       if (muzzleFlash > 0) setMuzzleFlash(m => Math.max(0, m - 0.15));
 
-      // Update bullets
       for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
         bullet.x += bullet.velocityX;
@@ -1684,7 +1695,6 @@ export default function AlamnagarStrike() {
         if (bullet.trail.length > 20) bullet.trail.shift();
         
         if (bullet.x < -10 || bullet.x > 110 || bullet.y < -10 || bullet.y > 110) {
-          // Bullet impact on ground/wall
           setBulletImpacts(prev => [...prev, {
             id: Date.now() + Math.random(),
             x: Math.max(0, Math.min(100, bullet.x)),
@@ -1701,7 +1711,6 @@ export default function AlamnagarStrike() {
 
       setBulletImpacts(prev => prev.map(impact => ({ ...impact, life: impact.life - 0.04 })).filter(impact => impact.life > 0));
 
-      // Update particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const particle = particles[i];
         particle.x += particle.velocityX;
@@ -1720,7 +1729,6 @@ export default function AlamnagarStrike() {
         if (particle.life <= 0 || particle.y > 120) particles.splice(i, 1);
       }
 
-      // Spawn birds
       birdSpawnRef.current++;
       if (birdSpawnRef.current > 250 && birds.length < 6) {
         birdSpawnRef.current = 0;
@@ -1743,11 +1751,9 @@ export default function AlamnagarStrike() {
         wingPhase: bird.wingPhase + 0.3
       })).filter(bird => bird.x > -10 && bird.x < 110));
 
-      // Update enemies
       for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
         
-        // Handle dying enemies
         if (enemy.isDying) {
           enemy.deathFrame += 1;
           if (enemy.deathFrame > 30) {
@@ -1763,7 +1769,6 @@ export default function AlamnagarStrike() {
         const speedMultiplier = enemy.type === 'ghost' ? 1.3 : enemy.type === 'snake' ? 0.9 : 1;
         const speed = baseSpeed * speedMultiplier;
         
-        // Apply stumble decay
         enemy.stumbleX *= 0.9;
         enemy.stumbleY *= 0.9;
         
@@ -1781,12 +1786,10 @@ export default function AlamnagarStrike() {
         enemy.y += enemy.velocityY;
         enemy.walkFrame += 0.04;
         
-        // Clear hit flash after time
         if (enemy.isHit && Date.now() - enemy.hitTime > 150) {
           enemy.isHit = false;
         }
 
-        // Enemy attacks player
         if (distance < (15 + enemy.size / 2) && !isDashing) {
           healthRef.current -= (enemy.isBoss ? 20 : 10);
           setHealth(Math.max(0, healthRef.current));
@@ -1808,7 +1811,6 @@ export default function AlamnagarStrike() {
         }
       }
 
-      // Bullet-enemy collision
       for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
         let hit = false;
@@ -1825,14 +1827,12 @@ export default function AlamnagarStrike() {
             enemy.hitTime = Date.now();
             hit = true;
             
-            // ✅ Stumble effect - push enemy back
             const pushAngle = Math.atan2(bullet.velocityY, bullet.velocityX);
             enemy.stumbleX = Math.cos(pushAngle) * 0.5;
             enemy.stumbleY = Math.sin(pushAngle) * 0.3;
             
             if (soundEnabled) playSound('hit');
             
-            // ✅ Blood splatter at HIT POINT (not enemy center)
             spawnParticles(bullet.x, bullet.y, '#8b0000', 5, 'blood', { speed: 4, size: 6 });
             spawnParticles(bullet.x, bullet.y, '#ff0000', 3, 'blood', { speed: 3, size: 4 });
 
@@ -1866,7 +1866,6 @@ export default function AlamnagarStrike() {
               
               setScreenShake(enemy.isBoss ? 20 : 10);
               
-              // ✅ MASSIVE EXPLOSION AT ENEMY POSITION
               spawnExplosion(enemy.x, enemy.y, enemy.isBoss ? 'large' : 'medium', 
                 enemy.type === 'alien' ? '#00ff00' : 
                 enemy.type === 'ghost' ? '#ffffff' : 
@@ -1977,7 +1976,6 @@ export default function AlamnagarStrike() {
       if (soundEnabled) playSound('rifle');
     }
     
-    // Shell ejection
     const shellAngle = angleRad + Math.PI / 2 + (Math.random() - 0.5) * 0.3;
     particlesRef.current.push({
       id: Date.now(),
@@ -1995,7 +1993,6 @@ export default function AlamnagarStrike() {
       gravity: 0.1,
     });
 
-    // ✅ Small muzzle smoke (not explosion)
     spawnParticles(muzzleX, muzzleY, '#ffaa00', 2, 'fire', { speed: 1, size: 3, gravity: -0.05 });
 
     setScreenShake(currentWeapon === 'sniper' ? 10 : currentWeapon === 'shotgun' ? 5 : 2);
@@ -2120,7 +2117,6 @@ export default function AlamnagarStrike() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden select-none touch-none font-sans text-white">
-      {/* ✅ ANIMATED PROCEDURAL BACKGROUND */}
       <AnimatedBackground environment={selectedEnvironment} time={gameTime} />
       
       <div className={`absolute inset-0 ${currentEnvironment.overlay} pointer-events-none`} />
@@ -2232,7 +2228,6 @@ export default function AlamnagarStrike() {
       >
         {gameState === 'playing' && (
           <>
-            {/* Particles */}
             {particlesRef.current.map(particle => (
               <div
                 key={particle.id}
@@ -2255,7 +2250,6 @@ export default function AlamnagarStrike() {
               />
             ))}
 
-            {/* ✅ ENHANCED: Impact Effects at TARGET position */}
             {bulletImpacts.map(impact => (
               <motion.div
                 key={impact.id}
@@ -2280,7 +2274,6 @@ export default function AlamnagarStrike() {
               />
             ))}
 
-            {/* Bullets with trails */}
             {bulletsRef.current.map(bullet => (
               <div key={bullet.id} className="absolute pointer-events-none">
                 {bullet.trail.map((trailPoint, index) => (
@@ -2316,7 +2309,6 @@ export default function AlamnagarStrike() {
               </div>
             ))}
 
-            {/* Enemies */}
             {enemiesRef.current.map(enemy => (
               <div
                 key={enemy.id}
@@ -2353,7 +2345,6 @@ export default function AlamnagarStrike() {
               </div>
             ))}
 
-            {/* Gun */}
             <div
               className="absolute z-30 pointer-events-none"
               style={{
@@ -2364,7 +2355,6 @@ export default function AlamnagarStrike() {
             >
               <svg width="200" height="200" viewBox="-100 -100 200 200" className="overflow-visible">
                 <GunSVG weapon={currentWeapon} angle={gunAngleRef.current} recoil={gunRecoil} />
-                {/* ✅ Subtle muzzle flash (not explosion) */}
                 {muzzleFlash > 0 && (
                   <circle
                     cx={Math.cos(gunAngleRef.current * Math.PI / 180) * WEAPONS[currentWeapon].muzzleOffset}
@@ -2389,7 +2379,6 @@ export default function AlamnagarStrike() {
         )}
       </div>
 
-      {/* Bottom Navigation */}
       {gameState === 'playing' && (
         <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
           <motion.button
