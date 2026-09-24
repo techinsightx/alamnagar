@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, Trophy, Play, RotateCcw, Volume2, VolumeX, Target, 
   MapPin, Trees, Building2, AlertTriangle, Mic, MicOff, Wind,
-  RefreshCw, Zap, Crosshair, ChevronUp, ChevronDown, Music, Music2
+  RefreshCw, Zap, Crosshair, ChevronUp, ChevronDown, Music, Music2,
+  Menu, X, User
 } from "lucide-react";
 import Link from "next/link";
 import { db, auth } from "@/lib/firebase";
@@ -437,21 +438,13 @@ const stopBgAmbient = () => {
   }
 };
 
-const setBgVolume = (volume: number) => {
-  if (bgSoundNodes) {
-    bgSoundNodes.gains.forEach(gain => {
-      gain.gain.value = volume;
-    });
-  }
-};
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🎮 TYPE DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 type EnvironmentType = 'gali' | 'jungle' | 'city';
 type WeaponType = 'pistol' | 'rifle' | 'shotgun' | 'sniper';
 type EnemyType = 'zombie' | 'thug' | 'tiger' | 'ghost' | 'alien' | 'snake';
-type ParticleType = 'blood' | 'spark' | 'shell' | 'dust' | 'smoke' | 'debris' | 'fire' | 'fragment';
+type ParticleType = 'blood' | 'spark' | 'shell' | 'dust' | 'smoke' | 'debris' | 'fire' | 'fragment' | 'leaf' | 'light';
 
 interface WeaponStats {
   name: string;
@@ -601,10 +594,48 @@ interface BirdObject {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🌙 WORLD-CLASS STABLE ANIMATED BACKGROUND (100% CSS GPU Accelerated)
+// 💥 ENEMY FRAGMENT SVGs - Real Body Parts
+// ═══════════════════════════════════════════════════════════════════════════════
+const HeadFragment = ({ color, size }: { color: string; size: number }) => (
+  <svg width={size} height={size} viewBox="-20 -20 40 40">
+    <circle cx="0" cy="0" r="12" fill={color} />
+    <circle cx="-4" cy="-2" r="2" fill="#ff0000" />
+    <circle cx="4" cy="-2" r="2" fill="#ff0000" />
+    <path d="M-3 4 Q0 6 3 4" stroke="#000" strokeWidth="1" fill="none" />
+    <circle cx="-2" cy="6" r="1" fill="#8b0000" />
+  </svg>
+);
+
+const TorsoFragment = ({ color, size }: { color: string; size: number }) => (
+  <svg width={size} height={size * 1.5} viewBox="-15 -25 30 50">
+    <rect x="-12" y="-20" width="24" height="35" rx="4" fill={color} />
+    <path d="M-10 -15 L-8 -10 M-5 -16 L-4 -11 M0 -15 L1 -10" stroke="#4a2d2d" strokeWidth="0.5" />
+    <circle cx="-5" cy="0" r="3" fill="#8b0000" opacity="0.8" />
+    <circle cx="6" cy="5" r="2" fill="#8b0000" opacity="0.7" />
+  </svg>
+);
+
+const ArmFragment = ({ color, size }: { color: string; size: number }) => (
+  <svg width={size} height={size * 2} viewBox="-8 -20 16 40">
+    <rect x="-6" y="-15" width="12" height="30" rx="3" fill={color} />
+    <circle cx="0" cy="15" r="4" fill={color} opacity="0.8" />
+    <path d="M-4 -10 L-3 -5 M2 -12 L3 -7" stroke="#4a2d2d" strokeWidth="0.5" />
+  </svg>
+);
+
+const LegFragment = ({ color, size }: { color: string; size: number }) => (
+  <svg width={size} height={size * 2} viewBox="-8 -20 16 40">
+    <rect x="-6" y="-15" width="12" height="30" rx="3" fill={color} />
+    <rect x="-8" y="12" width="16" height="6" rx="2" fill="#1a1a1a" />
+    <path d="M-4 -5 L-3 0 M3 -8 L4 -3" stroke="#4a2d2d" strokeWidth="0.5" />
+  </svg>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🌙 WORLD-CLASS NATURAL ANIMATED BACKGROUND
 // ═══════════════════════════════════════════════════════════════════════════════
 const AnimatedBackground = ({ environment }: { environment: EnvironmentType }) => {
-  const stars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({
+  const stars = useMemo(() => Array.from({ length: 150 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 60,
@@ -613,13 +644,30 @@ const AnimatedBackground = ({ environment }: { environment: EnvironmentType }) =
     duration: 2 + Math.random() * 3,
   })), []);
 
-  const fireflies = useMemo(() => environment === 'jungle' ? Array.from({ length: 25 }, (_, i) => ({
+  const fireflies = useMemo(() => environment === 'jungle' ? Array.from({ length: 30 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: 30 + Math.random() * 50,
     delay: Math.random() * 5,
     duration: 3 + Math.random() * 4,
   })) : [], [environment]);
+
+  const leaves = useMemo(() => environment === 'jungle' ? Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    delay: Math.random() * 10,
+    duration: 8 + Math.random() * 4,
+    size: 8 + Math.random() * 6,
+  })) : [], [environment]);
+
+  const dustMotes = useMemo(() => Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    delay: Math.random() * 8,
+    duration: 6 + Math.random() * 4,
+    size: 2 + Math.random() * 3,
+  })), []);
 
   const houses = useMemo(() => environment === 'gali' ? Array.from({ length: 8 }, (_, i) => ({
     id: i,
@@ -647,29 +695,32 @@ const AnimatedBackground = ({ environment }: { environment: EnvironmentType }) =
     switch (environment) {
       case 'gali':
         return {
-          sky: 'linear-gradient(to bottom, #050510 0%, #1a1025 60%, #0a0810 100%)',
+          sky: 'linear-gradient(to bottom, #050510 0%, #1a1025 40%, #2a1535 70%, #0a0810 100%)',
           mountain: '#151020',
           fog: 'rgba(150, 120, 180, 0.15)',
           house: '#1a1525',
           roof: '#251d35',
           light: '#ffaa44',
+          ambient: 'rgba(255, 170, 68, 0.05)',
         };
       case 'jungle':
         return {
-          sky: 'linear-gradient(to bottom, #000a05 0%, #051a0f 60%, #030d06 100%)',
+          sky: 'linear-gradient(to bottom, #000a05 0%, #051a0f 40%, #0a2515 70%, #030d06 100%)',
           mountain: '#0a2515',
           fog: 'rgba(50, 180, 100, 0.2)',
           treeBack: '#05150a',
           treeFront: '#0a2515',
+          ambient: 'rgba(50, 180, 100, 0.08)',
         };
       case 'city':
         return {
-          sky: 'linear-gradient(to bottom, #050515 0%, #10102a 60%, #050510 100%)',
+          sky: 'linear-gradient(to bottom, #050515 0%, #10102a 40%, #1a1a3a 70%, #050510 100%)',
           mountain: '#151535',
           fog: 'rgba(100, 120, 200, 0.15)',
           building: '#12122a',
           buildingTop: '#1a1a3a',
           window: '#fbbf24',
+          ambient: 'rgba(100, 120, 200, 0.06)',
         };
     }
   };
@@ -695,6 +746,11 @@ const AnimatedBackground = ({ environment }: { environment: EnvironmentType }) =
           <div className="absolute w-2 h-2 bg-stone-400/20 rounded-full" style={{ top: '70%', left: '40%' }} />
         </div>
       </div>
+
+      <div className="absolute inset-0" style={{
+        background: `radial-gradient(ellipse at 88% 10%, ${theme.ambient} 0%, transparent 50%)`,
+        animation: 'lightRayPulse 8s ease-in-out infinite',
+      }} />
 
       <div className="absolute inset-0 opacity-20" style={{ animation: 'floatClouds 120s linear infinite' }}>
         <svg className="w-[200%] h-full" preserveAspectRatio="none">
@@ -756,6 +812,34 @@ const AnimatedBackground = ({ environment }: { environment: EnvironmentType }) =
         <div className="absolute w-[200%] h-full" style={{ background: `radial-gradient(ellipse at 50% 100%, ${theme.fog}, transparent 70%)`, animation: 'moveFog 20s ease-in-out infinite alternate' }} />
       </div>
 
+      {leaves.map(leaf => (
+        <div key={leaf.id} className="absolute" style={{
+          left: `${leaf.x}%`,
+          top: '-5%',
+          width: `${leaf.size}px`,
+          height: `${leaf.size}px`,
+          animation: `fallLeaf ${leaf.duration}s linear infinite`,
+          animationDelay: `${leaf.delay}s`,
+        }}>
+          <svg width={leaf.size} height={leaf.size} viewBox="0 0 20 20">
+            <path d="M10 2 Q15 5 15 10 Q15 15 10 18 Q5 15 5 10 Q5 5 10 2" fill="#4ade80" opacity="0.6" />
+            <path d="M10 2 L10 18" stroke="#2d5016" strokeWidth="0.5" />
+          </svg>
+        </div>
+      ))}
+
+      {dustMotes.map(mote => (
+        <div key={mote.id} className="absolute rounded-full" style={{
+          left: `${mote.x}%`,
+          top: `${mote.y}%`,
+          width: `${mote.size}px`,
+          height: `${mote.size}px`,
+          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+          animation: `floatDust ${mote.duration}s ease-in-out infinite`,
+          animationDelay: `${mote.delay}s`,
+        }} />
+      ))}
+
       {fireflies.map(fly => (
         <div key={fly.id} className="absolute rounded-full" style={{ left: `${fly.x}%`, top: `${fly.y}%`, width: '4px', height: '4px', backgroundColor: '#fbbf24', boxShadow: '0 0 8px #fbbf24, 0 0 16px #f59e0b', animation: `floatFirefly ${fly.duration}s ease-in-out infinite`, animationDelay: `${fly.delay}s` }} />
       ))}
@@ -770,13 +854,26 @@ const AnimatedBackground = ({ environment }: { environment: EnvironmentType }) =
         @keyframes flickerLight { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } 70% { opacity: 0.3; } 80% { opacity: 0.7; } }
         @keyframes moveFog { 0% { transform: translateX(-10%) scale(1); opacity: 0.3; } 100% { transform: translateX(10%) scale(1.1); opacity: 0.5; } }
         @keyframes blinkWindow { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+        @keyframes fallLeaf {
+          0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.8; }
+          100% { transform: translate(50px, 100vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes floatDust {
+          0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+          50% { transform: translate(20px, -30px); opacity: 0.6; }
+        }
+        @keyframes lightRayPulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.6; }
+        }
       `}</style>
     </div>
   );
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🔫 ENHANCED GUN SVGs - Desktop Large, Mobile Responsive, Micro Details
+// 🔫 ENHANCED GUN SVGs
 // ═══════════════════════════════════════════════════════════════════════════════
 const PistolSVG = ({ recoilAmount }: { recoilAmount: number }) => (
   <g transform={`translate(${-recoilAmount}, 0)`}>
@@ -1224,6 +1321,8 @@ export default function AlamnagarStrike() {
   const [birds, setBirds] = useState<BirdObject[]>([]);
   const [bulletImpacts, setBulletImpacts] = useState<ImpactEffect[]>([]);
   
+  // 🎛️ COLLAPSIBLE TOP-LEFT UI STATE
+  const [isUIExpanded, setIsUIExpanded] = useState(false);
   const [isNavExpanded, setIsNavExpanded] = useState(true);
   const [navAutoHideTimer, setNavAutoHideTimer] = useState<NodeJS.Timeout | null>(null);
 
@@ -1252,7 +1351,6 @@ export default function AlamnagarStrike() {
     if (saved) setHighScore(parseInt(saved));
   }, []);
 
-  // Background Music Toggle Effect
   useEffect(() => {
     if (gameState === 'playing' && bgMusicEnabled) {
       startBgAmbient(selectedEnvironment, 0.12);
@@ -1404,6 +1502,7 @@ export default function AlamnagarStrike() {
     setBirds([]);
     setBulletImpacts([]);
     setIsNavExpanded(true);
+    setIsUIExpanded(false);
     scoreRef.current = 0;
     healthRef.current = 100;
     gunPositionRef.current = { x: 50, y: 80 };
@@ -1440,7 +1539,7 @@ export default function AlamnagarStrike() {
     }
   }, []);
 
-  // 💥 ENEMY FRAGMENTATION BLAST - Tukde Tukde Effect
+  // 💥 ENEMY FRAGMENTATION BLAST - Real Body Parts
   const spawnFragmentationBlast = useCallback((x: number, y: number, weaponType: WeaponType, enemyType: EnemyType) => {
     const blastPower = WEAPONS[weaponType].blastPower;
     const fragmentCounts = { small: 6, medium: 10, large: 16, massive: 24 };
@@ -1481,7 +1580,6 @@ export default function AlamnagarStrike() {
       });
     }
 
-    // Shockwave ring
     setBulletImpacts(prev => [...prev, {
       id: Date.now() + Math.random(),
       x, y, life: 1,
@@ -1726,7 +1824,6 @@ export default function AlamnagarStrike() {
               setScore(scoreRef.current);
               setScreenShake(enemy.isBoss ? 20 : 10);
               
-              // 💥 FRAGMENTATION BLAST - Enemy ke tukde tukde!
               spawnFragmentationBlast(enemy.x, enemy.y, bullet.weaponType, enemy.type);
               spawnExplosion(enemy.x, enemy.y, enemy.isBoss ? 'large' : 'medium', enemy.type === 'alien' ? '#00ff00' : enemy.type === 'ghost' ? '#ffffff' : enemy.type === 'snake' ? '#4ade80' : '#ff6600');
             }
@@ -1863,54 +1960,84 @@ export default function AlamnagarStrike() {
         ))}
       </div>
 
-      <div className="absolute top-0 left-0 right-0 z-30 p-4 flex justify-between items-start pointer-events-none">
-        <div className="flex flex-col gap-2 pointer-events-auto">
-          <Link href="/" className="flex items-center gap-2 text-white bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 hover:bg-black/80 transition shadow-lg"><ArrowLeft className="w-4 h-4" /> Home</Link>
-          <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
-            {currentUser.photoURL ? <img src={currentUser.photoURL} alt="" className="w-8 h-8 rounded-full border-2 border-yellow-500" /> : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-xs font-black text-black">{(currentUser.displayName || currentUser.email || 'P')[0].toUpperCase()}</div>}
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-white truncate">{currentUser.displayName || 'Player'}</div>
-              <div className="text-[10px] text-stone-400 truncate">{currentUser.email}</div>
-            </div>
-            <button onClick={handleLogout} className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors">🚪</button>
-          </div>
-          <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
-            {soundEnabled ? <Volume2 className="w-5 h-5 text-green-400" /> : <VolumeX className="w-5 h-5 text-red-400" />}
-            <button onClick={() => setSoundEnabled(!soundEnabled)} className="text-xs text-white font-bold">SFX</button>
-          </div>
-          <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
-            {bgMusicEnabled ? <Music className="w-5 h-5 text-cyan-400" /> : <Music2 className="w-5 h-5 text-stone-600" />}
-            <button onClick={() => setBgMusicEnabled(!bgMusicEnabled)} className="text-xs text-white font-bold">BGM</button>
-          </div>
-          <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
-            {ambientEnabled ? <Wind className="w-5 h-5 text-purple-400" /> : <Wind className="w-5 h-5 text-stone-600" />}
-            <button onClick={() => setAmbientEnabled(!ambientEnabled)} className="text-xs text-white font-bold">Amb</button>
-          </div>
-          <button onClick={toggleMic} className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${isMicOn ? 'bg-green-600/60 border-green-400/50' : 'bg-black/60 border-white/10'}`}>
-            {isMicOn ? <Mic className="w-5 h-5 text-green-400" /> : <MicOff className="w-5 h-5 text-red-400" />}
-            <span className="text-xs text-white font-bold">{isMicOn ? 'MIC' : 'OFF'}</span>
-            {isSpeaking && <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />}
-          </button>
-        </div>
+      {/* 🎛️ COLLAPSIBLE TOP-LEFT UI */}
+      <div className="absolute top-0 left-0 z-30 p-4 pointer-events-none">
+        {/* Toggle Button */}
+        <motion.button
+          onClick={() => setIsUIExpanded(!isUIExpanded)}
+          className="pointer-events-auto mb-2 bg-black/70 backdrop-blur-md p-2 rounded-lg border border-white/20 hover:bg-black/90 transition-colors shadow-lg"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {isUIExpanded ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
+        </motion.button>
 
-        {gameState === 'playing' && (
-          <div className="flex flex-col items-end gap-3">
-            <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 flex items-center gap-3 shadow-lg">
-              <Target className="w-5 h-5 text-yellow-400" />
-              <span className="text-2xl font-black text-white">{score}</span>
-              {combo >= 3 && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-sm font-black text-red-500 animate-pulse">x{combo}!</motion.span>}
-            </div>
-            <div className="w-48 h-6 bg-black/60 rounded-full border border-white/10 overflow-hidden relative shadow-lg">
-              <motion.div className="h-full bg-gradient-to-r from-red-600 to-red-400" animate={{ width: `${health}%` }} transition={{ type: 'spring', bounce: 0 }} />
-              <div className="absolute inset-0 flex items-center justify-center"><span className="text-xs font-black text-white drop-shadow-md">HP {health}%</span></div>
-            </div>
-            <div className="text-sm font-bold text-stone-300 bg-black/40 px-3 py-1 rounded-full border border-white/5 flex items-center gap-2">
-              <currentEnvironment.icon className="w-4 h-4" />
-              {currentEnvironment.hindiName} • WAVE {wave}
-            </div>
-          </div>
-        )}
+        {/* Collapsible Panel */}
+        <AnimatePresence>
+          {isUIExpanded && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-2 pointer-events-auto"
+            >
+              <Link href="/" className="flex items-center gap-2 text-white bg-black/70 backdrop-blur-md px-4 py-2 rounded-lg border border-white/20 hover:bg-black/90 transition shadow-lg">
+                <ArrowLeft className="w-4 h-4" /> Home
+              </Link>
+              
+              <div className="flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20">
+                {currentUser.photoURL ? <img src={currentUser.photoURL} alt="" className="w-8 h-8 rounded-full border-2 border-yellow-500" /> : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-xs font-black text-black">{(currentUser.displayName || currentUser.email || 'P')[0].toUpperCase()}</div>}
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-white truncate">{currentUser.displayName || 'Player'}</div>
+                  <div className="text-[10px] text-stone-400 truncate">{currentUser.email}</div>
+                </div>
+                <button onClick={handleLogout} className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors">🚪</button>
+              </div>
+
+              <div className="flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20">
+                {soundEnabled ? <Volume2 className="w-5 h-5 text-green-400" /> : <VolumeX className="w-5 h-5 text-red-400" />}
+                <button onClick={() => setSoundEnabled(!soundEnabled)} className="text-xs text-white font-bold">SFX</button>
+              </div>
+
+              <div className="flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20">
+                {bgMusicEnabled ? <Music className="w-5 h-5 text-cyan-400" /> : <Music2 className="w-5 h-5 text-stone-600" />}
+                <button onClick={() => setBgMusicEnabled(!bgMusicEnabled)} className="text-xs text-white font-bold">BGM</button>
+              </div>
+
+              <div className="flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20">
+                {ambientEnabled ? <Wind className="w-5 h-5 text-purple-400" /> : <Wind className="w-5 h-5 text-stone-600" />}
+                <button onClick={() => setAmbientEnabled(!ambientEnabled)} className="text-xs text-white font-bold">Amb</button>
+              </div>
+
+              <button onClick={toggleMic} className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${isMicOn ? 'bg-green-600/60 border-green-400/50' : 'bg-black/70 border-white/20'}`}>
+                {isMicOn ? <Mic className="w-5 h-5 text-green-400" /> : <MicOff className="w-5 h-5 text-red-400" />}
+                <span className="text-xs text-white font-bold">{isMicOn ? 'MIC' : 'OFF'}</span>
+                {isSpeaking && <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Top-Right Stats */}
+      {gameState === 'playing' && (
+        <div className="absolute top-0 right-0 z-30 p-4 flex flex-col items-end gap-3 pointer-events-none">
+          <div className="bg-black/70 backdrop-blur-md px-4 py-2 rounded-lg border border-white/20 flex items-center gap-3 shadow-lg pointer-events-auto">
+            <Target className="w-5 h-5 text-yellow-400" />
+            <span className="text-2xl font-black text-white">{score}</span>
+            {combo >= 3 && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-sm font-black text-red-500 animate-pulse">x{combo}!</motion.span>}
+          </div>
+          <div className="w-48 h-6 bg-black/70 rounded-full border border-white/20 overflow-hidden relative shadow-lg pointer-events-auto">
+            <motion.div className="h-full bg-gradient-to-r from-red-600 to-red-400" animate={{ width: `${health}%` }} transition={{ type: 'spring', bounce: 0 }} />
+            <div className="absolute inset-0 flex items-center justify-center"><span className="text-xs font-black text-white drop-shadow-md">HP {health}%</span></div>
+          </div>
+          <div className="text-sm font-bold text-stone-300 bg-black/50 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-auto">
+            <currentEnvironment.icon className="w-4 h-4" />
+            {currentEnvironment.hindiName} • WAVE {wave}
+          </div>
+        </div>
+      )}
 
       <div ref={canvasRef} className="absolute inset-0 z-10 cursor-crosshair" onPointerMove={handlePointerMove} onPointerDown={handlePointerDown} style={{ transform: screenShake > 0 ? `translate(${(Math.random() - 0.5) * screenShake}px, ${(Math.random() - 0.5) * screenShake}px)` : 'none' }}>
         {gameState === 'playing' && (
@@ -1924,7 +2051,12 @@ export default function AlamnagarStrike() {
                 transform: `rotate(${particle.rotation}deg)`,
                 boxShadow: particle.type === 'blood' ? 'none' : particle.type === 'fire' ? `0 0 ${particle.size * 2}px ${particle.color}` : particle.type === 'fragment' ? `0 0 4px ${particle.color}` : `0 0 8px ${particle.color}`,
                 borderRadius: particle.type === 'debris' || particle.type === 'fragment' ? '2px' : '50%',
-              }} />
+              }}>
+                {particle.type === 'fragment' && particle.fragmentType === 'head' && <HeadFragment color={particle.color} size={particle.size * 2} />}
+                {particle.type === 'fragment' && particle.fragmentType === 'torso' && <TorsoFragment color={particle.color} size={particle.size * 2} />}
+                {particle.type === 'fragment' && (particle.fragmentType === 'arm_l' || particle.fragmentType === 'arm_r') && <ArmFragment color={particle.color} size={particle.size * 2} />}
+                {particle.type === 'fragment' && (particle.fragmentType === 'leg_l' || particle.fragmentType === 'leg_r') && <LegFragment color={particle.color} size={particle.size * 2} />}
+              </div>
             ))}
             {bulletImpacts.map(impact => (
               <motion.div key={impact.id} initial={{ scale: 0, opacity: 1 }} animate={{ scale: impact.type === 'death' ? 5 : impact.type === 'explosion' ? 4 : 2.5, opacity: 0 }} transition={{ duration: impact.type === 'death' ? 0.6 : 0.4 }} className="absolute pointer-events-none" style={{ left: `${impact.x}%`, top: `${impact.y}%`, width: `${impact.size}px`, height: `${impact.size}px`, marginLeft: `-${impact.size / 2}px`, marginTop: `-${impact.size / 2}px`, background: impact.type === 'death' ? 'radial-gradient(circle, rgba(255,255,200,1) 0%, rgba(255,150,0,0.9) 20%, rgba(255,50,0,0.7) 40%, rgba(100,0,0,0.4) 60%, transparent 100%)' : impact.type === 'explosion' ? `radial-gradient(circle, rgba(255,200,100,0.9) 0%, ${impact.color || 'rgba(255,100,0,0.7)'} 30%, rgba(100,50,0,0.4) 60%, transparent 100%)` : 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,200,100,0.4) 40%, transparent 70%)', borderRadius: '50%' }} />
@@ -1955,7 +2087,6 @@ export default function AlamnagarStrike() {
               </div>
             ))}
             <div className="absolute z-30 pointer-events-none" style={{ left: `${gunPositionRef.current.x}%`, top: `${gunPositionRef.current.y}%`, transform: 'translate(-50%, -50%)' }}>
-              {/* 🔫 Responsive Gun Size: Desktop Large, Mobile Small */}
               <svg className="overflow-visible w-[150px] h-[150px] md:w-[220px] md:h-[220px] lg:w-[260px] lg:h-[260px]" viewBox="-100 -100 200 200">
                 <GunSVG weapon={currentWeapon} angle={gunAngleRef.current} recoil={gunRecoil} />
                 {muzzleFlash > 0 && (<circle cx={Math.cos(gunAngleRef.current * Math.PI / 180) * WEAPONS[currentWeapon].muzzleOffset} cy={Math.sin(gunAngleRef.current * Math.PI / 180) * WEAPONS[currentWeapon].muzzleOffset} r={15 * muzzleFlash} fill="rgba(255, 200, 50, 0.8)" style={{ filter: 'blur(3px)' }} />)}
