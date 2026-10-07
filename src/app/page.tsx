@@ -8,7 +8,7 @@ import {
   Zap, UserPlus, MessageCircle, Share2, Activity, Eye, Shield,
   Flame, Award, TrendingUp, LogIn, Lock, Trash2, Loader2, 
   CheckCircle, X, Globe, AlertTriangle, Gamepad2, Bot, LayoutTemplate, ExternalLink,
-  Smile, Rocket, Palette, Trophy, ChevronDown as ChevronDownIcon
+  Smile, Rocket, Palette, Trophy, ChevronDown as ChevronDownIcon, Stethoscope
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -26,7 +26,7 @@ import {
 import Navbar from "./components/Navbar";
 
 // ═══════════════════════════════════════════════════════════
-// 🖼️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
+// ️ SMOOTH IMAGE SLIDER WITH FALLBACK IMAGES
 // ═══════════════════════════════════════════════════════════
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
@@ -461,6 +461,124 @@ const FloatingBubble = ({ delay, size, left, duration }: { delay: number; size: 
   />
 );
 
+// ═══════════════════════════════════════════════════════════
+// 🏛️ TRIBUTE SECTION - LATE AMRESHWAR PRASAD SINGH (SONA BABU)
+// ═══════════════════════════════════════════════════════════
+const TributeSection = () => (
+  <section className="py-24 px-4 md:px-8 lg:px-12 bg-gradient-to-br from-amber-50 via-stone-50 to-orange-50 relative overflow-hidden">
+    <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+      }} />
+    </div>
+    
+    <div className="max-w-6xl mx-auto relative z-10">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-12"
+      >
+        <div className="inline-flex items-center gap-2 bg-amber-100/80 backdrop-blur-md border border-amber-300 rounded-full px-6 py-2 mb-6">
+          <Flame className="w-5 h-5 text-amber-600" />
+          <span className="text-sm font-black tracking-wide uppercase text-amber-800">श्रद्धांजलि</span>
+        </div>
+        <h2 className="text-4xl md:text-6xl font-black text-stone-900 mb-4">
+          आलमनगर की शान
+        </h2>
+        <h3 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-600 to-amber-600 mb-6">
+          स्व. अमरेश्वर प्रसाद सिंह उर्फ सोना बाबू
+        </h3>
+        <p className="text-lg text-stone-600 italic max-w-3xl mx-auto">
+          "राजपरिवार से संबंधित, समाजसेवा को ही सबसे बड़ा धर्म मानने वाले महान व्यक्तित्व"
+        </p>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.2 }}
+        className="bg-white/80 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-2xl border border-amber-200 mb-8"
+      >
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <div className="aspect-square rounded-2xl overflow-hidden shadow-xl mb-6 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
+              <div className="text-center p-8">
+                <Award className="w-24 h-24 text-amber-600 mx-auto mb-4" />
+                <p className="text-amber-800 font-bold text-lg">स्व. अमरेश्वर प्रसाद सिंह</p>
+                <p className="text-amber-600 text-sm">(सोना बाबू)</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="prose prose-stone max-w-none">
+              <p className="text-stone-700 leading-relaxed text-lg mb-4">
+                आलमनगर के राजपरिवार से संबंधित <strong>स्व. अमरेश्वर प्रसाद सिंह (सोना बाबू)</strong> 
+                गाँव के सबसे सम्मानित और विशिष्ट नागरिकों में से एक थे।
+              </p>
+              
+              <blockquote className="border-l-4 border-amber-500 pl-6 italic text-stone-600 my-6">
+                "मां-पिता ने मानव सेवा को ही सबसे बड़ा धर्म बताया और वे सदैव मानव सेवा में ही 
+                अपना जीवन खपाने का काम किया। उनका मानना था कि समाज के अंतिम पायदान पर 
+                खड़े व्यक्ति तक विकास पहुंचना चाहिए।"
+              </blockquote>
+
+              <p className="text-stone-700 leading-relaxed mb-4">
+                उन्होंने अपनी नौकरी और शहर का आनंद छोड़कर गाँव में समाज के वंचित शोषित और 
+                जरूरतमंदों के लिए अपना पूरा जीवन खपा समर्पित कर दिया।
+              </p>
+
+              <div className="bg-amber-50 rounded-xl p-6 border border-amber-200">
+                <h4 className="font-black text-amber-900 mb-3 flex items-center gap-2">
+                  <Heart className="w-5 h-5" />
+                  उनकी देन:
+                </h4>
+                <ul className="space-y-2 text-stone-700">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                    <span>पटना से एमएस की पढ़ाई कर वीरपुर के भारदेह अस्पताल में सेवा</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                    <span>1980 के दशक में सरकारी नौकरी छोड़ पैतृक गांव आलमनगर लौटे</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                    <span>गांव में निःशुल्क चिकित्सा सेवा करने लगे</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                    <span>दूर-दूर से लोग उपचार कराने आते थे</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3 }}
+        className="text-center"
+      >
+        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black px-8 py-4 rounded-full shadow-lg">
+          <Heart className="w-6 h-6 fill-white" />
+          <span>हमेशा याद रखे जाएंगे</span>
+          <Heart className="w-6 h-6 fill-white" />
+        </div>
+        <p className="text-stone-500 mt-4 text-sm">
+          - उनके पुत्र सर्वेश्वर प्रसाद सिंह द्वारा साझा की गई यादें
+        </p>
+      </motion.div>
+    </div>
+  </section>
+);
+
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
@@ -669,7 +787,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 3. ABOUT PREVIEW ===== */}
+        {/* ===== 3. TRIBUTE TO SONA BABU ===== */}
+        <TributeSection />
+
+        {/* ===== 4. ABOUT PREVIEW ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-white relative overflow-hidden">
           <MadhubaniPattern />
           <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
@@ -702,7 +823,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 4. EXPLORE SECTIONS ===== */}
+        {/* ===== 5. EXPLORE SECTIONS ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-stone-100">
           <div className="max-w-7xl mx-auto">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
@@ -736,7 +857,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 5. MARKETPLACE TEASER WITH CINEMATIC SLIDER ===== */}
+        {/* ===== 6. MARKETPLACE TEASER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-neutral-900 text-white relative overflow-hidden">
           <MarketplaceCinematicSlider />
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
@@ -771,7 +892,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 6. REAL-TIME TESTIMONIALS ===== */}
+        {/* ===== 7. REAL-TIME TESTIMONIALS ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-white">
           <div className="max-w-7xl mx-auto">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
@@ -821,7 +942,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 7. GAMING ARENA TEASER WITH CINEMATIC SLIDER ===== */}
+        {/* ===== 8. GAMING ARENA TEASER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-purple-950 text-white relative overflow-hidden">
           <GamesCinematicSlider />
           <div className="relative z-10 max-w-7xl mx-auto">
@@ -840,7 +961,7 @@ export default function HomePage() {
               {[
                 { icon: "🎈", title: "Bubble Pop", desc: "Balloons pop karo aur magical items collect karo!", href: "/games/bubble-pop", color: "from-pink-500 to-purple-500" },
                 { icon: "🧺", title: "Jadui Tokri", desc: "Girte hue stars aur gifts pakdo, bombs se bacho!", href: "/games/magical-catch", color: "from-indigo-500 to-purple-600" },
-                { icon: "🔫", title: "Alamnagar Strike", desc: "Survival shooter action! Dushmano ko harao aur bachao!", href: "/games/alamnagar-strike", color: "from-red-500 to-orange-600" }
+                { icon: "", title: "Alamnagar Strike", desc: "Survival shooter action! Dushmano ko harao aur bachao!", href: "/games/alamnagar-strike", color: "from-red-500 to-orange-600" }
               ].map((game, i) => (
                 <Link key={i} href={game.href} className="group relative bg-white/10 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-white/20 hover:scale-105 transition-all duration-300 overflow-hidden text-left">
                   <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${game.color} opacity-20 rounded-full blur-2xl -mr-10 -mt-10 group-hover:opacity-40 transition-all`} />
@@ -864,7 +985,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 8. CREATOR TOOLS TEASER WITH CINEMATIC SLIDER ===== */}
+        {/* ===== 9. CREATOR TOOLS TEASER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-indigo-950 text-white relative overflow-hidden">
           <ToolsCinematicSlider />
           <div className="relative z-10 max-w-7xl mx-auto">
@@ -913,7 +1034,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== 9. WORKING NEWSLETTER WITH CINEMATIC SLIDER ===== */}
+        {/* ===== 10. WORKING NEWSLETTER WITH CINEMATIC SLIDER ===== */}
         <section className="py-24 px-4 md:px-8 lg:px-12 bg-zinc-800 text-white relative overflow-hidden">
           <NewsletterCinematicSlider />
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-3xl mx-auto text-center relative z-10">
@@ -935,7 +1056,7 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        {/* ===== 10. PREMIUM FOOTER WITH SCALABLE SECTIONS ===== */}
+        {/* ===== 11. PREMIUM FOOTER WITH SCALABLE SECTIONS ===== */}
         <footer className="bg-stone-950 text-stone-400 py-16 px-4 md:px-8 lg:px-12 border-t border-stone-900 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-amber-500 to-emerald-600" />
           <div className="max-w-7xl mx-auto">
@@ -1022,6 +1143,25 @@ export default function HomePage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Healthcare Section */}
+            <div className="mb-12 bg-gradient-to-r from-emerald-900/30 to-teal-900/30 rounded-2xl p-8 border border-emerald-800/30">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Stethoscope className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-white mb-1">स्वास्थ्य सेवा</h3>
+                    <p className="text-emerald-200 text-sm">Dental Care Dr. Vikram Singh [BDS]</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-stone-400">
+                  <Phone className="w-4 h-4" />
+                  <span>संपर्क करें</span>
+                </div>
               </div>
             </div>
 
