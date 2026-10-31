@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Devanagari } from "next/font/google";
 import Script from "next/script";
-import { SpeedInsights } from "@vercel/speed-insights/next"
-// import { SpeedInsights } from "@vercel/speed-insights/next"; // Uncomment if deploying on Vercel
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
-// ✅ PWA Provider Import (Navbar removed from here)
+// ✅ PWA Provider Import
 import PWAProvider from "./components/PWAProvider";
 
 // ==================== FONTS (Hindi + English) ====================
@@ -29,8 +28,8 @@ const FOUNDER_NAME = 'Mukesh Kumar Malakar';
 const CREATERA_URL = 'https://createra.in';
 
 // ⚠️ TODO: Replace these with your actual Google Analytics & GTM IDs
-const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; 
-const GTM_ID = 'GTM-XXXXXXX';
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-XXXXXXXXXX'; 
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || 'GTM-XXXXXXX';
 
 // ==================== HERO MESSAGING ====================
 const HERO_TAGLINE = "आलमनगर: जड़ों से जुड़ा, मिथिला की धरती का गौरव। हमारा गाँव, हमारी पहचान, हमारा डिजिटल चौपाल।";
@@ -39,21 +38,22 @@ const HERO_TAGLINE = "आलमनगर: जड़ों से जुड़ा
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Alamnagar | आलमनगर - मिथिला की धरती का गौरव और डिजिटल चौपाल",
-    template: "%s | Alamnagar - आलमनगर डिजिटल प्लेटफॉर्म",
+    default: "Alamnagar.in | आलमनगर, मधेपुरा का आधिकारिक डिजिटल प्लेटफॉर्म",
+    template: "%s | Alamnagar - मिथिला की धरती का गौरव",
   },
-  description: "Alamnagar.in is the official digital platform of Alamnagar, Madhepura, Bihar. Founded by Mukesh Kumar Malakar (Founder of Createra.in). Connect with the community, explore local Mithila culture, marketplace, and village news.",
+  description: "Alamnagar.in is the official digital platform of Alamnagar, Madhepura, Bihar. Founded by Mukesh Kumar Malakar (Founder of Createra.in). Connect with the Mithila community, explore local culture, marketplace, and village heritage.",
   keywords: [
-    "Alamnagar", "Alamnagar Madhepura", "Alamnagar Bihar", "Mithila culture", 
-    "Alamnagar news", "Alamnagar marketplace", "Mukesh Kumar Malakar", "Createra founder",
-    "Bihar village community", "Hariballabh Chowk Alamnagar", "Mithilaanchal digital",
+    "Alamnagar", "Alamnagar Madhepura", "Alamnagar Bihar", "Alamnagar.in",
+    "Mithila culture", "Mithilaanchal digital", "Alamnagar news", 
+    "Alamnagar marketplace", "Mukesh Kumar Malakar", "Createra founder",
+    "Bihar village community", "Hariballabh Chowk Alamnagar",
     "आलमनगर", "मधेपुरा", "मिथिला संस्कृति", "बिहार गाँव", "मुखेश कुमार मलाकार"
   ],
   authors: [{ name: FOUNDER_NAME, url: CREATERA_URL }],
   creator: FOUNDER_NAME,
   publisher: "Alamnagar Digital",
   applicationName: "Alamnagar",
-  generator: "Next.js",
+  generator: "Next.js 15",
   referrer: "strict-origin-when-cross-origin",
   robots: {
     index: true,
@@ -68,21 +68,24 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: SITE_URL,
+    languages: {
+      'hi-IN': SITE_URL,
+      'en-IN': `${SITE_URL}/en`, // Future-proofing for English version
+    }
   },
-  // ⚠️ TODO: Add your Google Search Console verification code here
   verification: {
-    google: 'guXiWsyDznzmNeQ9wBA6NfiPp0AuDW7QYT7TJDlDFKE',
+    google: 'guXiWsyDznzmNeQ9wBA6NfiPp0AuDW7QYT7TJDlDFKE', // ✅ Your verified code
   },
   openGraph: {
     type: "website",
     locale: "hi_IN",
     url: SITE_URL,
-    siteName: "Alamnagar",
+    siteName: "Alamnagar.in",
     title: "Alamnagar | आलमनगर - मिथिला की धरती का गौरव",
-    description: "आलमनगर, मधेपुरा, बिहार का आधिकारिक डिजिटल प्लेटफॉर्म। Founded by Mukesh Kumar Malakar (Createra.in).",
+    description: HERO_TAGLINE,
     images: [
       { 
-        url: "/og-cover.png", 
+        url: `${SITE_URL}/og-cover.png`, // 🔥 Absolute URL for better social scraping
         width: 1200, 
         height: 630, 
         alt: "Alamnagar - जड़ों से जुड़ा, मिथिला की धरती का गौरव", 
@@ -93,10 +96,10 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@alamnagar_in",
-    creator: "@createra_in", // Cross-promoting your main brand
+    creator: "@createra_in", 
     title: "Alamnagar | आलमनगर - मिथिला की धरती का गौरव",
     description: HERO_TAGLINE,
-    images: ["/og-cover.png"],
+    images: [`${SITE_URL}/og-cover.png`],
   },
   category: "Community & Local Culture",
   classification: "Indian Village Community & Digital Empowerment Platform",
@@ -106,7 +109,6 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent", 
     title: "Alamnagar" 
   },
-  // ✅ Perfect PWA & Favicon Icon Mapping
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -120,10 +122,9 @@ export const metadata: Metadata = {
     ],
     other: [
       { rel: "mask-icon", url: "/icon-maskable-192x192.png", sizes: "192x192", type: "image/png" },
-      { rel: "mask-icon", url: "/icon-maskable-512x512.png", sizes: "512x512", type: "image/png" },
     ],
   },
-  manifest: "/manifest.json", // Next.js automatically serves app/manifest.ts as /manifest.json
+  manifest: "/manifest.json",
   other: {
     'author': `${FOUNDER_NAME} (Founder of Createra.in & Alamnagar.in)`,
     'copyright': `© ${new Date().getFullYear()} Alamnagar.in. All rights reserved.`,
@@ -146,15 +147,15 @@ export const viewport: Viewport = {
   userScalable: true,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafaf9" }, // stone-50
-    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" }, // stone-950
+    { media: "(prefers-color-scheme: light)", color: "#fafaf9" }, 
+    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" }, 
   ],
   colorScheme: "dark light",
 };
 
 // ==================== ADVANCED STRUCTURED DATA (JSON-LD) ====================
 
-// 🔥 FOUNDER PERSON SCHEMA (E-E-A-T Authority Booster)
+// 🔥 1. FOUNDER PERSON SCHEMA (E-E-A-T Authority Booster)
 const personSchema = {
   "@context": "https://schema.org",
   "@type": "Person",
@@ -163,28 +164,15 @@ const personSchema = {
   "url": CREATERA_URL,
   "jobTitle": "Founder & Tech Visionary",
   "worksFor": [
-    {
-      "@type": "Organization",
-      "name": "Createra",
-      "url": CREATERA_URL,
-      "description": "India's Premier Creator Economy Platform"
-    },
-    {
-      "@type": "Organization",
-      "name": "Alamnagar Digital",
-      "url": SITE_URL
-    }
+    { "@type": "Organization", "name": "Createra", "url": CREATERA_URL },
+    { "@type": "Organization", "name": "Alamnagar Digital", "url": SITE_URL }
   ],
-  "description": "Mukesh Kumar Malakar is a visionary tech entrepreneur, the founder of Createra.in (India's leading creator economy platform), and the digital architect behind Alamnagar.in, dedicated to rural empowerment and cultural preservation in Bihar.",
-  "knowsAbout": [
-    "Creator Economy", "Web Development", "Digital Empowerment", "Rural Innovation", "Mithila Culture", "Next.js", "Firebase"
-  ],
-  "sameAs": [
-    CREATERA_URL,
-    SITE_URL
-  ]
+  "description": "Mukesh Kumar Malakar is a visionary tech entrepreneur, founder of Createra.in, and the digital architect behind Alamnagar.in, dedicated to rural empowerment and Mithila cultural preservation in Bihar.",
+  "knowsAbout": ["Creator Economy", "Web Development", "Digital Empowerment", "Rural Innovation", "Mithila Culture"],
+  "sameAs": [CREATERA_URL, SITE_URL, "https://www.linkedin.com/in/your-profile"] // ⚠️ Add your LinkedIn/Twitter here
 };
 
+// 🔥 2. ORGANIZATION SCHEMA
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -193,23 +181,14 @@ const organizationSchema = {
   "alternateName": "Alamnagar.in",
   "url": SITE_URL,
   "logo": `${SITE_URL}/icon-512x512.png`,
-  "description": "Alamnagar.in is the official digital platform of Alamnagar, Madhepura, Bihar, founded by Mukesh Kumar Malakar (Founder of Createra.in) to preserve Mithila culture and foster local digital empowerment.",
+  "description": "Official digital platform of Alamnagar, Madhepura, Bihar, founded by Mukesh Kumar Malakar to preserve Mithila culture and foster local digital empowerment.",
   "foundingDate": "2024",
-  "founder": { "@id": `${SITE_URL}#founder` }, // 🔥 Links directly to the Person Schema
+  "founder": { "@id": `${SITE_URL}#founder` },
   "areaServed": { 
     "@type": "Place",
     "name": "Alamnagar, Madhepura, Bihar, India",
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": "25.9333",
-      "longitude": "86.1167"
-    }
+    "geo": { "@type": "GeoCoordinates", "latitude": "25.9333", "longitude": "86.1167" }
   },
-  "industry": "Community, Local Culture, Digital Empowerment, Local Marketplace",
-  "knowsAbout": [
-    "Mithila Culture", "Alamnagar Community", "Local Marketplace Bihar", 
-    "Village Digital Empowerment", "Indian Heritage", "Madhepura News"
-  ],
   "contactPoint": {
     "@type": "ContactPoint",
     "email": "digitechinfo.india@gmail.com",
@@ -219,6 +198,58 @@ const organizationSchema = {
   }
 };
 
+// 🔥 3. LOCAL PLACE SCHEMA (🚀 VIRAL SECRET FOR LOCAL SEO #1 RANKING)
+const placeSchema = {
+  "@context": "https://schema.org",
+  "@type": "Place",
+  "@id": `${SITE_URL}#place`,
+  "name": "Alamnagar",
+  "description": "A historic and culturally rich village in Madhepura district, Bihar, known for its Mithila heritage and strong community.",
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "25.9333",
+    "longitude": "86.1167"
+  },
+  "containedInPlace": {
+    "@type": "AdministrativeArea",
+    "name": "Madhepura, Bihar, India"
+  },
+  "photo": `${SITE_URL}/og-cover.png`
+};
+
+// 🔥 4. FAQ SCHEMA (Triggers "People Also Ask" in Google)
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "आलमनगर.इन (Alamnagar.in) क्या है?",
+      "acceptedAnswer": { 
+        "@type": "Answer", 
+        "text": "Alamnagar.in आलमनगर, मधेपुरा, बिहार का आधिकारिक डिजिटल प्लेटफॉर्म है। इसे Createra.in के संस्थापक मुखेश कुमार मलाकार द्वारा गाँव की संस्कृति और समुदाय को डिजिटल रूप से जोड़ने के लिए बनाया गया है।" 
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "क्या आलमनगर प्लेटफॉर्म का उपयोग करना मुफ्त है?",
+      "acceptedAnswer": { 
+        "@type": "Answer", 
+        "text": "जी हाँ, Alamnagar.in पर रजिस्टर करना, समुदाय से जुड़ना और मार्केटप्लेस का उपयोग करना 100% मुफ्त है।" 
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "आलमनगर की इतिहास और संस्कृति के बारे में जानकारी कहाँ मिलेगी?",
+      "acceptedAnswer": { 
+        "@type": "Answer", 
+        "text": "हमारे 'About' और 'Heritage' सेक्शन में आलमनगर की समृद्ध मिथिला-अंगिका विरासत, चंदेल वंश की परंपराओं और स्थानीय इतिहास की विस्तृत जानकारी उपलब्ध है।" 
+      }
+    }
+  ]
+};
+
+// 🔥 5. WEBSITE & BREADCRUMB SCHEMA
 const webSiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -233,58 +264,6 @@ const webSiteSchema = {
     "target": `${SITE_URL}/community?search={search_term_string}`,
     "query-input": "required name=search_term_string"
   }
-};
-
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "आलमनगर.इन (Alamnagar.in) क्या है?",
-      "acceptedAnswer": { 
-        "@type": "Answer", 
-        "text": "Alamnagar.in आलमनगर, मधेपुरा, बिहार का आधिकारिक डिजिटल प्लेटफॉर्म है। इसे Createra.in के संस्थापक मुखेश कुमार मलाकार (Mukesh Kumar Malakar) द्वारा गाँव की संस्कृति और समुदाय को डिजिटल रूप से जोड़ने के लिए बनाया गया है।" 
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "क्या आलमनगर प्लेटफॉर्म का उपयोग करना मुफ्त है?",
-      "acceptedAnswer": { 
-        "@type": "Answer", 
-        "text": "जी हाँ, Alamnagar.in पर रजिस्टर करना और इसका उपयोग करना 100% मुफ्त है। यह हमारे गाँव और समुदाय के लिए एक डिजिटल सेवा है।" 
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "मैं आलमनगर मार्केटप्लेस में अपनी वस्तु या सेवा कैसे बेच सकता हूँ?",
-      "acceptedAnswer": { 
-        "@type": "Answer", 
-        "text": "आप प्लेटफॉर्म पर 'मार्केटप्लेस' सेक्शन में जाकर अपना खाता बना सकते हैं और स्थानीय खरीददारों तक पहुँचने के लिए अपनी वस्तुओं या सेवाओं की लिस्टिंग मुफ्त में बना सकते हैं।" 
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "क्या विदेश में रहने वाले लोग भी इस प्लेटफॉर्म से जुड़ सकते हैं?",
-      "acceptedAnswer": { 
-        "@type": "Answer", 
-        "text": "बिल्कुल! यह प्लेटफॉर्म विशेष रूप से उन प्रवासियों के लिए डिज़ाइन किया गया है जो अपनी जड़ों और गाँव की ताज़ा खबरों और यादों से जुड़े रहना चाहते हैं।" 
-      }
-    }
-  ]
-};
-
-const breadcrumbSchema = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "होम",
-      "item": SITE_URL
-    }
-  ]
 };
 
 // ==================== ROOT LAYOUT ====================
@@ -303,25 +282,27 @@ export default function RootLayout({
       <head>
         <meta name="msvalidate.01" content="04BA0BC01BC4F0F4605763AC11C4F674" />
 
+        {/* 🔥 Performance: DNS Prefetch & Preconnect for Critical Resources */}
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://firestore.googleapis.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         
         <link rel="canonical" href={SITE_URL} />
         
+        {/* 🔥 Viral Secret: Native App Feel on iOS */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Alamnagar" />
         
-        {/* 🔥 Inject all JSON-LD schemas for Rich Snippets & Knowledge Graph */}
+        {/* 🔥 Inject ALL JSON-LD schemas for Google Knowledge Graph Domination */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(placeSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       </head>
       <body className={`antialiased bg-stone-50 text-stone-900 selection:bg-amber-200 selection:text-amber-900 font-sans`}>
         {/* ✅ PWA Service Worker Registration */}
@@ -337,15 +318,14 @@ export default function RootLayout({
           />
         </noscript>
 
-        {/* ✅ Page Content Yahan Render Hoga */}
         {children}
         
-        {/* ✅ Google Tag Manager (Lazy Loaded for Performance) */}
+        {/* ✅ Google Tag Manager (Lazy Loaded) */}
         <Script id="google-tag-manager" strategy="lazyOnload">
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');`}
         </Script>
 
-        {/* ✅ Google Analytics (Lazy Loaded for Performance) */}
+        {/* ✅ Google Analytics (Lazy Loaded) */}
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="lazyOnload" />
         <Script id="google-analytics" strategy="lazyOnload">
           {`
@@ -363,8 +343,8 @@ export default function RootLayout({
           `}
         </Script>
         
-        {/* ✅ Vercel Speed Insights (Optional: Uncomment if deploying on Vercel) */}
-        {/* <SpeedInsights /> */}
+        {/* ✅ Vercel Speed Insights (Core Web Vitals Tracking) */}
+        <SpeedInsights />
       </body>
     </html>
   );

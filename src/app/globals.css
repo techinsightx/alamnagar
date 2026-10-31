@@ -1,21 +1,180 @@
 @import "tailwindcss";
 
-/* Smooth scrolling for the whole page */
+/* =========================================
+   1. CORE & TYPOGRAPHY (Crisp Text)
+   ========================================= */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem; /* Offset for fixed headers/navbar */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Custom scrollbar for a premium feel */
+body {
+  overflow-x: hidden;
+  /* Prevent layout shift on scroll */
+  scrollbar-gutter: stable; 
+}
+
+/* =========================================
+   2. SELECTION & HIGHLIGHTS (Brand Colors)
+   ========================================= */
+::selection {
+  background-color: #fbbf24; /* amber-400 */
+  color: #0c0a09; /* stone-950 */
+}
+
+::-moz-selection {
+  background-color: #fbbf24;
+  color: #0c0a09;
+}
+
+/* =========================================
+   3. PREMIUM SCROLLBARS (Light & Dark)
+   ========================================= */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #fafaf9; /* stone-50 */
+  background: transparent;
 }
-::-webkit-scrollbar-thumb {
-  background: #059669; /* emerald-600 */
+
+/* Light Mode Scrollbar */
+@media (prefers-color-scheme: light) {
+  ::-webkit-scrollbar-thumb {
+    background: #d6d3d1; /* stone-300 */
+    border-radius: 10px;
+    border: 2px solid #fafaf9; /* stone-50 */
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a8a29e; /* stone-400 */
+  }
+}
+
+/* Dark Mode Scrollbar */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: #44403c; /* stone-700 */
+    border-radius: 10px;
+    border: 2px solid #0c0a09; /* stone-950 */
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #57534e; /* stone-600 */
+  }
+}
+
+/* Firefox Scrollbar Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a8a29e transparent;
+}
+@media (prefers-color-scheme: dark) {
+  * {
+    scrollbar-color: #44403c transparent;
+  }
+}
+
+/* =========================================
+   4. ACCESSIBILITY & FOCUS STATES
+   ========================================= */
+:focus-visible {
+  outline: 2px solid #f59e0b; /* amber-500 */
+  outline-offset: 2px;
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #047857; /* emerald-700 */
+
+/* Remove default focus for mouse users, keep for keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* =========================================
+   5. MEDIA & ASSETS (Crisp Images)
+   ========================================= */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: -webkit-optimize-contrast; /* Makes images sharper */
+}
+
+/* =========================================
+   6. GOD-TIER UTILITY CLASSES
+   ========================================= */
+
+/* Hide scrollbar but keep scroll functionality (Great for horizontal sliders) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism Base (Use className="glass") */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+@media (prefers-color-scheme: dark) {
+  .glass {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Text Gradient Utility (Use className="text-gradient-gold") */
+.text-gradient-gold {
+  background: linear-gradient(to right, #fbbf24, #f59e0b, #d97706);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Smooth Fade In Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Shimmer Effect for Loading States (Skeletons) */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+.shimmer {
+  background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+@media (prefers-color-scheme: dark) {
+  .shimmer {
+    background: linear-gradient(to right, #1c1917 0%, #292524 20%, #1c1917 40%, #1c1917 100%);
+  }
+}
+
+/* =========================================
+   7. PRINT STYLES (Professional Look)
+   ========================================= */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .no-print {
+    display: none !important;
+  }
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
 }
